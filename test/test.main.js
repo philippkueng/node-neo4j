@@ -76,7 +76,7 @@ describe('Testing Node specific operations for Neo4j', function(){
        });
        
        describe('-> Read an existing Node', function(){
-           it('should return the JSOn for that node', function(done){
+           it('should return the JSON for that node', function(done){
               db.ReadNode(node_id, function(err, result){
                  result.data.name.should.equal('foobar');
                  result.id.should.equal(node_id);
@@ -89,6 +89,15 @@ describe('Testing Node specific operations for Neo4j', function(){
        after(function(done){
           db.DeleteNode(node_id, function(err, result){
              done(); 
+          });
+       });
+       
+       describe('-> Read an non-existing Node', function(){
+          it('should return null for the node and the error messsage', function(done){
+             db.ReadNode(99999999, function(err, result){
+                should.not.exist(result);
+                done(); 
+             });
           });
        });
        
