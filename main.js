@@ -37,11 +37,15 @@ Neo4j.prototype.DeleteNode = function(node_id, callback){
         .del(this.url + '/db/data/node/' + node_id)
         .set('Accept', 'application/json')
         .end(function(result){
-            if(result.statusCode === 204 && typeof result.body !== 'undefined'){
-                callback(null, true);
-            } else {
-                console.log(result);
-                callback(new Error('Error when deleting Node'), null);
+            switch(result.statusCode){
+                case 204:
+                    callback(null, true); // Node was deleted.
+                    break;
+                case 409:
+                    callback(null, false); // Node has Relationships and cannot be deleted.
+                    break;
+                default:
+                    callback(new Error('Unknown Error while deleting Node'), null);
             }
         });
 };
