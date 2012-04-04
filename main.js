@@ -38,7 +38,7 @@ Neo4j.prototype.DeleteNode = function(node_id, callback){
         .set('Accept', 'application/json')
         .end(function(result){
             if(result.statusCode === 204 && typeof result.body !== 'undefined'){
-                callback(null, result.body);
+                callback(null, true);
             } else {
                 console.log(result);
                 callback(new Error('Error when deleting Node'), null);
@@ -67,6 +67,29 @@ Neo4j.prototype.ReadNode = function(node_id, callback){
            } else {
                callback(new Error('Response is empty'), null);
            }
+        });
+};
+
+/* Update a Node ---------- */
+
+Neo4j.prototype.UpdateNode = function(node_id, node_data, callback){
+    var that = this;
+    request
+        .put(this.url + '/db/data/node' + node_id)
+        .send(node_data)
+        .set('Accept', 'application/json')
+        .end(function(result){
+            // console.log(result.statusCode);
+            switch(result.statusCode){
+                case 204:
+                    callback(null, result.body);
+                    break;
+                case 404:
+                    callback(null, null);
+                    break;
+                default:
+                    callback(new Error('HTTP Error ' + result.statusCode + ' when updating a Node.'), null);
+            }
         });
 };
 

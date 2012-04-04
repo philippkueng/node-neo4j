@@ -48,7 +48,7 @@ describe('Testing Node specific operations for Neo4j', function(){
         describe('-> Deleting an existing Node without Relationships', function(){
             it('should delete the Node without issues', function(done){
                 db.DeleteNode(node_id, function(err, result){
-                    result.should.not.equal(null);
+                    result.should.equal(true);
                     done(); 
                 });
             });
@@ -99,6 +99,37 @@ describe('Testing Node specific operations for Neo4j', function(){
                 done(); 
              });
           });
+       });
+       
+    });
+    
+    describe('=> Update a Node', function(){
+       var node_id;
+       
+       //Insert a Node.
+       before(function(done){
+          db.InsertNode({name:'foobar'}, function(err, node){
+             node_id = node.id;
+             done(); 
+          });
+       });
+       
+       describe('-> Update an existing Node', function(){
+          it('should return the JSON for that node', function(done){
+             db.UpdateNode(node_id, {name:'foobar2'}, function(err, result){
+                 // console.log(result);
+                 // result.data.name.should.equal('foobar2');
+                 // result.id.should.equal(node_id);
+                 done();
+             });
+          });
+       });
+       
+       // Remove Node afterwards.
+       after(function(done){
+           db.DeleteNode(node_id, function(err, result){
+               done(); 
+           });
        });
        
     });
