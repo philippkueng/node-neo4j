@@ -62,5 +62,36 @@ describe('Testing Node specific operations for Neo4j', function(){
         //     });
         // });
     });
+    
+    describe('=> Read a Node', function(){
+       
+       var node_id;
+       
+       //Insert a Node.
+       before(function(done){
+          db.InsertNode({name:'foobar'}, function(err, node){
+             node_id = node.id;
+             done(); 
+          });
+       });
+       
+       describe('-> Read an existing Node', function(){
+           it('should return the JSOn for that node', function(done){
+              db.ReadNode(node_id, function(err, result){
+                 result.data.name.should.equal('foobar');
+                 result.id.should.equal(node_id);
+                 done();
+              });
+           });
+       });
+       
+       // Remove Node afterwards.
+       after(function(done){
+          db.DeleteNode(node_id, function(err, result){
+             done(); 
+          });
+       });
+       
+    });
    
 });

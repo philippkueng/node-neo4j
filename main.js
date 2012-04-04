@@ -48,6 +48,22 @@ Neo4j.prototype.DeleteNode = function(node_id, callback){
 
 
 
+/* Read a Node ---------- */
+
+Neo4j.prototype.ReadNode = function(node_id, callback){
+    var that = this;
+    request
+        .get(this.url + '/db/data/node/' + node_id)
+        .set('Accept', 'application/json')
+        .end(function(result){
+           if(typeof result.body !== 'undefined'){
+               that.AddNodeId(result.body, callback);
+           } else {
+               callback(new Error('Response is empty'), null);
+           }
+        });
+};
+
 
 /* HELPER METHODS --------- */
 
