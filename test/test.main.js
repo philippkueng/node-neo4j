@@ -7,39 +7,45 @@ var db = new neo4j(url);
 
 describe('Testing Node specific operations for Neo4j', function(){
     
-    describe('A simple valid node insertion', function(){
-        it('should return the JSON for that node', function(done){
-            db.InsertNode({name:'foobar'}, function(err, result){
-                // console.log(result);
-                
-                // Javascript Regex to extract the node_id
-                // console.log(result.self.replace(url + '/db/data/node/', ''));
-                
-                result.should.not.equal(null);
-                result.data.name.should.equal('foobar');
-                done();
+    describe('=> Create a Node', function(){
+        var node_id;
+
+        describe('-> A simple valid node insertion', function(){
+            it('should return the JSON for that node', function(done){
+                db.InsertNode({name:'foobar'}, function(err, result){
+
+                    node_id = result.id;
+
+                    result.should.not.equal(null);
+                    result.data.name.should.equal('foobar');
+                    result.id.should.not.equal('');
+                    done();
+                });
             });
         });
+
+        // Remove Node afterwards.
+        after(function(done){
+           db.DeleteNode(node_id, function(err, result){
+              done(); 
+           });
+        });
     });
+
     
-    describe('- Deleting a Node', function(){
+    describe('=> Delete a Node', function(){
         
         var node_id;
         
         // Insert a Node.
         before(function(done){
             db.InsertNode({name:'foobar'}, function(err, result){
-                
-                // console.log(url);
-                // console.log(neo4j.getPathWithoutUsernameAndPassword(url));
-                
-                node_id = result.self.replace(url + '/db/data/node/', '');
+                node_id = result.id;
                 done();
-                
             });
         })
         
-        describe(' - Deleting an existing Node without Relationships', function(){
+        describe('-> Deleting an existing Node without Relationships', function(){
             it('should delete the Node without issues', function(done){
                 db.DeleteNode(node_id, function(err, result){
                     result.should.not.equal(null);

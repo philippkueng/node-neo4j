@@ -13,15 +13,14 @@ function Neo4j(url){
 /* Insert a Node --------- */
 
 Neo4j.prototype.InsertNode = function(node, callback){
+    var that = this;
     request
         .post(this.url + '/db/data/node')
         .send(node)
         .set('Accept', 'application/json')
         .end(function(result){
-            // console.log(result.body.data);
             if(typeof result.body !== 'undefined'){
-                // callback(null, JSON.parse(result.body));
-                callback(null, result.body);
+                that.AddNodeId(result.body, callback);
             } else {
                 callback(new Error('Response is empty'), null);
             }
@@ -32,7 +31,6 @@ Neo4j.prototype.InsertNode = function(node, callback){
 
 /* Delete a Node --------- */
 // Nodes with Relationships cannot be deleted -> deliver proper error message
-// superagent has no method delete as of yet!!
 
 Neo4j.prototype.DeleteNode = function(node_id, callback){
     request
@@ -45,17 +43,28 @@ Neo4j.prototype.DeleteNode = function(node_id, callback){
                 console.log(result);
                 callback(new Error('Error when deleting Node'), null);
             }
-            
-            // console.log(result);
-            // callback(null, {});
         });
 };
 
-var getPathWithoutUsernameAndPassword = function(path){
-    if(typeof path !== 'undefined'){
-        return path.replace(/[^a-zA-Z0-9]+\:[^a-zA-Z0-9]+\@/, '');
+
+
+
+/* HELPER METHODS --------- */
+
+/* Strips username and password from URL so that the node_id can be extracted. */
+
+Neo4j.prototype.RemoveCredentials = function(path){
+    if(typeof path !== 'undefined' && path !== ''){
+        return path.replace(/[a-z0-9]+\:[a-z0-9]+\@/, '');
+    } else {
+        return '';
     }
 };
 
-module.exports.getPathWithoutUsernameAndPassword = getPathWithoutUsernameAndPassword;
 
+/* Extract node_id and add it as a property. */
+
+Neo4j.prototype.AddNodeId = function(node, callback){    
+    node.id = node.self.replace(this.RemoveCredentials(this.url) + '/db/data/node/', '');
+    callback(null, node);
+};
