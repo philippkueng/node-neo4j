@@ -23,14 +23,38 @@ Insert a Node.
         db.InsertNode({
             name: 'Darth Vader',
             sex: 'male'
-        },
-        function(err, node){
+        },function(err, node){
+            if(err) throw err;
             
             // Output Node properties.
             console.log(node.data);
             
             // Output Node id.
             console.log(node.id);
+        });
+        
+Delete a Node
+
+        db.DeleteNode(12, function(err, node){
+           if(err) throw err;
+           
+           if(node === true){
+               // node deleted
+           } else {
+               // node not deleted because of existing relationships
+           }
+        });
+        
+Read a Node
+
+        db.ReadNode(12, function(err, node){
+            if(err) throw err;
+        
+           // Output Node properties.
+           console.log(node.data);
+           
+           // Output Node id.
+           console.log(node.id);
         });
         
 ## Tests
