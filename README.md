@@ -4,43 +4,43 @@
 
 ## Installation
 
-        npm install node-neo4j
+    npm install node-neo4j
 
 ## Usage
 
 In order to use the library you either have to create a [heroku](http://www.heroku.com/) app and add the [Neo4j Addon](https://addons.heroku.com/neo4j) there or install it locally. If you're using OS X i highly recommend installing Neo4j via [Homebrew](http://mxcl.github.com/homebrew/).
 
-        $ brew install neo4j
-        $ neo4j start
+    $ brew install neo4j
+    $ neo4j start
 
 Instantiate a wrapper instance.
 
-        var neo4j = require('node-neo4j);
-        db = new neo4j('http://username:password@domain:port');
+    var neo4j = require('node-neo4j);
+    db = new neo4j('http://username:password@domain:port');
         
 Insert a Node.
 
-        db.InsertNode({
-            name: 'Darth Vader',
-            sex: 'male'
-        },
-        function(err, node){
-            
-            // Output Node properties.
-            console.log(node.data);
-            
-            // Output Node id.
-            console.log(node.id);
-        });
+    db.InsertNode({
+        name: 'Darth Vader',
+        sex: 'male'
+    },
+    function(err, node){
+        
+        // Output Node properties.
+        console.log(node.data);
+        
+        // Output Node id.
+        console.log(node.id);
+    });
         
 ## Tests
 
 This API wrapper relies on [mocha](https://github.com/visionmedia/mocha) for testing, therefore when you want to run the tests follow the steps below.
 
-        $ git clone git://github.com/philippkueng/node-neo4j.git
-        $ cd node-neo4j/
-        $ npm install
-        $ npm test
+    $ git clone git://github.com/philippkueng/node-neo4j.git
+    $ cd node-neo4j/
+    $ npm install
+    $ npm test
 
 ## License
 
