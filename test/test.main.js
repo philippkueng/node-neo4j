@@ -143,6 +143,24 @@ describe('Testing Node specific operations for Neo4j', function(){
           });
        });
        
+       describe('-> Update an existing Node with an object with an object as value', function(){
+          var test_obj = {
+              name: 'foobar',
+              family: {
+                  mother: 'barfii',
+                  father: 'barfoo'
+              }
+          };
+          
+          it('should return true', function(done){
+              db.UpdateNode(node_id, test_obj, function(err, result){
+                 should.not.exist(err);
+                 result.should.equal(true);
+                 done();
+              });
+          });
+       });
+       
        // Remove Node afterwards.
        after(function(done){
            db.DeleteNode(node_id, function(err, result){
@@ -164,6 +182,22 @@ describe('Testing Node specific operations for Neo4j', function(){
                 node_data.name.should.equal('foobar');
                 node_data.age.should.equal('');
             });
+        });
+    });
+    
+    describe('=> Testing an object with an object as value', function(){
+        var test_obj = {
+          name: 'foobar',
+          family: {
+              mother: 'barfii',
+              father: 'barfoo'
+          }  
+        };
+        
+        it('should return the transformed object', function(){
+           var node_data = db.StringifyValueObjects(test_obj);
+           node_data.name.should.equal('foobar');
+           node_data.family.should.equal("{\"mother\":\"barfii\",\"father\":\"barfoo\"}");
         });
     });
    

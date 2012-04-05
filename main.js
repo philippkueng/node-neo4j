@@ -83,7 +83,7 @@ Neo4j.prototype.UpdateNode = function(node_id, node_data, callback){
     var that = this;
     request
         .put(this.url + '/db/data/node/' + node_id + '/properties')
-        .send(that.ReplaceNullWithString(node_data))
+        .send(that.StringifyValueObjects(that.ReplaceNullWithString(node_data)))
         .set('Accept', 'application/json')
         .end(function(result){
             switch(result.statusCode){
@@ -128,6 +128,20 @@ Neo4j.prototype.ReplaceNullWithString = function(node_data, callback){
     for(var key in node_data){
         if(node_data.hasOwnProperty(key) && node_data[key] === null){
             node_data[key] = '';
+        }
+    }
+    
+    return node_data;
+};
+
+
+/*  */
+
+Neo4j.prototype.StringifyValueObjects = function(node_data, callback){
+    
+    for(var key in node_data){
+        if(node_data.hasOwnProperty(key) && typeof node_data[key] === 'object'){
+            node_data[key] = JSON.stringify(node_data[key]);
         }
     }
     
