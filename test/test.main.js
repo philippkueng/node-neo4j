@@ -126,9 +126,8 @@ describe('Testing Node specific operations for Neo4j', function(){
        describe('-> Update an existing Node', function(){
           it('should return the JSON for that node', function(done){
              db.UpdateNode(node_id, {name:'foobar2'}, function(err, result){
-                 // console.log(result);
-                 // result.data.name.should.equal('foobar2');
-                 // result.id.should.equal(node_id);
+                 should.not.exist(err);
+                 result.should.equal(true);                 
                  done();
              });
           });

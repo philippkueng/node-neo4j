@@ -82,11 +82,10 @@ Neo4j.prototype.ReadNode = function(node_id, callback){
 Neo4j.prototype.UpdateNode = function(node_id, node_data, callback){
     var that = this;
     request
-        .put(this.url + '/db/data/node' + node_id)
+        .put(this.url + '/db/data/node/' + node_id + '/properties')
         .send(node_data)
         .set('Accept', 'application/json')
         .end(function(result){
-            // console.log(result.statusCode);
             switch(result.statusCode){
                 case 204:
                     callback(null, true);
