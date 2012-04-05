@@ -41,6 +41,9 @@ Neo4j.prototype.DeleteNode = function(node_id, callback){
                 case 204:
                     callback(null, true); // Node was deleted.
                     break;
+                case 404:
+                    callback(null, false); // Node doesn't exist.
+                    break;
                 case 409:
                     callback(null, false); // Node has Relationships and cannot be deleted.
                     break;
@@ -86,10 +89,10 @@ Neo4j.prototype.UpdateNode = function(node_id, node_data, callback){
             // console.log(result.statusCode);
             switch(result.statusCode){
                 case 204:
-                    callback(null, result.body);
+                    callback(null, true);
                     break;
                 case 404:
-                    callback(null, null);
+                    callback(null, false);
                     break;
                 default:
                     callback(new Error('HTTP Error ' + result.statusCode + ' when updating a Node.'), null);

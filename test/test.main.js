@@ -54,6 +54,15 @@ describe('Testing Node specific operations for Neo4j', function(){
             });
         });
         
+        describe('-> Delete an non-existig Node', function(){
+           it('should return false as a result since Node cannot be found', function(done){
+               db.DeleteNode(node_id, function(err, result){
+                  result.should.equal(false);
+                  done(); 
+               });
+           });
+        });
+        
         // it('should return a valid response', function(err, result){
         //     console.log(node_self);
         //     db.DeleteNode(node_self, function(err, result){
