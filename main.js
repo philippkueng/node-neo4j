@@ -83,7 +83,7 @@ Neo4j.prototype.UpdateNode = function(node_id, node_data, callback){
     var that = this;
     request
         .put(this.url + '/db/data/node/' + node_id + '/properties')
-        .send(node_data)
+        .send(that.ReplaceNullWithString(node_data))
         .set('Accept', 'application/json')
         .end(function(result){
             switch(result.statusCode){
@@ -96,7 +96,7 @@ Neo4j.prototype.UpdateNode = function(node_id, node_data, callback){
                 default:
                     callback(new Error('HTTP Error ' + result.statusCode + ' when updating a Node.'), null);
             }
-        });
+        }); 
 };
 
 
@@ -119,3 +119,19 @@ Neo4j.prototype.AddNodeId = function(node, callback){
     node.id = node.self.replace(this.RemoveCredentials(this.url) + '/db/data/node/', '');
     callback(null, node);
 };
+
+
+/* Replace null values with an empty string */
+
+Neo4j.prototype.ReplaceNullWithString = function(node_data, callback){
+
+    for(var key in node_data){
+        if(node_data.hasOwnProperty(key) && node_data[key] === null){
+            node_data[key] = '';
+        }
+    }
+    
+    return node_data;
+};
+
+

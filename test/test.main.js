@@ -123,13 +123,23 @@ describe('Testing Node specific operations for Neo4j', function(){
           });
        });
        
-       describe('-> Update an existing Node', function(){
-          it('should return the JSON for that node', function(done){
+       describe('-> Update an existing Node with a simple object', function(){
+          it('should return true', function(done){
              db.UpdateNode(node_id, {name:'foobar2'}, function(err, result){
                  should.not.exist(err);
                  result.should.equal(true);                 
                  done();
              });
+          });
+       });
+       
+       describe('-> Update an existing Node with an object with null values', function(){
+          it('should return true', function(done){
+              db.UpdateNode(node_id,{name:'foobar3',age:null}, function(err, result){
+                 should.not.exist(err);
+                 result.should.equal(true);
+                 done();
+              });
           });
        });
        
@@ -140,6 +150,21 @@ describe('Testing Node specific operations for Neo4j', function(){
            });
        });
        
+    });
+    
+    describe('=> Testing ReplaceNullWithString', function(){
+        var test_obj = {
+            name: 'foobar',
+            age: null
+        };
+        
+        describe('-> Testing a small object', function(){
+            it('should return the transformed object', function(){
+                var node_data = db.ReplaceNullWithString(test_obj);
+                node_data.name.should.equal('foobar');
+                node_data.age.should.equal('');
+            });
+        });
     });
    
 });
