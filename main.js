@@ -114,7 +114,7 @@ Neo4j.prototype.InsertRelationship = function(root_node_id, other_node_id, relat
         .end(function(result){
             switch(result.statusCode){
                 case 201:
-                    callback(null, true);
+                    callback(null, result.body);
                     break;
                 case 400: // Endnode not found exception
                     callback(null, false);

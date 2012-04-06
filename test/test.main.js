@@ -233,11 +233,16 @@ describe('Testing Node specific operations for Neo4j', function(){
             it('should return true', function(done){
                 db.InsertRelationship(root_node_id, other_node_id, 'RELATED_TO', function(err, result){
                     should.not.exist(err);
-                    result.should.equal(true);
+                    result.type.should.equal('RELATED_TO');
                     done();
                 });
             });
         });
+
+        // CLEANUP : TODO
+        // -------
+        // Delete Relationship
+        // Delete Nodes
     });
     
     describe('=> Testing ReplaceNullWithString', function(){
