@@ -100,6 +100,35 @@ Neo4j.prototype.UpdateNode = function(node_id, node_data, callback){
 };
 
 
+/* Insert a Relationship ------ */
+
+Neo4j.prototype.InsertRelationship = function(root_node_id, other_node_id, relationship_type, callback){
+    var that = this;
+    request
+        .post(that.url + '/db/data/node/' + root_node_id + '/relationships')
+        .send({
+            to: that.url + '/db/data/node/' + other_node_id,
+            type: relationship_type
+        })
+        .set('Accept', 'application/json')
+        .end(function(result){
+            switch(result.statusCode){
+                case 201:
+                    callback(null, true);
+                    break;
+                case 400: // Endnode not found exception
+                    callback(null, false);
+                    break;
+                case 404: // Startnode not found exception
+                    callback(null, false);
+                    break;
+                default:
+                    callback(new Error('HTTP Error ' + result.statusCode + ' when updating a Node.'), null);
+            }
+        });
+};
+
+
 /* HELPER METHODS --------- */
 
 /* Strips username and password from URL so that the node_id can be extracted. */

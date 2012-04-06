@@ -5,6 +5,14 @@ var url = 'http://localhost:7474';
 
 var db = new neo4j(url);
 
+/*
+ *
+ * -------------------------------------------
+ * RUN TESTS WITH AGAINST EMPTY NEO4J INSTANCE
+ * -------------------------------------------
+ * 
+ */
+
 describe('Testing Node specific operations for Neo4j', function(){
     
     describe('=> Create a Node', function(){
@@ -168,6 +176,68 @@ describe('Testing Node specific operations for Neo4j', function(){
            });
        });
        
+    });
+    
+    describe('=> Insert a Relationship', function(){
+        describe('-> Insert a Relationship with rood_node and other_node not existing', function(){
+            it('should return false', function(done){
+                db.InsertRelationship(99999999, 99999998, 'RELATED_TO', function(err, result){
+                    should.not.exist(err);
+                    result.should.equal(false);
+                    done();
+                });
+            });
+        });
+       
+        var root_node_id;
+       
+        before(function(done){
+            db.InsertNode({name:'foobar'}, function(err, node){
+                root_node_id = node.id;
+                done(); 
+            });
+        });
+       
+        describe('-> Insert a Relationship with other_node not existing', function(){
+
+            it('should return false', function(done){
+                db.InsertRelationship(root_node_id, 99999998, 'RELATED_TO', function(err, result){
+                    should.not.exist(err);
+                    result.should.equal(false);
+                    done();
+                });
+            });
+
+        });
+       
+        describe('-> Insert a Relationship with root_node not existing', function(){
+            it('should return false', function(done){
+                db.InsertRelationship(99999998, root_node_id, 'RELATED_TO', function(err, result){
+                    should.not.exist(err);
+                    result.should.equal(false);
+                    done();
+                });
+            });
+        });
+
+        var other_node_id;
+
+        before(function(done){
+            db.InsertNode({name:'foobar2'}, function(err, node){
+                other_node_id = node.id;
+                done();
+            });
+        });
+
+        describe('-> Insert a Relationship with both nodes existing', function(){
+            it('should return true', function(done){
+                db.InsertRelationship(root_node_id, other_node_id, 'RELATED_TO', function(err, result){
+                    should.not.exist(err);
+                    result.should.equal(true);
+                    done();
+                });
+            });
+        });
     });
     
     describe('=> Testing ReplaceNullWithString', function(){
