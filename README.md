@@ -13,12 +13,15 @@ In order to use the library you either have to create a [heroku](http://www.hero
     $ brew install neo4j
     $ neo4j start
 
-Instantiate a wrapper instance.
+**Instantiate a wrapper instance**
 
     var neo4j = require('node-neo4j);
     db = new neo4j('http://username:password@domain:port');
+
+
+### Node operations
         
-Insert a Node.
+**Insert a Node**
 
     db.InsertNode({
         name: 'Darth Vader',
@@ -26,36 +29,49 @@ Insert a Node.
     },function(err, node){
         if(err) throw err;
         
-        // Output Node properties.
+        // Output node properties.
         console.log(node.data);
         
-        // Output Node id.
+        // Output node id.
         console.log(node.id);
     });
-        
-Delete a Node
 
-    db.DeleteNode(12, function(err, node){
-       if(err) throw err;
-       
-       if(node === true){
-           // node deleted
-       } else {
-           // node not deleted because of existing relationships
-       }
-    });
-        
-Read a Node
+**Read a Node**
 
     db.ReadNode(12, function(err, node){
         if(err) throw err;
     
-       // Output Node properties.
-       console.log(node.data);
+        // Output Node properties.
+        console.log(node.data);
        
-       // Output Node id.
-       console.log(node.id);
+        // Output Node id.
+        console.log(node.id);
     });
+
+**Update a Node**
+
+    db.UpdateNode(12, {name:'foobar2'}, function(err, node){
+        if(err) throw err;
+
+        if(node === true){
+            // node updated
+        } else {
+            // node not found, hence not updated
+        }
+    });
+        
+**Delete a Node**
+
+    db.DeleteNode(12, function(err, node){
+        if(err) throw err;
+       
+        if(node === true){
+            // node deleted
+        } else {
+            // node not deleted because of existing relationships
+        }
+    });
+    
         
 ## Tests
 
