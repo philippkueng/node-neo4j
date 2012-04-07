@@ -250,7 +250,7 @@ describe('Testing Node specific operations for Neo4j', function(){
                 });
             });
         });
-        
+
     });
     
     describe('=> Delete a Relationship', function(){
@@ -300,8 +300,56 @@ describe('Testing Node specific operations for Neo4j', function(){
                 });
             });
         });
+    });
 
+    describe('=> Read a Relationship', function(){
+        describe('-> Read a non-existing Relationship', function(){
+            it('should return false', function(done){
+                db.ReadRelationship(99999999, function(err, result){
+                    should.not.exist(err);
+                    result.should.equal(false);
+                    done();
+                });
+            });
+        });
 
+        var root_node_id;
+        var other_node_id;
+        var relationship_id;
+
+        before(function(done){
+            db.InsertNode({name:'foobar'}, function(err, node1){
+                root_node_id = node1.id;
+                db.InsertNode({name:'foobar2'}, function(err, node2){
+                    other_node_id = node2.id;
+                    db.InsertRelationship(root_node_id, other_node_id, 'RELATED_TO', function(err, relationship){
+                        relationship_id = relationship.id;
+                        done();
+                    });
+                });
+            });
+        });
+
+        describe('-> Read an existing Node', function(){
+            it('should return relationship data', function(done){
+                db.ReadRelationship(relationship_id, function(err, result){
+                    should.not.exist(err);
+                    result.should.not.equal(false);
+                    result.type.should.equal('RELATED_TO');
+                    done();
+                });
+            });
+        });
+
+        after(function(done){
+            db.DeleteRelationship(relationship_id, function(err, result){
+                db.DeleteNode(other_node_id, function(err, result){
+                    db.DeleteNode(root_node_id, function(err, result){
+                        done();
+                    });
+                });
+            });
+        });
     });
 
     describe('=> Testing ReplaceNullWithString', function(){

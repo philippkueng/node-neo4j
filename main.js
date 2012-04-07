@@ -151,6 +151,29 @@ Neo4j.prototype.DeleteRelationship = function(relationship_id, callback){
 };
 
 
+/* Read a Relationship ----------- */
+
+Neo4j.prototype.ReadRelationship = function(relationship_id, callback){
+    var that = this;
+
+    request
+        .get(that.url + '/db/data/relationship/' + relationship_id)
+        .set('Accept', 'application/json')
+        .end(function(result){
+            switch(result.statusCode){
+                case 200:
+                    that.AddRelationshipId(result.body, callback);
+                    break;
+                case 404:
+                    callback(null, false);
+                    break;
+                default:
+                    callback(new Error('HTTP Error ' + result.statusCode + ' when reading a Relationship'), null);
+            }
+        });
+};
+
+
 /* HELPER METHODS --------- */
 
 /* Strips username and password from URL so that the node_id can be extracted. */
