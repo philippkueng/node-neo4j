@@ -1,4 +1,4 @@
-# Neo4j REST API Wrapper for Node.js
+# Neo4j REST API wrapper for Node.js
 
 ---
 
@@ -8,7 +8,7 @@
 
 ## Usage
 
-In order to use the library you either have to create a [heroku](http://www.heroku.com/) app and add the [Neo4j Addon](https://addons.heroku.com/neo4j) there or install it locally. If you're using OS X i highly recommend installing Neo4j via [Homebrew](http://mxcl.github.com/homebrew/).
+In order to use the library you either have to create a [heroku](http://www.heroku.com/) app and add the [Neo4j Addon](https://addons.heroku.com/neo4j) there or install it locally.<br/>If you're using OS X i highly recommend installing Neo4j via [Homebrew](http://mxcl.github.com/homebrew/).
 
     $ brew install neo4j
     $ neo4j start
@@ -41,14 +41,16 @@ In order to use the library you either have to create a [heroku](http://www.hero
     db.ReadNode(12, function(err, node){
         if(err) throw err;
     
-        // Output Node properties.
+        // Output node properties.
         console.log(node.data);
        
-        // Output Node id.
+        // Output node id.
         console.log(node.id);
     });
 
 **Update a Node**
+
+Will remove any assigned properties and replace them with the ones given below.
 
     db.UpdateNode(12, {name:'foobar2'}, function(err, node){
         if(err) throw err;
@@ -68,11 +70,111 @@ In order to use the library you either have to create a [heroku](http://www.hero
         if(node === true){
             // node deleted
         } else {
-            // node not deleted because of existing relationships
+            // node not deleted because not found or because of existing relationships
         }
     });
-    
-        
+
+
+### Relationship operations
+
+**Insert a Relationship**
+
+    db.InsertRelationship(root_node_id, other_node_id, 'RELATIONSHIP_TYPE', {
+        age: '5 years',
+        sideeffects: {
+            positive: 'happier',
+            negative: 'less time'
+        }}, function(err, relationship){
+            if(err) throw err;
+
+            // Output relationship properties.
+            console.log(relationship.data);
+
+            // Output relationship id.
+            console.log(relationship.id);
+
+            // Output relationship start_node_id.
+            console.log(relationship.start_node_id);
+
+            // Output relationship end_node_id.
+            console.log(relationship.end_node_id);
+    });
+
+**Read a Relationship**
+
+    db.ReadRelationship(relationship_id, function(err, relationship){
+        if(err) throw err;
+
+        // Same properties for relationship object as with InsertRelationship
+    });
+
+**Update a Relationship**
+
+Will remove any assigned properties and replace them with the ones given below.
+
+    db.UpdateRelationship(relationship_id, {
+            age: '6 years'
+        }, function(err, relationship){
+            if(err) throw err;
+
+            if(relationship === true){
+                // relationship updated
+            } else {
+                relationship not found, hence not updated.
+            }
+    });
+
+**Delete a Relationship**
+
+    db.DeleteRelationship(relationship_id, function(err, relationship){
+        if(err) throw err;
+
+        if(relationship === true){
+            // relationship deleted
+        } else {
+            // relationship not deleted because not found.
+        }
+    });
+
+
+### Advanced relationship operations
+
+**Get all relationship types used within the Neo4j database**
+
+Will also return types of those relationships that have been deleted.
+
+    db.ReadRelationshipTypes(function(err, result){
+        if(err) throw err;
+
+        console.log(result); // eg. ['RELATED_TO', 'LOVES', 'KNOWNS']
+    });
+
+**Get all relationships of a node**
+
+Will return incoming aswell as outgoing nodes.
+
+    db.ReadAllRelationshipsOfNode(node_id, function(err, relationships){
+        if(err) throw err;
+
+        console.log(relationships); // delivers an array of relationship objects.
+    });
+
+**Get all incoming relationships of a node**
+
+    db.ReadIncomingRelationshipsOfNode(node_id, function(err, relationships){
+        if(err) throw err;
+
+        console.log(relationships); // delivers an array of relationships objects.
+    });
+
+**Get all outgoing relationships of a node**
+
+    db.ReadOutgoingRelationshipsOfNode(node_id, function(err, relationships){
+        if(err) throw err;
+
+        console.log(relationships); // delivers an array of relationships objects.
+    });
+
 ## Tests
 
 This API wrapper relies on [mocha](https://github.com/visionmedia/mocha) for testing, therefore when you want to run the tests follow the steps below.
@@ -81,6 +183,10 @@ This API wrapper relies on [mocha](https://github.com/visionmedia/mocha) for tes
     $ cd node-neo4j/
     $ npm install
     $ npm test
+
+## Issues or Feature Requests?
+
+In case you run into an issue while using the wrapper or you have a feature request please let me know by [creating a new issue](https://github.com/philippkueng/node-neo4j/issues) or contacting me via [twitter](https://twitter.com/philippkueng).
 
 ## License
 

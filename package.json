@@ -1,8 +1,8 @@
 {
   "author": "Philipp Küng <git@philippkueng.ch> (http://philippkueng.ch)",
   "name": "node-neo4j",
-  "description": "Neo4j REST API Wrapper for Node.js",
-  "version": "0.1.0",
+  "description": "Neo4j REST API wrapper for Node.js",
+  "version": "0.1.1",
   "repository": {
     "type": "git",
     "url": "https://github.com/philippkueng/node-neo4j.git"
