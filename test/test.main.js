@@ -70,111 +70,104 @@ describe('Testing Node specific operations for Neo4j', function(){
                });
            });
         });
-        
-        // it('should return a valid response', function(err, result){
-        //     console.log(node_self);
-        //     db.DeleteNode(node_self, function(err, result){
-        //         result.should.not.equal(null);
-        //         done();
-        //     });
-        // });
+
     });
     
     describe('=> Read a Node', function(){
        
-       var node_id;
+        var node_id;
        
-       //Insert a Node.
-       before(function(done){
-          db.InsertNode({name:'foobar'}, function(err, node){
-             node_id = node.id;
-             done(); 
-          });
-       });
-       
-       describe('-> Read an existing Node', function(){
-           it('should return the JSON for that node', function(done){
-              db.ReadNode(node_id, function(err, result){
-                 result.data.name.should.equal('foobar');
-                 result.id.should.equal(node_id);
-                 done();
-              });
-           });
-       });
-       
-       // Remove Node afterwards.
-       after(function(done){
-          db.DeleteNode(node_id, function(err, result){
-             done(); 
-          });
-       });
-       
-       describe('-> Read an non-existing Node', function(){
-          it('should return null for the node and the error messsage', function(done){
-             db.ReadNode(99999999, function(err, result){
-                should.not.exist(result);
+        //Insert a Node.
+        before(function(done){
+            db.InsertNode({name:'foobar'}, function(err, node){
+                node_id = node.id;
                 done(); 
-             });
-          });
-       });
+            });
+        });
+       
+        describe('-> Read an existing Node', function(){
+            it('should return the JSON for that node', function(done){
+                db.ReadNode(node_id, function(err, result){
+                    result.data.name.should.equal('foobar');
+                    result.id.should.equal(node_id);
+                    done();
+                });
+            });
+        });
+       
+        // Remove Node afterwards.
+        after(function(done){
+            db.DeleteNode(node_id, function(err, result){
+                done(); 
+            });
+        });
+       
+        describe('-> Read an non-existing Node', function(){
+            it('should return null for the node and the error messsage', function(done){
+                db.ReadNode(99999999, function(err, result){
+                    should.not.exist(result);
+                    done(); 
+                });
+            });
+        });
        
     });
     
     describe('=> Update a Node', function(){
-       var node_id;
+        var node_id;
        
-       //Insert a Node.
-       before(function(done){
-          db.InsertNode({name:'foobar'}, function(err, node){
-             node_id = node.id;
-             done(); 
-          });
-       });
+        //Insert a Node.
+        before(function(done){
+            db.InsertNode({name:'foobar'}, function(err, node){
+                node_id = node.id;
+                done(); 
+            });
+        });
        
-       describe('-> Update an existing Node with a simple object', function(){
-          it('should return true', function(done){
-             db.UpdateNode(node_id, {name:'foobar2'}, function(err, result){
-                 should.not.exist(err);
-                 result.should.equal(true);                 
-                 done();
-             });
-          });
-       });
+        describe('-> Update an existing Node with a simple object', function(){
+            it('should return true', function(done){
+                db.UpdateNode(node_id, {name:'foobar2'}, function(err, result){
+                    should.not.exist(err);
+                    result.should.equal(true);                 
+                    done();
+                });
+            });
+        });
        
-       describe('-> Update an existing Node with an object with null values', function(){
-          it('should return true', function(done){
-              db.UpdateNode(node_id,{name:'foobar3',age:null}, function(err, result){
-                 should.not.exist(err);
-                 result.should.equal(true);
-                 done();
-              });
-          });
-       });
+        describe('-> Update an existing Node with an object with null values', function(){
+            it('should return true', function(done){
+                db.UpdateNode(node_id,{name:'foobar3',age:null}, function(err, result){
+                    should.not.exist(err);
+                    result.should.equal(true);
+                    done();
+                });
+            });
+        });
        
-       describe('-> Update an existing Node with an object with an object as value', function(){
-          var test_obj = {
-              name: 'foobar',
-              family: {
-                  mother: 'barfii',
-                  father: 'barfoo'
-              }
-          };
+        describe('-> Update an existing Node with an object with an object as value', function(){
+            var test_obj = {
+                name: 'foobar',
+                family: {
+                    mother: 'barfii',
+                    father: 'barfoo'
+                }
+            };
           
-          it('should return true', function(done){
-              db.UpdateNode(node_id, test_obj, function(err, result){
-                 should.not.exist(err);
-                 result.should.equal(true);
-                 done();
-              });
-          });
-       });
+            it('should return true', function(done){
+                db.UpdateNode(node_id, test_obj, function(err, result){
+                    should.not.exist(err);
+                    result.should.equal(true);
+                    done();
+                });
+            });
+        });
        
-       // Remove Node afterwards.
-       after(function(done){
-           db.DeleteNode(node_id, function(err, result){
-               done(); 
-           });
-       });
+        // Remove Node afterwards.
+        after(function(done){
+            db.DeleteNode(node_id, function(err, result){
+                done(); 
+            });
+        });
        
     });
     

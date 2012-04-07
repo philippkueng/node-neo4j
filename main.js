@@ -64,17 +64,17 @@ Neo4j.prototype.ReadNode = function(node_id, callback){
         .get(this.url + '/db/data/node/' + node_id)
         .set('Accept', 'application/json')
         .end(function(result){
-           if(typeof result.body !== 'undefined'){
-               if(result.statusCode === 200){
-                   that.AddNodeId(result.body, callback);   
-               } else if(result.statusCode === 404){
-                   callback(null, null);
-               } else {
-                   callback(new Error('HTTP Error ' + result.statusCode + ' occurred.'), null);
-               }
-           } else {
-               callback(new Error('Response is empty'), null);
-           }
+            if(typeof result.body !== 'undefined'){
+                if(result.statusCode === 200){
+                    that.AddNodeId(result.body, callback);   
+                } else if(result.statusCode === 404){
+                    callback(null, null);
+                } else {
+                    callback(new Error('HTTP Error ' + result.statusCode + ' occurred.'), null);
+                }
+            } else {
+                callback(new Error('Response is empty'), null);
+            }
         });
 };
 
