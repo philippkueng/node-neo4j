@@ -114,7 +114,7 @@ Neo4j.prototype.InsertRelationship = function(root_node_id, other_node_id, relat
         .end(function(result){
             switch(result.statusCode){
                 case 201:
-                    callback(null, result.body);
+                    that.AddRelationshipId(result.body, callback);
                     break;
                 case 400: // Endnode not found exception
                     callback(null, false);
@@ -123,7 +123,29 @@ Neo4j.prototype.InsertRelationship = function(root_node_id, other_node_id, relat
                     callback(null, false);
                     break;
                 default:
-                    callback(new Error('HTTP Error ' + result.statusCode + ' when updating a Node.'), null);
+                    callback(new Error('HTTP Error ' + result.statusCode + ' when inserting a Relationship.'), null);
+            }
+        });
+};
+
+
+/* Delete a Relationship --------- */
+
+Neo4j.prototype.DeleteRelationship = function(relationship_id, callback){
+    var that = this;
+    request
+        .del(that.url + '/db/data/relationship/' + relationship_id)
+        .set('Accept', 'application/json')
+        .end(function(result){
+            switch(result.statusCode){
+                case 204:
+                    callback(null, true);
+                    break;
+                case 404: // Relationship with that id doesn't exist.
+                    callback(null, false);
+                    break;
+                default:
+                    callback(new Error('HTTP Error ' + result.statusCode + ' when deleting a Relationship.'), null);
             }
         });
 };
@@ -150,6 +172,14 @@ Neo4j.prototype.AddNodeId = function(node, callback){
 };
 
 
+/* Extract relationship_id and add it as a property. */
+
+Neo4j.prototype.AddRelationshipId = function(relationship, callback){
+    relationship.id = relationship.self.replace(this.RemoveCredentials(this.url) + '/db/data/relationship/', '');
+    callback(null, relationship);
+};
+
+
 /* Replace null values with an empty string */
 
 Neo4j.prototype.ReplaceNullWithString = function(node_data, callback){
@@ -164,7 +194,7 @@ Neo4j.prototype.ReplaceNullWithString = function(node_data, callback){
 };
 
 
-/*  */
+/* Turn values that are objects themselves into strings. */
 
 Neo4j.prototype.StringifyValueObjects = function(node_data, callback){
     
