@@ -173,6 +173,29 @@ Neo4j.prototype.ReadRelationship = function(relationship_id, callback){
         });
 };
 
+/* Update a Relationship -------- */
+
+Neo4j.prototype.UpdateRelationship = function(relationship_id, relationship_data, callback){
+    var that = this;
+
+    request
+        .put(that.url + '/db/data/relationship/' + relationship_id + '/properties')
+        .send(that.StringifyValueObjects(that.ReplaceNullWithString(relationship_data)))
+        .set('Accept', 'application/json')
+        .end(function(result){
+            switch(result.statusCode){
+                case 204:
+                    callback(null, true);
+                    break;
+                case 404:
+                    callback(null, false);
+                    break;
+                default:
+                    callback(new Error('HTTP Error ' + result.statusCode + ' when updating a Relationship.'), null);
+            }
+        });
+};
+
 
 /* HELPER METHODS --------- */
 

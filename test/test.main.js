@@ -352,10 +352,70 @@ describe('Testing Node specific operations for Neo4j', function(){
         });
     });
 
+    describe('=> Update a Relationship', function(){
+
+        var test_obj = {
+                importance: 'high',
+                age: null,
+                description: {
+                    positive: 'fullfilling',
+                    negative: 'too time consuming'
+                }
+            };
+
+        describe('-> Update a non-existing Relationship', function(){
+            it('should return false', function(done){
+                db.UpdateRelationship(99999999, test_obj, function(err, result){
+                    should.not.exist(err);
+                    result.should.equal(false);
+                    done();
+                });
+            });
+        });
+
+        var root_node_id;
+        var other_node_id;
+        var relationship_id;
+
+        before(function(done){
+            db.InsertNode({name:'foobar'}, function(err, node1){
+                root_node_id = node1.id;
+                db.InsertNode({name:'foobar2'}, function(err, node2){
+                    other_node_id = node2.id;
+                    db.InsertRelationship(root_node_id, other_node_id, 'RELATED_TO', function(err, relationship){
+                        relationship_id = relationship.id;
+                        done();
+                    });
+                });
+            });
+        });
+
+        describe('-> Update an existing Relationship', function(){
+            it('should return relationship data', function(done){
+                db.UpdateRelationship(relationship_id, test_obj, function(err, result){
+                    should.not.exist(err);
+                    result.should.equal(true);
+                    done();
+                });
+            });
+        });
+
+        after(function(done){
+            db.DeleteRelationship(relationship_id, function(err, result){
+                db.DeleteNode(other_node_id, function(err, result){
+                    db.DeleteNode(root_node_id, function(err, result){
+                        done();
+                    });
+                });
+            });
+        });
+    });
+
     describe('=> Testing ReplaceNullWithString', function(){
         var test_obj = {
             name: 'foobar',
-            age: null
+            age: null,
+
         };
         
         describe('-> Testing a small object', function(){
