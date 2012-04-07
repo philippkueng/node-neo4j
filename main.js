@@ -232,6 +232,9 @@ Neo4j.prototype.ReadAllRelationshipsOfNode = function(node_id, callback){
                 case 200:
                     that.AddRelationshipIdForArray(result.body, callback);
                     break;
+                case 404:
+                    callback(null, false);
+                    break;
                 default:
                     callback(new Error('HTTP Error ' + result.statusCode + ' when retrieving all relationships for node ' + node_id), null);
             }
@@ -251,8 +254,33 @@ Neo4j.prototype.ReadIncomingRelationshipsOfNode = function(node_id, callback){
                 case 200:
                     that.AddRelationshipIdForArray(result.body, callback);
                     break;
+                case 404:
+                    callback(null, false);
+                    break;
                 default:
                     callback(new Error('HTTP Error ' + result.statusCode + ' when retrieving incoming relationships for node ' + node_id), null);
+            }
+        });
+};
+
+/* Get all the outgoing Relationships of a Node -------- */
+
+Neo4j.prototype.ReadOutgoingRelationshipsOfNode = function(node_id, callback){
+    var that = this;
+
+    request
+        .get(that.url + '/db/data/node/' + node_id + '/relationships/out')
+        .set('Accept', 'application/json')
+        .end(function(result){
+            switch(result.statusCode){
+                case 200:
+                    that.AddRelationshipIdForArray(result.body, callback);
+                    break;
+                case 404:
+                    callback(null, false);
+                    break;
+                default:
+                    callback(new Error('HTTP Error ' + result.statusCode + ' when retrieving outgoing relationships for node ' + node_id), null);
             }
         });
 };
