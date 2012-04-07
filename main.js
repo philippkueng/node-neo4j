@@ -1,4 +1,5 @@
-var request = require('superagent');
+var request = require('superagent'),
+    Step = require('step');
 
 module.exports = Neo4j;
 
@@ -218,6 +219,25 @@ Neo4j.prototype.ReadRelationshipTypes = function(callback){
         });
 };
 
+/* Get all Relationships of a Node --------- */
+
+Neo4j.prototype.ReadAllRelationshipsOfNode = function(node_id, callback){
+    var that = this;
+
+    request
+        .get(that.url + '/db/data/node/' + node_id + '/relationships/all')
+        .set('Accept', 'application/json')
+        .end(function(result){
+            switch(result.statusCode){
+                case 200:
+                    that.AddRelationshipIdForArray(result.body, callback);
+                    break;
+                default:
+                    callback(new Error('HTTP Error ' + result.statusCode + ' when retrieving all relationships for node ' + node_id), null);
+            }
+        });
+};
+
 
 /* HELPER METHODS --------- */
 
@@ -243,10 +263,33 @@ Neo4j.prototype.AddNodeId = function(node, callback){
 /* Extract relationship_id and add it as a property. */
 
 Neo4j.prototype.AddRelationshipId = function(relationship, callback){
+    relationship.start_node_id = relationship.start.replace(this.RemoveCredentials(this.url) + '/db/data/node/', '');
+    relationship.end_node_id = relationship.end.replace(this.RemoveCredentials(this.url) + '/db/data/node/', '');
     relationship.id = relationship.self.replace(this.RemoveCredentials(this.url) + '/db/data/relationship/', '');
     callback(null, relationship);
 };
 
+
+/* Add relationship_id for an array of relationships */
+
+Neo4j.prototype.AddRelationshipIdForArray = function(relationships, callback){
+    var that = this;
+    Step(
+        function process_relationships(){
+            var group = this.group();
+            relationships.forEach(function(relationship){
+                that.AddRelationshipId(relationship, group());
+            });
+        },
+        function sum_up(err, results){
+            if(err) {
+                callback(err, null);
+            } else {
+                callback(null, results);
+            }
+        }
+    );
+};
 
 /* Replace null values with an empty string */
 

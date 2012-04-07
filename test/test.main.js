@@ -467,6 +467,62 @@ describe('Testing Node specific operations for Neo4j', function(){
 
     });
 
+    describe('=> Read all Relationships of a Node', function(){
+
+        // Make an request against an empty node.
+
+        var root_node_id;
+        var other_node1_id;
+        var other_node2_id;
+        var relationship1_id;
+        var relationship2_id;
+
+        before(function(done){
+            db.InsertNode({name:'foobar'}, function(err, node1){
+                root_node_id = node1.id;
+                db.InsertNode({name:'foobar2'}, function(err, node2){
+                    other_node1_id = node2.id;
+                    db.InsertRelationship(root_node_id, other_node1_id, 'RELATED_TO', {}, function(err, relationship1){
+                        relationship1_id = relationship1.id;
+
+                        db.InsertNode({name:'foobar3'}, function(err, node3){
+                            other_node2_id = node3.id;
+                            db.InsertRelationship(root_node_id, other_node2_id, 'RELATED_TO', {}, function(err, relationship2){
+                                relationship2_id = relationship2.id;
+                                done();
+                            });
+                        });
+                    });
+                });
+            });
+        });
+
+        describe('-> Read Relationships of root_node', function(){
+            it('should return 2 relationships', function(done){
+                db.ReadAllRelationshipsOfNode(root_node_id, function(err, result){
+                    should.not.exist(err);
+                    result.length.should.equal(2);
+                    done();
+                });
+            });
+        });
+
+        after(function(done){
+            db.DeleteRelationship(relationship1_id, function(err, result){
+                db.DeleteRelationship(relationship2_id, function(err, result){
+                    db.DeleteNode(other_node1_id, function(err, result){
+                        db.DeleteNode(other_node2_id, function(err, result){
+                            db.DeleteNode(root_node_id, function(err, result){
+                                done();
+                            });
+                        });
+                    });
+                });
+            });
+        });
+
+    });
+
     /* HELPER FUNCTIONS ------------ */
 
     describe('=> Testing ReplaceNullWithString', function(){
@@ -501,4 +557,42 @@ describe('Testing Node specific operations for Neo4j', function(){
         });
     });
    
+    describe('=> Testing the AddRelationshipIdForArray function', function(){
+        var relationships = [{ 
+                start: 'http://localhost:7474/db/data/node/147',
+                data: {},
+                self: 'http://localhost:7474/db/data/relationship/54',
+                property: 'http://localhost:7474/db/data/relationship/54/properties/{key}',
+                properties: 'http://localhost:7474/db/data/relationship/54/properties',
+                type: 'RELATED_TO',
+                extensions: {},
+                end: 'http://localhost:7474/db/data/node/148' 
+            },{ 
+                start: 'http://localhost:7474/db/data/node/147',
+                data: {},
+                self: 'http://localhost:7474/db/data/relationship/55',
+                property: 'http://localhost:7474/db/data/relationship/55/properties/{key}',
+                properties: 'http://localhost:7474/db/data/relationship/55/properties',
+                type: 'RELATED_TO',
+                extensions: {},
+                end: 'http://localhost:7474/db/data/node/149' }];
+
+        describe('-> Extend the response', function(){
+            it('should return an extended array', function(done){
+                db.AddRelationshipIdForArray(relationships, function(err, results){
+                    should.not.exist(err);
+                    results.length.should.equal(2);
+                    results[0].id.should.equal('54');
+                    results[1].id.should.equal('55');
+                    results[0].start_node_id.should.equal('147');
+                    results[0].end_node_id.should.equal('148');
+                    results[1].start_node_id.should.equal('147');
+                    results[1].end_node_id.should.equal('149');
+                    done();
+                });
+            });
+        });
+    });
+    
+
 });
