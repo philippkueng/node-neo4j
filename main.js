@@ -238,6 +238,25 @@ Neo4j.prototype.ReadAllRelationshipsOfNode = function(node_id, callback){
         });
 };
 
+/* Get all the incoming Relationships of a Node --------- */
+
+Neo4j.prototype.ReadIncomingRelationshipsOfNode = function(node_id, callback){
+    var that = this;
+
+    request
+        .get(that.url + '/db/data/node/' + node_id + '/relationships/in')
+        .set('Accept', 'application/json')
+        .end(function(result){
+            switch(result.statusCode){
+                case 200:
+                    that.AddRelationshipIdForArray(result.body, callback);
+                    break;
+                default:
+                    callback(new Error('HTTP Error ' + result.statusCode + ' when retrieving incoming relationships for node ' + node_id), null);
+            }
+        });
+};
+
 
 /* HELPER METHODS --------- */
 

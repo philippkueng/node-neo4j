@@ -523,6 +523,73 @@ describe('Testing Node specific operations for Neo4j', function(){
 
     });
 
+
+    describe('=> Read incoming Relationships of a Node', function(){
+
+        // Make an request against an empty node.
+
+        var root_node_id;
+        var other_node1_id;
+        var other_node2_id;
+        var relationship1_id;
+        var relationship2_id;
+
+        before(function(done){
+            db.InsertNode({name:'foobar'}, function(err, node1){
+                root_node_id = node1.id;
+                db.InsertNode({name:'foobar2'}, function(err, node2){
+                    other_node1_id = node2.id;
+                    db.InsertRelationship(other_node1_id, root_node_id, 'RELATED_TO', {}, function(err, relationship1){
+                        relationship1_id = relationship1.id;
+
+                        db.InsertNode({name:'foobar3'}, function(err, node3){
+                            other_node2_id = node3.id;
+                            db.InsertRelationship(other_node2_id, root_node_id, 'RELATED_TO', {}, function(err, relationship2){
+                                relationship2_id = relationship2.id;
+                                done();
+                            });
+                        });
+                    });
+                });
+            });
+        });
+
+        describe('-> Read Relationships of root_node', function(){
+            it('should return 2 relationships', function(done){
+                db.ReadIncomingRelationshipsOfNode(root_node_id, function(err, result){
+                    should.not.exist(err);
+                    result.length.should.equal(2);
+                    done();
+                });
+            });
+        });
+
+        describe('-> Read Relationships of other_node1', function(){
+            it('should return 0 relationships', function(done){
+                db.ReadIncomingRelationshipsOfNode(other_node1_id, function(err, result){
+                    should.not.exist(err);
+                    result.length.should.equal(0);
+                    done();
+                });
+            });
+        });
+
+        after(function(done){
+            db.DeleteRelationship(relationship1_id, function(err, result){
+                db.DeleteRelationship(relationship2_id, function(err, result){
+                    db.DeleteNode(other_node1_id, function(err, result){
+                        db.DeleteNode(other_node2_id, function(err, result){
+                            db.DeleteNode(root_node_id, function(err, result){
+                                done();
+                            });
+                        });
+                    });
+                });
+            });
+        });
+
+    });
+
     /* HELPER FUNCTIONS ------------ */
 
     describe('=> Testing ReplaceNullWithString', function(){
