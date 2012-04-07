@@ -423,6 +423,52 @@ describe('Testing Node specific operations for Neo4j', function(){
         });
     });
 
+    /* ADVANCED FUNCTIONS ---------- */ 
+
+    describe('=> Read Relationship Types already within the DB', function(){
+
+        var root_node_id;
+        var other_node_id;
+        var relationship_id;
+
+        before(function(done){
+            db.InsertNode({name:'foobar'}, function(err, node1){
+                root_node_id = node1.id;
+                db.InsertNode({name:'foobar2'}, function(err, node2){
+                    other_node_id = node2.id;
+                    db.InsertRelationship(root_node_id, other_node_id, 'RELATED_TO', {}, function(err, relationship){
+                        relationship_id = relationship.id;
+                        done();
+                    });
+                });
+            });
+        });
+
+        describe('-> Retrieve types', function(){
+            it('should return an array of types', function(done){
+                db.ReadRelationshipTypes(function(err, result){
+                    should.not.exist(err);
+                    result.length.should.equal(1);
+                    result[0].should.equal('RELATED_TO');
+                    done();
+                });
+            });
+        });
+
+        after(function(done){
+            db.DeleteRelationship(relationship_id, function(err, result){
+                db.DeleteNode(other_node_id, function(err, result){
+                    db.DeleteNode(root_node_id, function(err, result){
+                        done();
+                    });
+                });
+            });
+        });
+
+    });
+
+    /* HELPER FUNCTIONS ------------ */
+
     describe('=> Testing ReplaceNullWithString', function(){
         var test_obj = {
             name: 'foobar',

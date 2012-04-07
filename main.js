@@ -197,6 +197,27 @@ Neo4j.prototype.UpdateRelationship = function(relationship_id, relationship_data
         });
 };
 
+/* ADVANCED FUNCTIONS ---------- */
+
+/* Get all Relationship Types -------- */
+
+Neo4j.prototype.ReadRelationshipTypes = function(callback){
+    var that = this;
+
+    request
+        .get(that.url + '/db/data/relationship/types')
+        .set('Accept', 'application/json')
+        .end(function(result){
+            switch(result.statusCode){
+                case 200:
+                    callback(null, result.body);
+                    break;
+                default:
+                    callback(new Error('HTTP Error ' + result.statusCode + ' when retrieving relationship types.'), null);
+            }
+        });
+};
+
 
 /* HELPER METHODS --------- */
 
