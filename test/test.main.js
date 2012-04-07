@@ -179,9 +179,19 @@ describe('Testing Node specific operations for Neo4j', function(){
     });
     
     describe('=> Insert a Relationship', function(){
-        describe('-> Insert a Relationship with rood_node and other_node not existing', function(){
+
+        var test_obj = {
+                importance: 'high',
+                age: null,
+                description: {
+                    positive: 'fullfilling',
+                    negative: 'too time consuming'
+                }
+        };
+
+        describe('-> Insert a Relationship with root_node and other_node not existing', function(){
             it('should return false', function(done){
-                db.InsertRelationship(99999999, 99999998, 'RELATED_TO', function(err, result){
+                db.InsertRelationship(99999999, 99999998, 'RELATED_TO', {}, function(err, result){
                     should.not.exist(err);
                     result.should.equal(false);
                     done();
@@ -201,7 +211,7 @@ describe('Testing Node specific operations for Neo4j', function(){
         describe('-> Insert a Relationship with other_node not existing', function(){
 
             it('should return false', function(done){
-                db.InsertRelationship(root_node_id, 99999998, 'RELATED_TO', function(err, result){
+                db.InsertRelationship(root_node_id, 99999998, 'RELATED_TO', {}, function(err, result){
                     should.not.exist(err);
                     result.should.equal(false);
                     done();
@@ -212,7 +222,7 @@ describe('Testing Node specific operations for Neo4j', function(){
        
         describe('-> Insert a Relationship with root_node not existing', function(){
             it('should return false', function(done){
-                db.InsertRelationship(99999998, root_node_id, 'RELATED_TO', function(err, result){
+                db.InsertRelationship(99999998, root_node_id, 'RELATED_TO', {}, function(err, result){
                     should.not.exist(err);
                     result.should.equal(false);
                     done();
@@ -232,10 +242,12 @@ describe('Testing Node specific operations for Neo4j', function(){
 
         describe('-> Insert a Relationship with both nodes existing', function(){
             it('should return true', function(done){
-                db.InsertRelationship(root_node_id, other_node_id, 'RELATED_TO', function(err, result){
+                db.InsertRelationship(root_node_id, other_node_id, 'RELATED_TO', test_obj, function(err, result){
                     relationship_id = result.id; // Used for later cleanup process.
                     should.not.exist(err);
                     result.type.should.equal('RELATED_TO');
+                    result.data.importance.should.equal('high');
+                    result.data.age.should.equal('');
                     done();
                 });
             });
@@ -275,7 +287,7 @@ describe('Testing Node specific operations for Neo4j', function(){
                 root_node_id = node1.id;
                 db.InsertNode({name:'foobar2'}, function(err, node2){
                     other_node_id = node2.id;
-                    db.InsertRelationship(root_node_id, other_node_id, 'RELATED_TO', function(err, result){
+                    db.InsertRelationship(root_node_id, other_node_id, 'RELATED_TO', {}, function(err, result){
                         relationship_id = result.id;
                         done();
                     });
@@ -322,7 +334,7 @@ describe('Testing Node specific operations for Neo4j', function(){
                 root_node_id = node1.id;
                 db.InsertNode({name:'foobar2'}, function(err, node2){
                     other_node_id = node2.id;
-                    db.InsertRelationship(root_node_id, other_node_id, 'RELATED_TO', function(err, relationship){
+                    db.InsertRelationship(root_node_id, other_node_id, 'RELATED_TO', {}, function(err, relationship){
                         relationship_id = relationship.id;
                         done();
                     });
@@ -382,7 +394,7 @@ describe('Testing Node specific operations for Neo4j', function(){
                 root_node_id = node1.id;
                 db.InsertNode({name:'foobar2'}, function(err, node2){
                     other_node_id = node2.id;
-                    db.InsertRelationship(root_node_id, other_node_id, 'RELATED_TO', function(err, relationship){
+                    db.InsertRelationship(root_node_id, other_node_id, 'RELATED_TO', {}, function(err, relationship){
                         relationship_id = relationship.id;
                         done();
                     });

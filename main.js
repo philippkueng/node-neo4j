@@ -102,13 +102,14 @@ Neo4j.prototype.UpdateNode = function(node_id, node_data, callback){
 
 /* Insert a Relationship ------ */
 
-Neo4j.prototype.InsertRelationship = function(root_node_id, other_node_id, relationship_type, callback){
+Neo4j.prototype.InsertRelationship = function(root_node_id, other_node_id, relationship_type, relationship_data, callback){
     var that = this;
     request
         .post(that.url + '/db/data/node/' + root_node_id + '/relationships')
         .send({
             to: that.url + '/db/data/node/' + other_node_id,
-            type: relationship_type
+            type: relationship_type,
+            data: that.StringifyValueObjects(that.ReplaceNullWithString(relationship_data))
         })
         .set('Accept', 'application/json')
         .end(function(result){
