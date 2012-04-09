@@ -18,6 +18,7 @@ Neo4j.prototype.InsertNode = function(node, callback){
     request
         .post(this.url + '/db/data/node')
         .send(node)
+        .type('form')
         .set('Accept', 'application/json')
         .end(function(result){
             if(typeof result.body !== 'undefined'){

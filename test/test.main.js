@@ -38,6 +38,28 @@ describe('Testing Node specific operations for Neo4j', function(){
               done(); 
            });
         });
+
+        var second_node_id;
+
+        describe('-> A node with properties containging Unicode characters', function(){
+            it('should return the JSON for that node', function(done){
+                db.InsertNode({name:'fööbar'}, function(err, result){
+
+                    second_node_id = result.id;
+
+                    result.should.not.equal(null);
+                    result.data.name.should.equal('fööbar');
+                    result.id.should.not.equal('');
+                    done();
+                });
+            });
+        });
+
+        after(function(done){
+            db.DeleteNode(second_node_id, function(err, result){
+                done();
+            });
+        });
     });
 
     
