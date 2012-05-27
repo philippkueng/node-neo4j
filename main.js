@@ -287,6 +287,18 @@ Neo4j.prototype.ReadOutgoingRelationshipsOfNode = function(node_id, callback){
 };
 
 
+/* Run Cypher Query -------- */
+
+Neo4j.prototype.CypherQuery = function(query, callback){
+    var that = this;
+
+    // maybe formatting the query into an URL encoded format
+    request
+        .get(that.url + '/db/data/')
+
+};
+
+
 /* HELPER METHODS --------- */
 
 /* Strips username and password from URL so that the node_id can be extracted. */

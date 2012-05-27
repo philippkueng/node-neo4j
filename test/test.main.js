@@ -695,6 +695,13 @@ describe('Testing Node specific operations for Neo4j', function(){
 
     });
 
+    describe('=> Test Cyper Query Functionality', function(){
+
+        // run that query against an empty dataset
+        // run that query against a dataset with a few nodes & relationships in there.
+
+    });
+
     /* HELPER FUNCTIONS ------------ */
 
     describe('=> Testing ReplaceNullWithString', function(){
