@@ -697,8 +697,77 @@ describe('Testing Node specific operations for Neo4j', function(){
 
     describe('=> Test Cyper Query Functionality', function(){
 
-        // run that query against an empty dataset
-        // run that query against a dataset with a few nodes & relationships in there.
+        describe('-> Run a cypher query against a non existing node', function(){
+            it('should return an empty result set', function(done){
+                db.CypherQuery("start x=node(100) return x", function(err, result){
+                    should.exist(err);
+                    should.not.exist(result);
+                    done(); 
+                });
+            });
+        });
+
+        var root_node_id;
+        var other_node1_id;
+        var other_node2_id;
+        var relationship1_id;
+        var relationship2_id;
+
+        before(function(done){
+            db.InsertNode({name:'foobar'}, function(err, node1){
+                root_node_id = node1.id;
+                db.InsertNode({name:'foobar2'}, function(err, node2){
+                    other_node1_id = node2.id;
+                    db.InsertRelationship(root_node_id, other_node1_id, 'RELATED_TO', {}, function(err, relationship1){
+                        relationship1_id = relationship1.id;
+
+                        db.InsertNode({name:'foobar3'}, function(err, node3){
+                            other_node2_id = node3.id;
+                            db.InsertRelationship(root_node_id, other_node2_id, 'RELATED_TO', {}, function(err, relationship2){
+                                relationship2_id = relationship2.id;
+                                done();
+                            });
+                        });
+                    });
+                });
+            });
+        });
+
+        describe('-> Run a cypher query against an existing root node', function(){
+            it('should return a dataset with a single node', function(done){
+                db.CypherQuery("START user = node(" + root_node_id + ") RETURN user", function(err, result){
+                    should.not.exist(err);
+                    result.data.length.should.equal(1);
+                    result.columns.length.should.equal(1);
+                    done();
+                });
+            });
+        });
+
+        describe('-> Run a cypher query against root_node retrieving all nodes related to it with a RELATED_TO type relationship', function(done){
+            it('should return a dataset with 2 nodes', function(done){
+                db.CypherQuery("START user = node(" + root_node_id + ") MATCH user-[:RELATED_TO]->friends RETURN friends", function(err, result){
+                    should.not.exist(err);
+                    result.data.length.should.equal(2);
+                    result.columns.length.should.equal(1);
+                    done();
+                });
+            });
+        });
+
+        after(function(done){
+            db.DeleteRelationship(relationship1_id, function(err, result){
+                db.DeleteRelationship(relationship2_id, function(err, result){
+                    db.DeleteNode(other_node1_id, function(err, result){
+                        db.DeleteNode(other_node2_id, function(err, result){
+                            db.DeleteNode(root_node_id, function(err, result){
+                                done();
+                            });
+                        });
+                    });
+                });
+            });
+        });
 
     });
 

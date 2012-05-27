@@ -175,6 +175,15 @@ Will return incoming aswell as outgoing nodes.
         console.log(relationships); // delivers an array of relationships objects.
     });
 
+**Run a cyper query against Neo4j**
+
+    db.CypherQuery("START user = node(123) MATCH user-[:RELATED_TO]->friends RETURN friends", function(err, result){
+        if(err) throw err;
+
+        console.log(result.data); // delivers an array of query results
+        console.log(result.columns); // delivers an array of names of objects getting returned
+    });
+
 ## Tests
 
 This API wrapper relies on [mocha](https://github.com/visionmedia/mocha) for testing, therefore when you want to run the tests follow the steps below.

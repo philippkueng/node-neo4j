@@ -294,8 +294,21 @@ Neo4j.prototype.CypherQuery = function(query, callback){
 
     // maybe formatting the query into an URL encoded format
     request
-        .get(that.url + '/db/data/')
-
+        .post(that.url + '/db/data/cypher')
+        .set('Content-Type', 'application/json')
+        .send({query: query})
+        .end(function(result){
+            switch(result.statusCode){
+                case 200:
+                    callback(null, result.body);
+                    break;
+                case 404:
+                    callback(null, null);
+                    break;
+                default:
+                    callback(new Error('HTTP Error ' + result.statusCode + ' when running the cypher query against neo4j'), null);
+            }
+        });
 };
 
 
