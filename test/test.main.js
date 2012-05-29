@@ -1,4 +1,5 @@
 var should = require('should'),
+    _ = require('underscore'),
     neo4j = require('../main');
 
 var url = 'http://localhost:7474';
@@ -698,7 +699,7 @@ describe('Testing Node specific operations for Neo4j', function(){
     describe('=> Test Cyper Query Functionality', function(){
 
         describe('-> Run a cypher query against a non existing node', function(){
-            it('should return an empty result set', function(done){
+            it('should return an error since node does not exist', function(done){
                 db.CypherQuery("start x=node(100) return x", function(err, result){
                     should.exist(err);
                     should.not.exist(result);
@@ -738,6 +739,7 @@ describe('Testing Node specific operations for Neo4j', function(){
                 db.CypherQuery("START user = node(" + root_node_id + ") RETURN user", function(err, result){
                     should.not.exist(err);
                     result.data.length.should.equal(1);
+                    result.data[0].id.should.equal(root_node_id);
                     result.columns.length.should.equal(1);
                     done();
                 });
@@ -750,6 +752,8 @@ describe('Testing Node specific operations for Neo4j', function(){
                     should.not.exist(err);
                     result.data.length.should.equal(2);
                     result.columns.length.should.equal(1);
+                    should.exist(result.data[0].id);
+                    should.exist(result.data[1].id);
                     done();
                 });
             });

@@ -292,7 +292,6 @@ Neo4j.prototype.ReadOutgoingRelationshipsOfNode = function(node_id, callback){
 Neo4j.prototype.CypherQuery = function(query, callback){
     var that = this;
 
-    // maybe formatting the query into an URL encoded format
     request
         .post(that.url + '/db/data/cypher')
         .set('Content-Type', 'application/json')
@@ -300,7 +299,26 @@ Neo4j.prototype.CypherQuery = function(query, callback){
         .end(function(result){
             switch(result.statusCode){
                 case 200:
-                    callback(null, result.body);
+                    if(result.body && result.body.data.length >= 1){
+                        Step(
+                            function addIds(){
+                                var group = this.group();
+                                result.body.data.forEach(function(node){
+                                    that.AddNodeId(node[0], group());
+                                });
+                            },
+                            function sumUp(err, nodes){
+                                if(err){
+                                    throw err;
+                                } else {
+                                    result.body.data = nodes;
+
+                                    callback(null, result.body);
+                                }
+                        });
+                    } else {
+                        callback(null, result.body);
+                    }
                     break;
                 case 404:
                     callback(null, null);
