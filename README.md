@@ -23,7 +23,7 @@ In order to use the library you either have to create a [heroku](http://www.hero
         
 **Insert a Node**
 
-    db.InsertNode({
+    db.insertNode({
         name: 'Darth Vader',
         sex: 'male'
     },function(err, node){
@@ -38,7 +38,7 @@ In order to use the library you either have to create a [heroku](http://www.hero
 
 **Read a Node**
 
-    db.ReadNode(12, function(err, node){
+    db.readNode(12, function(err, node){
         if(err) throw err;
     
         // Output node properties.
@@ -52,7 +52,7 @@ In order to use the library you either have to create a [heroku](http://www.hero
 
 Will remove any assigned properties and replace them with the ones given below.
 
-    db.UpdateNode(12, {name:'foobar2'}, function(err, node){
+    db.updateNode(12, {name:'foobar2'}, function(err, node){
         if(err) throw err;
 
         if(node === true){
@@ -64,7 +64,7 @@ Will remove any assigned properties and replace them with the ones given below.
         
 **Delete a Node**
 
-    db.DeleteNode(12, function(err, node){
+    db.deleteNode(12, function(err, node){
         if(err) throw err;
        
         if(node === true){
@@ -79,7 +79,7 @@ Will remove any assigned properties and replace them with the ones given below.
 
 **Insert a Relationship**
 
-    db.InsertRelationship(root_node_id, other_node_id, 'RELATIONSHIP_TYPE', {
+    db.insertRelationship(root_node_id, other_node_id, 'RELATIONSHIP_TYPE', {
         age: '5 years',
         sideeffects: {
             positive: 'happier',
@@ -102,7 +102,7 @@ Will remove any assigned properties and replace them with the ones given below.
 
 **Read a Relationship**
 
-    db.ReadRelationship(relationship_id, function(err, relationship){
+    db.readRelationship(relationship_id, function(err, relationship){
         if(err) throw err;
 
         // Same properties for relationship object as with InsertRelationship
@@ -112,7 +112,7 @@ Will remove any assigned properties and replace them with the ones given below.
 
 Will remove any assigned properties and replace them with the ones given below.
 
-    db.UpdateRelationship(relationship_id, {
+    db.updateRelationship(relationship_id, {
             age: '6 years'
         }, function(err, relationship){
             if(err) throw err;
@@ -126,7 +126,7 @@ Will remove any assigned properties and replace them with the ones given below.
 
 **Delete a Relationship**
 
-    db.DeleteRelationship(relationship_id, function(err, relationship){
+    db.deleteRelationship(relationship_id, function(err, relationship){
         if(err) throw err;
 
         if(relationship === true){
@@ -143,7 +143,7 @@ Will remove any assigned properties and replace them with the ones given below.
 
 Will also return types of those relationships that have been deleted.
 
-    db.ReadRelationshipTypes(function(err, result){
+    db.readRelationshipTypes(function(err, result){
         if(err) throw err;
 
         console.log(result); // eg. ['RELATED_TO', 'LOVES', 'KNOWNS']
@@ -153,7 +153,7 @@ Will also return types of those relationships that have been deleted.
 
 Will return incoming aswell as outgoing nodes.
 
-    db.ReadAllRelationshipsOfNode(node_id, function(err, relationships){
+    db.readAllRelationshipsOfNode(node_id, function(err, relationships){
         if(err) throw err;
 
         console.log(relationships); // delivers an array of relationship objects.
@@ -161,7 +161,7 @@ Will return incoming aswell as outgoing nodes.
 
 **Get all incoming relationships of a node**
 
-    db.ReadIncomingRelationshipsOfNode(node_id, function(err, relationships){
+    db.readIncomingRelationshipsOfNode(node_id, function(err, relationships){
         if(err) throw err;
 
         console.log(relationships); // delivers an array of relationships objects.
@@ -169,7 +169,7 @@ Will return incoming aswell as outgoing nodes.
 
 **Get all outgoing relationships of a node**
 
-    db.ReadOutgoingRelationshipsOfNode(node_id, function(err, relationships){
+    db.readOutgoingRelationshipsOfNode(node_id, function(err, relationships){
         if(err) throw err;
 
         console.log(relationships); // delivers an array of relationships objects.
@@ -177,7 +177,7 @@ Will return incoming aswell as outgoing nodes.
 
 **Run a cyper query against Neo4j**
 
-    db.CypherQuery("START user = node(123) MATCH user-[:RELATED_TO]->friends RETURN friends", function(err, result){
+    db.cypherQuery("START user = node(123) MATCH user-[:RELATED_TO]->friends RETURN friends", function(err, result){
         if(err) throw err;
 
         console.log(result.data); // delivers an array of query results
