@@ -1,5 +1,4 @@
 var should = require('should'),
-    _ = require('underscore'),
     neo4j = require('../main');
 
 var url = 'http://localhost:7474';
