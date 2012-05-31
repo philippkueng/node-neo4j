@@ -24,5 +24,13 @@
     },
   "licenses": [
     { "type": "MIT" }
+  ],
+  "keywords": [
+    "neo4j",
+    "graph",
+    "database"
+  ],
+  "contributors": [
+    { "name": "Dan Williams", "email": "me@deedubs.com" }
   ]
 }
