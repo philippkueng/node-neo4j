@@ -708,6 +708,16 @@ describe('Testing Node specific operations for Neo4j', function(){
             });
         });
 
+        describe('-> Run the cypher query from issue 2 from @glefloch against non existing nodes', function(done){
+            it('should return a error since the nodes do not exist', function(done){
+                db.cypherQuery("START d=node(100), e=node(102) MATCH p=shortestPath(d -[*..15]-> e) RETURN p", function(err, result){
+                    should.exist(err);
+                    should.not.exist(result);
+                    done();
+                });
+            });
+        });
+
         var root_node_id;
         var other_node1_id;
         var other_node2_id;
@@ -754,6 +764,21 @@ describe('Testing Node specific operations for Neo4j', function(){
                     result.columns.length.should.equal(1);
                     should.exist(result.data[0].id);
                     should.exist(result.data[1].id);
+                    done();
+                });
+            });
+        });
+
+        describe('-> Run the cypher query from issue 2 from @glefloch', function(done){
+            it('should return a valid response', function(done){
+                db.cypherQuery("START d=node(" + root_node_id + "), e=node(" + other_node1_id + ") MATCH p=shortestPath(d -[*..15]-> e) RETURN p", function(err, result){
+                    should.not.exist(err);
+                    result.data.length.should.equal(1);
+                    result.columns.length.should.equal(1);
+                    should.exist(result.data[0].start);
+                    result.data[0].nodes.length.should.equal(2);
+                    result.data[0].relationships.length.should.equal(1);
+                    should.exist(result.data[0].end);
                     done();
                 });
             });
