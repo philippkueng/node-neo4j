@@ -800,6 +800,86 @@ describe('Testing Node specific operations for Neo4j', function(){
 
     });
 
+
+    describe('=> Test Batch Query Functionality', function(){
+        describe('-> Run a batch query against non existing nodes', function(done){
+            it('should return an error', function(done){
+                db.batchQuery([{
+                    method: "GET",
+                    to: "/node/100",
+                    id: 0
+                },{
+                    method: "GET",
+                    to: "/node/101",
+                    id: 1
+                }], function(err, result){
+                    should.exist(err);
+                    should.not.exist(result);
+                    done();
+                });
+            });
+        });
+
+        var root_node_id;
+        var other_node1_id;
+        var other_node2_id;
+        var relationship1_id;
+        var relationship2_id;
+
+        before(function(done){
+            db.insertNode({name:'foobar'}, function(err, node1){
+                root_node_id = node1.id;
+                db.insertNode({name:'foobar2'}, function(err, node2){
+                    other_node1_id = node2.id;
+                    db.insertRelationship(root_node_id, other_node1_id, 'RELATED_TO', {}, function(err, relationship1){
+                        relationship1_id = relationship1.id;
+
+                        db.insertNode({name:'foobar3'}, function(err, node3){
+                            other_node2_id = node3.id;
+                            db.insertRelationship(root_node_id, other_node2_id, 'RELATED_TO', {}, function(err, relationship2){
+                                relationship2_id = relationship2.id;
+                                done();
+                            });
+                        });
+                    });
+                });
+            });
+        });
+
+        describe('-> Run a batch query against existing nodes and relationships', function(done){
+            it('should return an error', function(done){
+                db.batchQuery([{
+                    method: "GET",
+                    to: "/node/" + root_node_id,
+                    id: 0
+                },{
+                    method: "GET",
+                    to: "/node/" + other_node1_id,
+                    id: 1
+                }], function(err, result){
+                    should.not.exist(err);
+                    should.exist(result);
+                    done();
+                });
+            });
+        });
+
+        after(function(done){
+            db.deleteRelationship(relationship1_id, function(err, result){
+                db.deleteRelationship(relationship2_id, function(err, result){
+                    db.deleteNode(other_node1_id, function(err, result){
+                        db.deleteNode(other_node2_id, function(err, result){
+                            db.deleteNode(root_node_id, function(err, result){
+                                done();
+                            });
+                        });
+                    });
+                });
+            });
+        });
+    });
+
+
     /* HELPER FUNCTIONS ------------ */
 
     describe('=> Testing replaceNullWithString', function(){

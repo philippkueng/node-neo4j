@@ -330,6 +330,30 @@ Neo4j.prototype.cypherQuery = function(query, callback){
 };
 
 
+/* Run Batch Queries -------- */
+
+Neo4j.prototype.batchQuery = function(query, callback){
+    var that = this;
+
+    request
+        .post(that.url + '/db/data/batch')
+        .set('Content-Type', 'application/json')
+        .send(query)
+        .end(function(result){
+            switch(result.statusCode){
+                case 200:
+                    callback(null, result.body);
+                    break;
+                case 404:
+                    callback(null, null);
+                    break;
+                default:
+                    callback(new Error('HTTP Error ' + result.statusCode + ' when running the batch query against neo4j'), null);
+            }
+        });
+};
+
+
 /* HELPER METHODS --------- */
 
 /* Strips username and password from URL so that the node_id can be extracted. */

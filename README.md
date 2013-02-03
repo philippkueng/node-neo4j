@@ -184,6 +184,26 @@ Will return incoming aswell as outgoing nodes.
         console.log(result.columns); // delivers an array of names of objects getting returned
     });
 
+**Run a batch query against Neo4j**
+
+For more information about what queries are possible checkout the [Neo4j REST API documentation](http://docs.neo4j.org/chunked/stable/rest-api-batch-ops.html).
+
+    db.batchQuery([
+        {
+            method: "GET",
+            to: "/node/100",
+            id: 0
+        },{
+            method: "GET",
+            to: "/node/102",
+            id: 1
+        }
+    ], function(err, result){
+        if(err) throw err;
+
+        console.log(result); // delives an array of query results
+    });
+
 ## Tests
 
 This API wrapper relies on [mocha](https://github.com/visionmedia/mocha) for testing, therefore when you want to run the tests follow the steps below.
