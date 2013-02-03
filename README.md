@@ -201,7 +201,7 @@ For more information about what queries are possible checkout the [Neo4j REST AP
     ], function(err, result){
         if(err) throw err;
 
-        console.log(result); // delives an array of query results
+        console.log(result); // delivers an array of query results
     });
 
 ## Tests
