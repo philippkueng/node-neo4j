@@ -24,7 +24,7 @@ describe('Testing Node specific operations for Neo4j', function(){
 
                     node_id = result.id;
 
-                    result.should.not.equal(null);
+                    should.exist(result);
                     result.data.name.should.equal('foobar');
                     result.id.should.not.equal('');
                     done();
@@ -47,7 +47,7 @@ describe('Testing Node specific operations for Neo4j', function(){
 
                     second_node_id = result.id;
 
-                    result.should.not.equal(null);
+                    should.exist(result);
                     result.data.name.should.equal('fööbar');
                     result.id.should.not.equal('');
                     done();
