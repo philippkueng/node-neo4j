@@ -437,6 +437,98 @@ describe('Testing Node specific operations for Neo4j', function(){
             });
         });
     });
+    
+    describe('=> Insert an Index', function(){
+        
+        var test_index1 = 'test_index1';
+        var test_index2 = {
+            type: 'node',
+            index: 'test_index2',
+            config: {
+                type: 'fulltext',
+                provider: 'lucene'
+            }  
+        };
+        
+        describe('-> Insert a non existing index without configuration', function(){
+            it('should return the index', function(done){
+                db.insertNodeIndex(test_index1, function(err, result){
+                    should.not.exist(err);
+                    result.template.should.equal('http://localhost:7474/db/data/index/node/test_index1/{key}/{value}');
+                    done();
+                });
+            });
+        });
+        
+        describe('-> Insert a non existing index with configuration', function(){
+            it('should return the index', function(done){
+                db.insertIndex(test_index2, function(err, result){
+                    should.not.exist(err);
+                    result.template.should.equal('http://localhost:7474/db/data/index/node/test_index2/{key}/{value}');
+                    result.type.should.equal('fulltext');
+                    result.provider.should.equal('lucene');
+                    done();
+                });
+            });
+        });
+        
+        after(function(done){
+            db.deleteIndex(test_index2, function(err, result){
+                if (err) throw err;
+                db.deleteIndex({type: 'node', index: test_index1}, function(err, result){
+                    if (err) throw err;
+                    done();
+                });
+            });
+        });
+    });
+    
+    describe('=> List indexes', function(){
+        before(function(done){
+            db.insertIndex({type: 'node', index: 'list_test_index'}, function(err, result){
+                if (err) throw err;
+                done();
+            });
+        });
+        
+        describe('-> List all existing indexes', function(){
+            it('should return the indexes', function(done){
+                db.listIndexes('node', function(err, result){
+                    should.not.exist(err);
+                    result.list_test_index.template.should.equal('http://localhost:7474/db/data/index/node/list_test_index/{key}/{value}');
+                    result.list_test_index.provider.should.equal('lucene');
+                    result.list_test_index.type.should.equal('exact');
+                    done();
+                });
+            });
+        });
+        
+        after(function(done){
+            db.deleteIndex({type: 'node', index: 'list_test_index'}, function(err, result){
+                if (err) throw err;
+                done(); 
+            });
+        });
+    });
+    
+    describe('=> Delete an Index', function(){
+        before(function(done){
+            db.insertNodeIndex('delete_test_index', function(err, result){
+                if (err) throw err;
+                done();
+            });
+        });
+
+        describe('-> Delete existing node', function(){
+            it('should delete the node', function(done){
+                db.deleteNodeIndex('delete_test_index', function(err, result){
+                    should.not.exist(err);
+                    result.should.equal(true);
+                    done();
+                });
+            });
+        });
+    });
 
     /* ADVANCED FUNCTIONS ---------- */
 

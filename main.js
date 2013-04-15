@@ -199,6 +199,117 @@ Neo4j.prototype.updateRelationship = function(relationship_id, relationship_data
         });
 };
 
+/* Create an Index ---------- */
+
+Neo4j.prototype.insertIndex = function(index, callback){
+    var that = this;
+
+    request
+        .post(that.url + '/db/data/index/' + index.type + '/')
+        .send({
+            'name': index.index,
+            'config': index.config
+        })
+        .set('Accept', 'application/json')
+        .end(function(result){
+            switch(result.statusCode){
+                case 201:
+                    callback(null, result.body);
+                    break;
+                case 404:
+                    callback(null, false);
+                    break;
+                default:
+                    callback(new Error('HTTP Error ' + result.statusCode + ' when inserting an Index.'), null);
+            } 
+        });
+};
+
+/* Delete an Index ---------- */
+
+Neo4j.prototype.deleteIndex = function(index, callback){
+    var that = this;
+    
+    request
+    .del(this.url + '/db/data/index/' + index.type + '/' + index.index)
+    .set('Accept', 'application/json')
+    .end(function(result){
+        switch(result.statusCode){
+            case 204:
+                callback(null, true); // Index was deleted.
+                break;
+            case 404:
+                callback(null, false); // Index doesn't exist.
+                break;
+            default:
+                callback(new Error('Unknown Error while deleting Index'), null);
+        }
+    });
+};
+
+/* List all Indexes ---------- */
+
+Neo4j.prototype.listIndexes = function(indexType, callback){
+    var that = this;
+    
+    request
+    .get(that.url + '/db/data/index/' + indexType + '/')
+    .set('Accept', 'application/json')
+    .end(function(result){
+        switch(result.statusCode){
+            case 200:
+                callback(null, result.body);
+                break;
+            case 404:
+                callback(null, false);
+                break;
+            default:
+                callback(new Error('HTTP Error ' + result.statusCode + ' when listing all indexes.'), null);
+        } 
+    });
+    
+};
+
+/* Index - easy access functions */
+
+Neo4j.prototype.insertNodeIndex = function(index, callback){
+    var _index = index;
+    if(typeof index === 'string'){
+        _index = {
+            type: 'node',
+            index: index
+        };
+    }
+    this.insertIndex(_index, callback);
+};
+
+Neo4j.prototype.insertRelationshipIndex = function(index, callback){
+    var _index = index;
+    if(typeof index === 'string'){
+        _index = {
+            type: 'relationship',
+            index: index
+        };
+    }
+    this.insertIndex(_index, callback);
+};
+
+Neo4j.prototype.deleteNodeIndex = function(index, callback){
+    this.deleteIndex({type: 'node', index: index}, callback);
+};
+
+Neo4j.prototype.deleteRelationshipIndex = function(index, callback){
+    this.deleteIndex({type: 'relationship', index: index}, callback);
+};
+
+Neo4j.prototype.listNodeIndexes = function(callback){
+    this.listIndexes('node', callback);
+};
+
+Neo4j.prototype.listRelationshipIndexes = function(callback){
+    this.listIndexes('relationship', callback);
+};
+
 /* ADVANCED FUNCTIONS ---------- */
 
 /* Get all Relationship Types -------- */

@@ -137,6 +137,47 @@ Will remove any assigned properties and replace them with the ones given below.
     });
 
 
+### Relationship operations
+
+This documentation only contains calls to Node specific index functions however to call those functions for Relationships, just replace `Node` with `Relationship`.
+
+**Insert an Index**
+
+    db.insertNodeIndex('the_index_key', function(err, result){
+        if (err) throw err;
+
+        console.log(result); // return the index template and configuration
+    });
+
+    // insert an index with a custom configuration
+    db.insertNodeIndex({
+        index: 'the_index_key',
+        config: {
+            type: 'fulltext',
+            provider: 'lucene'
+        }
+    }, function(err, result){
+        if (err) throw err;
+
+        console.log(result); // return the index template with its custom configuration
+    });
+
+**Delete an Index**
+
+    db.deleteNodeIndex('the_index_key', function(err, result){
+        if (err) throw err;
+
+        console.log(result) // will be true, if the deletion is successful
+    });
+
+**List all Indexes**
+
+    db.listNodeIndexes(function(err, result){
+        if (err) throw err;
+
+        console.log(result); // an object with all indexes and their templates and configurations
+    });
+
 ### Advanced relationship operations
 
 **Get all relationship types used within the Neo4j database**
