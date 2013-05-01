@@ -530,6 +530,48 @@ describe('Testing Node specific operations for Neo4j', function(){
         });
     });
 
+    describe('=> Add a Node to an Index', function(){
+        root_node_id = null;
+        before(function(done){
+            db.insertNodeIndex('add_node_test_index', function(err, result){
+                if (err) throw err;
+                db.insertNode({name:'foobar'}, function(err, node1){
+                    root_node_id = node1.id;
+                    done();
+                });
+            });
+        });
+
+        describe('-> Add a non-existing Node to an Index', function(){
+            it('should throw an error', function(done){
+                db.addNodeToIndex(99999, 'add_node_test_index', 'test_index_key', 'test_index_value', function(err, result){
+                    should.exist(err);
+                    should.not.exist(result);
+                    done();
+                });
+            });
+        });
+
+        describe('-> Add an existing Node to an Index', function(){
+            it('should throw an error', function(done){
+                db.addNodeToIndex(root_node_id, 'add_node_test_index', 'test_index_key', 'test_index_value', function(err, result){
+                    should.not.exist(err);
+                    should.exist(result);
+                    should.exist(result.indexed);
+                    result.data.name.should.equal('foobar');
+                    done();
+                });
+            });
+        });
+
+        after(function(done){
+            db.deleteNode(root_node_id, function(err, result){
+                if (err) throw err;
+                done();
+            });
+        });
+    });
+
     /* ADVANCED FUNCTIONS ---------- */
 
     describe('=> Read Relationship Types already within the DB', function(){

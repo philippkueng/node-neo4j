@@ -266,8 +266,54 @@ Neo4j.prototype.listIndexes = function(indexType, callback){
             default:
                 callback(new Error('HTTP Error ' + result.statusCode + ' when listing all indexes.'), null);
         } 
-    });
-    
+    });  
+};
+
+/* Add item to Index ---------- */
+
+Neo4j.prototype.addItemToIndex = function(arguments, callback){
+    var that = this;
+
+    request
+        .post(that.url + '/db/data/index/' + arguments.indexType + '/' + arguments.indexName)
+        .send({
+            'uri': that.url + '/db/data/' + arguments.indexType + '/' + arguments.itemId,
+            'key': arguments.indexKey,
+            'value': arguments.indexValue
+        })
+        .set('Accept', 'application/json')
+        .end(function(result){
+            switch(result.statusCode){
+                case 200:
+                    callback(null, result.body);
+                    break;
+                case 201:
+                    callback(null, result.body);
+                    break;
+                default:
+                    callback(new Error('HTTP Error ' + result.statusCode + ' when adding an Item to an Index'), null);
+            }
+        });
+};
+
+Neo4j.prototype.addNodeToIndex = function(nodeId, indexName, indexKey, indexValue, callback){
+    this.addItemToIndex({
+        indexType: 'node',
+        itemId: nodeId,
+        indexName: indexName,
+        indexKey: indexKey,
+        indexValue: indexValue
+    }, callback);
+};
+
+Neo4j.prototype.addRelationshipToIndex = function(nodeId, indexName, indexKey, indexValue, callback){
+    this.addItemToIndex({
+        indexType: 'relationship',
+        itemId: nodeId,
+        indexName: indexName,
+        indexKey: indexKey,
+        indexValue: indexValue
+    }, callback);
 };
 
 /* Index - easy access functions */
