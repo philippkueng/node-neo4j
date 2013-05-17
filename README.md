@@ -15,7 +15,7 @@ In order to use the library you either have to create a [heroku](http://www.hero
 
 **Instantiate a wrapper instance**
 
-    var neo4j = require('node-neo4j);
+    var neo4j = require('node-neo4j');
     db = new neo4j('http://username:password@domain:port');
 
 
