@@ -917,6 +917,17 @@ describe('Testing Node specific operations for Neo4j', function(){
                 });
             });
         });
+        
+        describe('-> Run the cypher query from issue 7 from @Zaxnyd', function(done){
+            it('should return a node and the relationships', function(done){
+                db.cypherQuery("START r=relationship(*) MATCH (s)-[r]->(t) RETURN *", function(err, result){
+                    should.not.exist(err);
+                    result.data.length.should.equal(6);
+                    result.columns.length.should.equal(3);
+                    done();
+                });
+            });
+        });
 
         after(function(done){
             db.deleteRelationship(relationship1_id, function(err, result){

@@ -458,8 +458,10 @@ Neo4j.prototype.cypherQuery = function(query, callback){
                         Step(
                             function addIds(){
                                 var group = this.group();
-                                result.body.data.forEach(function(node){
-                                    that.addNodeId(node[0], group());
+                                result.body.data.forEach(function(resultset){
+                                    resultset.forEach(function(node){
+                                       that.addNodeId(node, group());
+                                    });
                                 });
                             },
                             function sumUp(err, nodes){
@@ -526,7 +528,9 @@ Neo4j.prototype.removeCredentials = function(path){
 
 Neo4j.prototype.addNodeId = function(node, callback){
     if (node.self) {
-        node.id = node.self.replace(this.removeCredentials(this.url) + '/db/data/node/', '');    
+        node.id = node.self
+                    .replace(this.removeCredentials(this.url) + '/db/data/node/', '')
+                    .replace(this.removeCredentials(this.url) + '/db/data/relationship/', '');  
     }
     callback(null, node);
 };
