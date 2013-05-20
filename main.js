@@ -225,6 +225,28 @@ Neo4j.prototype.insertIndex = function(index, callback){
         });
 };
 
+Neo4j.prototype.insertNodeIndex = function(index, callback){
+    var _index = index;
+    if(typeof index === 'string'){
+        _index = {
+            type: 'node',
+            index: index
+        };
+    }
+    this.insertIndex(_index, callback);
+};
+
+Neo4j.prototype.insertRelationshipIndex = function(index, callback){
+    var _index = index;
+    if(typeof index === 'string'){
+        _index = {
+            type: 'relationship',
+            index: index
+        };
+    }
+    this.insertIndex(_index, callback);
+};
+
 /* Delete an Index ---------- */
 
 Neo4j.prototype.deleteIndex = function(index, callback){
@@ -247,6 +269,14 @@ Neo4j.prototype.deleteIndex = function(index, callback){
     });
 };
 
+Neo4j.prototype.deleteNodeIndex = function(index, callback){
+    this.deleteIndex({type: 'node', index: index}, callback);
+};
+
+Neo4j.prototype.deleteRelationshipIndex = function(index, callback){
+    this.deleteIndex({type: 'relationship', index: index}, callback);
+};
+
 /* List all Indexes ---------- */
 
 Neo4j.prototype.listIndexes = function(indexType, callback){
@@ -267,6 +297,14 @@ Neo4j.prototype.listIndexes = function(indexType, callback){
                 callback(new Error('HTTP Error ' + result.statusCode + ' when listing all indexes.'), null);
         } 
     });  
+};
+
+Neo4j.prototype.listNodeIndexes = function(callback){
+    this.listIndexes('node', callback);
+};
+
+Neo4j.prototype.listRelationshipIndexes = function(callback){
+    this.listIndexes('relationship', callback);
 };
 
 /* Add item to Index ---------- */
@@ -314,46 +352,6 @@ Neo4j.prototype.addRelationshipToIndex = function(nodeId, indexName, indexKey, i
         indexKey: indexKey,
         indexValue: indexValue
     }, callback);
-};
-
-/* Index - easy access functions */
-
-Neo4j.prototype.insertNodeIndex = function(index, callback){
-    var _index = index;
-    if(typeof index === 'string'){
-        _index = {
-            type: 'node',
-            index: index
-        };
-    }
-    this.insertIndex(_index, callback);
-};
-
-Neo4j.prototype.insertRelationshipIndex = function(index, callback){
-    var _index = index;
-    if(typeof index === 'string'){
-        _index = {
-            type: 'relationship',
-            index: index
-        };
-    }
-    this.insertIndex(_index, callback);
-};
-
-Neo4j.prototype.deleteNodeIndex = function(index, callback){
-    this.deleteIndex({type: 'node', index: index}, callback);
-};
-
-Neo4j.prototype.deleteRelationshipIndex = function(index, callback){
-    this.deleteIndex({type: 'relationship', index: index}, callback);
-};
-
-Neo4j.prototype.listNodeIndexes = function(callback){
-    this.listIndexes('node', callback);
-};
-
-Neo4j.prototype.listRelationshipIndexes = function(callback){
-    this.listIndexes('relationship', callback);
 };
 
 /* ADVANCED FUNCTIONS ---------- */
