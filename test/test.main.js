@@ -7,6 +7,19 @@ var db = new neo4j(url);
 
 /*
  *
+ * ---------------------------
+ * MAKE SURE NODE 0 IS REMOVED
+ * ---------------------------
+ *
+ */
+
+db.deleteNode(0, function(err, node){
+    console.log('node 0 removed');
+});
+
+
+/*
+ *
  * -------------------------------------------
  * RUN TESTS WITH AGAINST EMPTY NEO4J INSTANCE
  * -------------------------------------------
@@ -91,6 +104,12 @@ describe('Testing Node specific operations for Neo4j', function(){
                   done();
                });
            });
+        });
+
+        after(function(done){
+            db.deleteNode(node_id, function(err, result){
+                done();
+            });
         });
 
     });
@@ -571,6 +590,8 @@ describe('Testing Node specific operations for Neo4j', function(){
             });
         });
     });
+    
+    // describe('=> Remove all ')
 
     /* ADVANCED FUNCTIONS ---------- */
 
@@ -830,7 +851,7 @@ describe('Testing Node specific operations for Neo4j', function(){
 
     });
 
-    describe('=> Test Cyper Query Functionality', function(){
+    describe('=> Test Cyper Query Functionality against non existing nodes', function(){
 
         describe('-> Run a cypher query against a non existing node', function(){
             it('should return an error since node does not exist', function(done){
@@ -852,6 +873,21 @@ describe('Testing Node specific operations for Neo4j', function(){
             });
         });
 
+        describe('-> Run the cypher query from issue 8 by @electrichead against non existing nodes', function(done){
+            it('should return null since no data matches the query', function(done){
+                db.cypherQuery("start a=node(*) with a match a-[r1?:RELATED_TO]->o return a.name,o.name", function(err, result){
+                    should.not.exist(err);
+                    should.exist(result);
+                    result.data.length.should.equal(0);
+                    result.columns.length.should.equal(2);
+                    result.columns[0].should.equal('a.name');
+                    done();
+                });
+            });
+        });
+    });
+
+    describe('=> Test Cypher Query Functionality against existing nodes and relationships', function(){
         var root_node_id;
         var other_node1_id;
         var other_node2_id;
@@ -913,6 +949,23 @@ describe('Testing Node specific operations for Neo4j', function(){
                     result.data[0].nodes.length.should.equal(2);
                     result.data[0].relationships.length.should.equal(1);
                     should.exist(result.data[0].end);
+                    done();
+                });
+            });
+        });
+
+        describe('-> Run the cypher query from issue 8 by @electrichead against non existing nodes', function(done){
+            it('should return a valid response', function(done){
+                db.cypherQuery("START a=node(*) match a-[r1?:RELATED_TO]->o return a.name,o.name", function(err, result){
+                    should.not.exist(err);
+                    should.exist(result);
+                    result.data.length.should.equal(8);
+                    result.data[0].should.equal('foobar');
+                    result.data[1].should.equal('foobar2');
+                    result.data[2].should.equal('foobar');
+                    result.data[3].should.equal('foobar3');
+                    result.columns.length.should.equal(2);
+                    result.columns[0].should.equal('a.name');
                     done();
                 });
             });
