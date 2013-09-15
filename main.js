@@ -450,32 +450,94 @@ Neo4j.prototype.addRelationshipToIndex = function(nodeId, indexName, indexKey, i
         indexValue: indexValue
     }, callback);
 };
-/*	Add a label to a node. Given a node id (integer) and a label (string)
-	returns true if successfully added a label. If it failed it will return false.
-	Example:
-	addLabelToNode(77, 'User', callback); 
-	returns true
-	*/
 
-Neo4j.prototype.addLabelToNode = function(nodeId, label, callback){
-    var that = this;
+/*	Adding one or multiple labels to a node. 
+	Given a node id (integer) and one label (string) or multiple labels (array of strings) (non-empty strings)
+	returns true if successfully added a label otherwise it will return false.
+	Examples:
+	addLabelsToNode(77, 'User', callback);
+	addLabelsToNode(77, ['User', 'Student'], callback); 
+		returns true
+	addLabelsToNode(77, ['User', ''], callback); 
+		returns an error! no empty string allowed	*/
 
-    request
-        .post(that.url + '/db/data/node/' + nodeId + '/labels')
-        .send(label)
-        .set('Accept', 'application/json')
-        .end(function(result){
-            switch(result.statusCode){
-                case 204:
-                    callback(null, true); // label added
-                    break;
-                case 404:
-                    callback(null, false);
-                    break;
-                default:
-                    callback(new Error('HTTP Error ' + result.statusCode + ' when adding a label to a node'), null);
+Neo4j.prototype.addLabelsToNode = function(nodeId, labels, callback){   
+    var url = this.url + '/db/data/node/' + nodeId + '/labels';
+    var errorMsg = '"Labels" should be a non-empty string or an array of non-empty strings.';
+
+    if(typeof labels === 'string') {
+    	if(labels === '')
+    		return callback(new Error(errorMsg), null);
+    	labels = [labels];
+    }
+
+    if(labels instanceof Array) {
+		request
+			.post(url)
+			.send(labels)
+			.set('Accept', 'application/json')
+			.end(function(result){
+			switch(result.statusCode){
+				case 204:
+					callback(null, true); // Labels added
+					break;
+				case 400:
+					callback(new Error(errorMsg), null); // Empty label
+					break;
+	            case 404:
+					callback(null, false); // Node doesn't exist
+					break;
+	            default:
+					callback(new Error('HTTP Error ' + result.statusCode + ' when adding a label to a node.'), null);
+	        	}
+			});
+	} else
+		callback(new Error(errorMsg), null);
+};
+
+/*	Replacing labels on a node.
+	This removes any labels currently on a node, and replaces them with the new labels.
+	Given a node id (integer) and one label (string) or multiple labels (array of strings) (non-empty strings)
+	returns true if successfully replaced all labels otherwise it will return false or an error.
+	Examples:
+	replaceLabelsFromNode(77, 'User', callback);
+	replaceLabelsFromNode(77, ['User', 'Student'], callback); 
+		returns true
+	replaceLabelsFromNode(77, ['User', ''], callback);
+	replaceLabelsFromNode(77, null, callback); 
+		returns an error! no empty string allowed	*/
+
+Neo4j.prototype.replaceLabelsFromNode = function(nodeId, labels, callback){
+	var errorMsg = '"Labels" should be a non-empty string or an array of non-empty strings.';
+
+	if(typeof labels === 'string') {
+    	if(labels === '')
+    		return callback(new Error(errorMsg), null);
+    	labels = [labels];
+    }
+
+	if(labels instanceof Array) {
+		request
+			.put(this.url + '/db/data/node/' + nodeId + '/labels')
+			.send(labels)
+			.set('Accept', 'application/json')
+			.end(function(result){
+				switch(result.statusCode){
+					case 204:
+						callback(null, true);
+						break;
+					case 400:
+						callback(new Error(errorMsg), null); // Empty label
+						break;
+					case 404:
+						callback(null, false);
+						break;
+					default:
+						callback(new Error('HTTP Error ' + result.statusCode + ' when replacing labels.'), null);
             }
         });
+	} else
+    	callback(new Error(errorMsg), null);
 };
 
 /* ADVANCED FUNCTIONS ---------- */

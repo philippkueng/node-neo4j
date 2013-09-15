@@ -727,6 +727,8 @@ describe('Testing Node specific operations for Neo4j', function(){
 
 /* END => Delete an Index -------*/
 
+/* START => Add a Node to an Index -------*/
+
     describe('=> Add a Node to an Index', function(){
         root_node_id = null;
         before(function(done){
@@ -769,36 +771,207 @@ describe('Testing Node specific operations for Neo4j', function(){
         });
     });
 
-/*
- describe('=> Add a Label to a Node', function(){
+/* END => Add a Node to an Index -------*/
+
+/* START => Add one or multiple Labels to a Node -------*/
+
+	describe('=> Add one or multiple Labels to a Node', function(){
 		var nodeId;
-		before(function(done){            
-			db.insertNode({name:'Bruxelles'}, function(err, node){
+		before(function(done){
+			db.insertNode({name:'Brussels'}, function(err, node){
 				nodeId = node.id;
-                done();
-            });            
-        });
+				done();
+			});
+		});
 
-        describe('-> Add a non-existing Node to an Index', function(){
-            it('should throw an error', function(done){
-                db.addNodeToIndex(99999, 'add_node_test_index', 'test_index_key', 'test_index_value', function(err, result){
-                    should.exist(err);
-                    should.not.exist(result);
-                    done();
-                });
-            });
-        });
+		describe('-> Add one Label to a Node', function(){
+			it('should return true if label was successfully added', function(done){
+				db.addLabelsToNode(nodeId, 'City', function(err, result){                	
+					should.not.exist(err);
+					should.exist(result);
+					result.should.equal(true);					
+					db.readLabels(nodeId, function (err, result) {
+						should.not.exist(err);
+						should.exist(result);
+						result.should.be.an.instanceOf(Array);
+						result.should.have.lengthOf(1);
+						result.should.include('City');
+						done();
+					});
+				});
+			});
+		});
 
-  
+		describe('-> Add multiple Labels to a Node', function(){
+			it('should return true if the labels were successfully added', function(done){
+				db.addLabelsToNode(nodeId, ['Capital','Belgium','Frietjes'], function(err, result){                	
+					should.not.exist(err);
+					should.exist(result);
+					result.should.equal(true);
+					db.readLabels(nodeId, function (err, result) {
+						should.not.exist(err);
+						should.exist(result);
+						result.should.be.an.instanceOf(Array);
+						result.should.have.lengthOf(4);
+						result.should.include('City');
+						result.should.include('Capital');
+						result.should.include('Belgium');
+						result.should.include('Frietjes');
+						done();
+					});
+				});
+			});
+		});
+
+		describe('-> Add wrong Label to a Node', function(){
+			it('should return an error message', function(done){
+				db.addLabelsToNode(nodeId, null, function(err, result){
+					should.exist(err);
+					should.not.exist(result);
+					done();
+				});
+			});
+		});
+
+		describe('-> Add multiple labels with one wrong Label to a Node', function(){
+			it('should return an error message', function(done){
+				db.addLabelsToNode(nodeId, ['User', ''], function(err, result){
+					should.exist(err);
+					should.not.exist(result);
+					done();
+				});
+			});
+		});
+
+		describe('-> Add a Label to a non-existing Node', function(){
+			it('should return false because Node does not exist', function(done){
+				db.addLabelsToNode(123456789, 'City', function(err, result){
+					should.not.exist(err);
+					should.exist(result);
+					result.should.equal(false);
+					done();
+				});
+			});
+		});
 
         after(function(done){
-            db.deleteNode(root_node_id, function(err, result){
+            db.deleteNode(nodeId, function(err, result){
                 if (err) throw err;
                 done();
             });
         });
     }); 
-    */
+
+/* END => Add one or multiple Labels to a Node -------*/
+
+/* START => Replace all Labels on a Node -------*/
+
+	describe('=> Replace all Labels on a Node', function(){
+		var nodeId;
+		before(function(done){
+			db.insertNode({name:'Brussels'}, function(err, node){
+				nodeId = node.id;
+				db.addLabelsToNode(nodeId, ['Capital','Belgium','Frietjes'], function(err, result){   
+					if (err) throw err;
+					done();
+				});
+			});
+		});
+
+		describe('-> Replace all labels by one new label', function(){
+			it('should return true if the labels were successfully changed', function(done){
+				db.replaceLabelsFromNode(nodeId, 'Dutch', function(err, result){                	
+					should.not.exist(err);
+					should.exist(result);
+					result.should.equal(true);
+					db.readLabels(nodeId, function (err, result) {
+						should.not.exist(err);
+						should.exist(result);
+						result.should.be.an.instanceOf(Array);
+						result.should.have.lengthOf(1);
+						result.should.include('Dutch');						
+						done();
+					});
+				});
+			});
+		});
+
+		describe('-> Replace all labels by multiple new labels', function(){
+			it('should return true if the labels were successfully changed', function(done){
+				db.replaceLabelsFromNode(nodeId, ['Dutch', 'French', 'German'], function(err, result){                	
+					should.not.exist(err);
+					should.exist(result);
+					result.should.equal(true);
+					db.readLabels(nodeId, function (err, result) {
+						should.not.exist(err);
+						should.exist(result);
+						result.should.be.an.instanceOf(Array);
+						result.should.have.lengthOf(3);
+						result.should.include('Dutch');
+						result.should.include('French');
+						result.should.include('German');
+						done();
+					});
+				});
+			});
+		});
+
+		describe('-> Replace all labels by an invalid label: [null]', function(){
+			it('should return an error message', function(done){
+				db.replaceLabelsFromNode(nodeId, [null], function(err, result){
+					should.exist(err);
+					should.not.exist(result);
+					done();
+				});
+			});
+		});
+
+		describe('-> Replace all labels by an invalid label: [""]', function(){
+			it('should return an error message', function(done){
+				db.replaceLabelsFromNode(nodeId, [''], function(err, result){					
+					should.exist(err);
+					should.not.exist(result);
+					done();
+				});
+			});
+		});
+
+		describe('-> Replace all labels by an invalid label: null', function(){
+			it('should return an error message', function(done){
+				db.replaceLabelsFromNode(nodeId, null, function(err, result){					
+					should.exist(err);
+					should.not.exist(result);
+					done();
+				});
+			});
+		});		
+
+		describe('-> Replace all labels of a non-existing Node', function(){
+			it('should return false because Node does not exist', function(done){
+				db.replaceLabelsFromNode(123456789, ['City'], function(err, result){					
+					should.not.exist(err);
+					should.exist(result);
+					result.should.equal(false);
+					done();
+				});
+			});
+		});
+
+        after(function(done){
+            db.deleteNode(nodeId, function(err, result){
+                if (err) throw err;
+                done();
+            });
+        });
+    }); 
+
+/* END => Replace all Labels on a Node -------*/
+
+
+
+
+
+
     // describe('=> Remove all ')
 
     /* ADVANCED FUNCTIONS ---------- */
