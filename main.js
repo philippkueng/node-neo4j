@@ -1,5 +1,7 @@
 var request = require('superagent'),
-    Step = require('step');
+    Step = require('step'),
+    util = require('util'),
+    cypher = require('./lib/utils/cypher');
 
 module.exports = Neo4j;
 
@@ -11,24 +13,64 @@ function Neo4j(url){
     }
 };
 
-/* Insert a Node --------- */
+/*	Insert a Node --------- 
+	Examples:
+	Insert a Node with no label:
+		insertNode({ name: 'Kristof' }, callback);
+	Insert a Node with one label:	
+		insertNode({ name: 'Kristof' }, ['Student'], callback);
+	Insert a Node with three labels:
+		insertNode({ name: 'Kristof' }, ['User', 'Student' ,'Man'], callback);		*/
 
-Neo4j.prototype.insertNode = function(node, callback){
-    var that = this;
-    request
-        .post(this.url + '/db/data/node')
-        .send(node)
-        .type('form')
-        .set('Accept', 'application/json')
-        .end(function(result){
-            if(typeof result.body !== 'undefined'){
-                that.addNodeId(result.body, callback);
-            } else {
-                callback(new Error('Response is empty'), null);
-            }
-        });
+Neo4j.prototype.insertNode = function(node, labels, callback){
+	var that = this;
+	// Insert node without a label with post request
+	if(typeof labels === 'function') {
+		callback = labels;		
+		request
+			.post(this.url + '/db/data/node')
+			.send(node)
+			.type('form')
+			.set('Accept', 'application/json')
+			.end(function(result){
+				if(typeof result.body !== 'undefined')
+					that.addNodeId(result.body, callback);
+				else 
+					callback(new Error('Response is empty'), null);
+		
+			});
+	} else {
+		// Insert node and label(s) with cypher query
+		if(labels instanceof Array){ 
+			var query = 'CREATE (data'+  cypher.stringify(labels) + ' {' + cypher.params(node) + '}) RETURN data';		
+			this.cypherQuery(query, node, function(err, res) {
+				if(err) 
+					callback(err, null);
+				else
+					callback(err, res.data[0]);
+			});		
+		} else
+			callback(new Error('The second parameter "labels" should be an array with strings OR "labels" should be a callback function.'), null);
+	}	
 };
 
+/*	Get an array of labels of a Node ---------
+	Example:
+		readLabels(77, callback); 
+		returns ['User','Student','Man']
+*/
+
+Neo4j.prototype.readLabels = function(node_id, callback){		
+	request
+		.get(this.url + '/db/data/node/' + node_id + '/labels')		
+		.set('Accept', 'application/json')
+		.end(function(result){
+			if(typeof result.body !== 'undefined')
+				callback(null, result.body);
+			else 
+				callback(new Error('Response is empty'), null);	
+		});	
+};
 
 
 /* Delete a Node --------- */
@@ -54,8 +96,6 @@ Neo4j.prototype.deleteNode = function(node_id, callback){
             }
         });
 };
-
-
 
 /* Read a Node ---------- */
 
@@ -101,7 +141,6 @@ Neo4j.prototype.updateNode = function(node_id, node_data, callback){
         });
 };
 
-
 /* Insert a Relationship ------ */
 
 Neo4j.prototype.insertRelationship = function(root_node_id, other_node_id, relationship_type, relationship_data, callback){
@@ -131,7 +170,6 @@ Neo4j.prototype.insertRelationship = function(root_node_id, other_node_id, relat
         });
 };
 
-
 /* Delete a Relationship --------- */
 
 Neo4j.prototype.deleteRelationship = function(relationship_id, callback){
@@ -152,7 +190,6 @@ Neo4j.prototype.deleteRelationship = function(relationship_id, callback){
             }
         });
 };
-
 
 /* Read a Relationship ----------- */
 
@@ -225,6 +262,32 @@ Neo4j.prototype.insertIndex = function(index, callback){
         });
 };
 
+/*	Create an index on a property of a label 
+	Example:
+	Create an index on the first name and last name of a person.
+		insertLabelIndex('Person', ['firstname'], callback);
+		returns {
+				  "label" : "Person",
+				  "property-keys" : [ "firstname" ]
+				}
+	Note:
+	Compound indexes are not yet supported, only one property per index is allowed.
+	So ['firstname', 'lastname'] is not supported yet. */
+
+Neo4j.prototype.insertLabelIndex = function(label, property_key, callback){
+    request
+			.post(this.url + '/db/data/schema/index/' + label)
+			.send({ "property_keys" : [property_key] })
+			.type('form')
+			.set('Accept', 'application/json')
+			.end(function(result){
+				if(typeof result.body !== 'undefined')
+					callback(null, result.body);
+				else 
+					callback(new Error('Response is empty'), null);		
+	});
+};
+
 Neo4j.prototype.insertNodeIndex = function(index, callback){
     var _index = index;
     if(typeof index === 'string'){
@@ -277,13 +340,27 @@ Neo4j.prototype.deleteRelationshipIndex = function(index, callback){
     this.deleteIndex({type: 'relationship', index: index}, callback);
 };
 
-/* List all Indexes ---------- */
-
-Neo4j.prototype.listIndexes = function(indexType, callback){
-    var that = this;
-    
+Neo4j.prototype.deleteLabelIndex = function(label, property_key, callback){
     request
-    .get(that.url + '/db/data/index/' + indexType + '/')
+	.del(this.url + '/db/data/schema/index/' + label + '/' + property_key)
+	.set('Accept', 'application/json')
+	.end(function(result){
+		switch(result.statusCode){
+			case 204:
+				callback(null, true); // Index was deleted.
+				break;
+            case 404:
+				callback(null, false); // Index doesn't exist.
+				break;
+            default:
+				callback(new Error('Unknown Error while deleting Index'), null);
+        }
+    });
+};
+
+function listIndexes (url, callback) {
+	request
+    .get(url)
     .set('Accept', 'application/json')
     .end(function(result){
         switch(result.statusCode){
@@ -296,15 +373,35 @@ Neo4j.prototype.listIndexes = function(indexType, callback){
             default:
                 callback(new Error('HTTP Error ' + result.statusCode + ' when listing all indexes.'), null);
         } 
-    });  
+    });
+}
+
+/* REMOVE?
+Neo4j.prototype.listIndexes = function(indexType, callback){
+    var url = this.url + '/db/data/index/' + indexType;
+    listIndexes(url, callback);    
 };
+*/
 
 Neo4j.prototype.listNodeIndexes = function(callback){
-    this.listIndexes('node', callback);
+	var url = this.url + '/db/data/index/node';
+    listIndexes(url, callback);
 };
 
 Neo4j.prototype.listRelationshipIndexes = function(callback){
-    this.listIndexes('relationship', callback);
+	var url = this.url + '/db/data/index/relationship';
+    listIndexes(url, callback);
+};
+
+/*	List indexes for a label 
+	Example: 
+	listLabelIndexes('City', callback);
+	returns [ { label: 'City', 'property-keys': [ 'postalcode' ] },
+  			  { label: 'City', 'property-keys': [ 'name' ] } ]		*/
+
+Neo4j.prototype.listLabelIndexes = function(label, callback){
+	var url = this.url + '/db/data/schema/index/' + label;
+    listIndexes(url, callback);
 };
 
 /* Add item to Index ---------- */
@@ -352,6 +449,33 @@ Neo4j.prototype.addRelationshipToIndex = function(nodeId, indexName, indexKey, i
         indexKey: indexKey,
         indexValue: indexValue
     }, callback);
+};
+/*	Add a label to a node. Given a node id (integer) and a label (string)
+	returns true if successfully added a label. If it failed it will return false.
+	Example:
+	addLabelToNode(77, 'User', callback); 
+	returns true
+	*/
+
+Neo4j.prototype.addLabelToNode = function(nodeId, label, callback){
+    var that = this;
+
+    request
+        .post(that.url + '/db/data/node/' + nodeId + '/labels')
+        .send(label)
+        .set('Accept', 'application/json')
+        .end(function(result){
+            switch(result.statusCode){
+                case 204:
+                    callback(null, true); // label added
+                    break;
+                case 404:
+                    callback(null, false);
+                    break;
+                default:
+                    callback(new Error('HTTP Error ' + result.statusCode + ' when adding a label to a node'), null);
+            }
+        });
 };
 
 /* ADVANCED FUNCTIONS ---------- */
@@ -444,14 +568,21 @@ Neo4j.prototype.readOutgoingRelationshipsOfNode = function(node_id, callback){
 
 /* Run Cypher Query -------- */
 
-Neo4j.prototype.cypherQuery = function(query, callback){
+Neo4j.prototype.cypherQuery = function(query, params, callback){
     var that = this;
-
+    var body = { query: query };
+    if(params) {
+    	if(typeof params === 'function')
+    		callback = params;
+    	else
+    		body['params'] = params;
+    } 
+    //console.log('PARAMS: ' + util.inspect(body));
     request
         .post(that.url + '/db/data/cypher')
         .set('Content-Type', 'application/json')
-        .send({query: query})
-        .end(function(result){
+        .send(body)
+        .end(function(result){        	
             switch(result.statusCode){
                 case 200:
                     if(result.body && result.body.data.length >= 1){
@@ -528,9 +659,9 @@ Neo4j.prototype.removeCredentials = function(path){
 
 Neo4j.prototype.addNodeId = function(node, callback){
     if (node && node.self) {
-        node.id = node.self
+        node.id = parseInt(node.self
                     .replace(this.removeCredentials(this.url) + '/db/data/node/', '')
-                    .replace(this.removeCredentials(this.url) + '/db/data/relationship/', '');  
+                    .replace(this.removeCredentials(this.url) + '/db/data/relationship/', ''));  
     }
     callback(null, node);
 };
@@ -580,7 +711,6 @@ Neo4j.prototype.replaceNullWithString = function(node_data, callback){
     return node_data;
 };
 
-
 /* Turn values that are objects themselves into strings. */
 
 Neo4j.prototype.stringifyValueObjects = function(node_data, callback){
@@ -593,5 +723,3 @@ Neo4j.prototype.stringifyValueObjects = function(node_data, callback){
 
     return node_data;
 };
-
-

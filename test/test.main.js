@@ -1,5 +1,6 @@
 var should = require('should'),
-    neo4j = require('../main');
+    neo4j = require('../main'),
+    util = require('util');
 
 var url = 'http://localhost:7474';
 
@@ -28,40 +29,109 @@ db.deleteNode(0, function(err, node){
 
 describe('Testing Node specific operations for Neo4j', function(){
 
+/* START => Create a Node */
+
     describe('=> Create a Node', function(){
         var node_id;
+        var secondNodeId;
+        var thirdNodeId;
 
-        describe('-> A simple valid node insertion', function(){
-            it('should return the JSON for that node', function(done){
-                db.insertNode({name:'foobar'}, function(err, result){
+		describe('-> A first simple valid node insertion with no labels', function(){
+			it('should return the JSON for the first node', function(done){
+				db.insertNode({name:'foobar'}, function(err, result){
+					node_id = result.id;
+					should.not.exist(err);
+					should.exist(result);
+					result.data.name.should.equal('foobar');
+					result.id.should.not.equal('');
+					done();
+				});
+			});
+		});
 
-                    node_id = result.id;
+		describe('-> A second valid node insertion with one label', function(){
+			it('should return the JSON for the second node', function(done){
+				db.insertNode({ name:'Philipp' },['User'], function(err, result){                	
+					secondNodeId = result.id;
+					should.not.exist(err);
+					should.exist(result);
+					result.data.name.should.equal('Philipp');
+					result.id.should.not.equal('');
+					done();
+				});
+			});
+		});
 
-                    should.exist(result);
-                    result.data.name.should.equal('foobar');
-                    result.id.should.not.equal('');
-                    done();
-                });
-            });
-        });
+		describe('-> A third valid node insertion with three labels', function(){
+			it('should return the JSON for the third node', function(done){
+				db.insertNode({ name:'Kristof' },['User','Student','Man'], function(err, result){                	
+					thirdNodeId = result.id;
+					should.not.exist(err);
+					should.exist(result);
+					result.data.name.should.equal('Kristof');
+					result.id.should.not.equal('');
+					done();
+				});
+			});
+		});
 
-        // Remove Node afterwards.
-        after(function(done){
-           db.deleteNode(node_id, function(err, result){
-              done();
-           });
-        });
+		describe('-> An invalid node insertion with wrong "labels" parameter', function(){
+			it('should give an error', function(done){
+				db.insertNode({ name:'Mister Error' }, ':Must:Be:Array', function(err, result){                	
+					should.exist(err);
+					should.not.exist(result);					
+					done();
+				});
+			});
+		});
+
+		describe('-> Get labels of the second node', function(){
+			it('should return an array with one label', function(done){
+				db.readLabels(secondNodeId, function(err, result){
+					should.not.exist(err);
+					should.exist(result);
+					result.should.be.an.instanceOf(Array);
+					result.should.have.lengthOf(1);
+					result.should.include('User');
+					done();
+				});
+			});
+		});
+
+		describe('-> Get labels of the third node', function(){
+			it('should return an array with three labels', function(done){
+				db.readLabels(thirdNodeId, function(err, result){
+					should.not.exist(err);
+					should.exist(result);
+					result.should.be.an.instanceOf(Array);
+					result.should.have.lengthOf(3);
+					result.should.include('User');
+					result.should.include('Student');
+					result.should.include('Man');
+					done();
+				});
+			});
+		});
+
+        // Remove these three nodes afterwards
+		after(function(done){
+			db.deleteNode(node_id, function(err, result){
+				db.deleteNode(secondNodeId, function(err, result){
+					db.deleteNode(thirdNodeId, function(err, result){
+						done();
+					});
+				});
+			});
+		});
 
         var second_node_id;
 
-        describe('-> A node with properties containging Unicode characters', function(){
+        describe('-> A node with properties containing Unicode characters', function(){
             it('should return the JSON for that node', function(done){
-                db.insertNode({name:'fööbar'}, function(err, result){
-
+                db.insertNode({name:'√ fööbar √'}, function(err, result){
                     second_node_id = result.id;
-
                     should.exist(result);
-                    result.data.name.should.equal('fööbar');
+                    result.data.name.should.equal('√ fööbar √');
                     result.id.should.not.equal('');
                     done();
                 });
@@ -75,9 +145,11 @@ describe('Testing Node specific operations for Neo4j', function(){
         });
     });
 
+/* END => Create a Node */
+
+/* START => Delete a Node */
 
     describe('=> Delete a Node', function(){
-
         var node_id;
 
         // Insert a Node.
@@ -111,11 +183,13 @@ describe('Testing Node specific operations for Neo4j', function(){
                 done();
             });
         });
-
     });
 
-    describe('=> Read a Node', function(){
+/* END => Delete a Node */
 
+/* START => Read a Node */
+
+    describe('=> Read a Node', function(){
         var node_id;
 
         //Insert a Node.
@@ -151,8 +225,11 @@ describe('Testing Node specific operations for Neo4j', function(){
                 });
             });
         });
-
     });
+
+/* END => Read a Node */
+
+/* START => Update a Node */
 
     describe('=> Update a Node', function(){
         var node_id;
@@ -209,8 +286,11 @@ describe('Testing Node specific operations for Neo4j', function(){
                 done();
             });
         });
-
     });
+
+/* END => Update a Node */
+
+/* START => Insert a Relationship */
 
     describe('=> Insert a Relationship', function(){
 
@@ -296,8 +376,11 @@ describe('Testing Node specific operations for Neo4j', function(){
                 });
             });
         });
-
     });
+
+/* END => Insert a Relationship */
+
+/* START => Delete a Relationship */
 
     describe('=> Delete a Relationship', function(){
 
@@ -347,6 +430,8 @@ describe('Testing Node specific operations for Neo4j', function(){
             });
         });
     });
+
+/* END => Delete a Relationship */
 
     describe('=> Read a Relationship', function(){
         describe('-> Read a non-existing Relationship', function(){
@@ -468,7 +553,9 @@ describe('Testing Node specific operations for Neo4j', function(){
                 provider: 'lucene'
             }  
         };
-        
+        var test_index3_label = 'Person';
+        var test_index3_property = 'firstname'; // only one property supported right now
+
         describe('-> Insert a non existing index without configuration', function(){
             it('should return the index', function(done){
                 db.insertNodeIndex(test_index1, function(err, result){
@@ -490,29 +577,70 @@ describe('Testing Node specific operations for Neo4j', function(){
                 });
             });
         });
+
+        /*	Create an index on a property of a label 
+			Example:
+			Create an index on the first name and last name of a person.
+				insertLabelIndex('Person', 'firstname', callback);
+				returns {
+						  "label" : "Person",
+						  "property-keys" : [ "firstname" ]
+						}
+			Note:
+			Compound indexes are not yet supported, only one property per index is allowed.
+			So ['firstname', 'lastname'] is not supported yet. */
+
+        describe('-> Insert a non existing index on ONLY ONE property of a label', function(){
+            it('should return the index', function(done){
+                db.insertLabelIndex(test_index3_label, test_index3_property, function(err, result){
+                    should.not.exist(err);
+                    should.exist(result);
+                    result.should.have.property('label','Person');
+                    result.should.have.property('property-keys');                    
+                    result['property-keys']
+                    done();
+                });
+            });
+        });
         
         after(function(done){
             db.deleteIndex(test_index2, function(err, result){
                 if (err) throw err;
                 db.deleteIndex({type: 'node', index: test_index1}, function(err, result){
                     if (err) throw err;
-                    done();
+					db.deleteLabelIndex(test_index3_label, test_index3_property, function(err, result){
+						if (err) throw err;
+						done();
+                	});
                 });
             });
         });
-    });
-    
+    }); // END => Insert an Index
+
+/* START => List indexes */
+
     describe('=> List indexes', function(){
+    	var label = 'City';
+    	var propertyOne = 'postalcode';
+    	var propertyTwo = 'name';
+
         before(function(done){
             db.insertIndex({type: 'node', index: 'list_test_index'}, function(err, result){
                 if (err) throw err;
-                done();
+                /* Create an index on postalcode & an index on name of a City */
+                db.insertLabelIndex('City', 'postalcode', function(err, result){
+                	if (err) throw err;
+                	db.insertLabelIndex('City', 'name', function(err, result){
+                		if (err) throw err;
+                		done();
+            		});
+            	});
             });
         });
         
         describe('-> List all existing indexes', function(){
             it('should return the indexes', function(done){
-                db.listIndexes('node', function(err, result){
+                db.listNodeIndexes(function(err, result){
                     should.not.exist(err);
                     result.list_test_index.template.should.equal('http://localhost:7474/db/data/index/node/list_test_index/{key}/{value}');
                     result.list_test_index.provider.should.equal('lucene');
@@ -521,22 +649,50 @@ describe('Testing Node specific operations for Neo4j', function(){
                 });
             });
         });
+
+        describe('-> List indexes for a label', function(){
+            it('should return the indexes of that label', function(done){
+                db.listLabelIndexes(label, function(err, result){
+					should.not.exist(err);
+					should.exist(result);
+					result.should.be.an.instanceOf(Array);
+					result.should.have.lengthOf(2);
+                    done();
+                });
+            });
+        });
         
-        after(function(done){
-            db.deleteIndex({type: 'node', index: 'list_test_index'}, function(err, result){
-                if (err) throw err;
-                done(); 
+		after(function(done){
+			db.deleteIndex({type: 'node', index: 'list_test_index'}, function(err, result){
+				if (err) throw err;
+				db.deleteLabelIndex(label, propertyOne, function(err, result){
+					if (err) throw err;
+					db.deleteLabelIndex(label, propertyTwo, function(err, result){
+						if (err) throw err;
+						done(); 
+					});
+				});
             });
         });
     });
-    
+
+/* END => List indexes */
+
+/* START => Delete an Index -------*/
+
     describe('=> Delete an Index', function(){
+    	var label = 'City';
+    	var property = 'postalcode';
+
         before(function(done){
             db.insertNodeIndex('delete_test_index', function(err, result){
-                if (err) throw err;
-                done();
-            });
-        });
+				if (err) throw err;
+				db.insertLabelIndex(label, property, function(err, result){
+					if (err) throw err;
+					done();
+				});
+			});
+		});
 
         describe('-> Delete existing node', function(){
             it('should delete the node', function(done){
@@ -546,8 +702,30 @@ describe('Testing Node specific operations for Neo4j', function(){
                     done();
                 });
             });
+        });       
+
+        describe('-> Delete existing label index', function(){
+            it('should delete the label index for that property and return true', function(done){
+                db.deleteLabelIndex(label, property, function(err, result){
+                    should.not.exist(err);
+                    result.should.equal(true);
+                    done();
+                });
+            });
+        });
+
+        describe('-> Delete non-existing label index', function(){
+            it('should return false because index does not exist', function(done){
+                db.deleteLabelIndex(label, property, function(err, result){
+                    should.not.exist(err);
+                    result.should.equal(false);
+                    done();
+                });
+            });
         });
     });
+
+/* END => Delete an Index -------*/
 
     describe('=> Add a Node to an Index', function(){
         root_node_id = null;
@@ -590,7 +768,37 @@ describe('Testing Node specific operations for Neo4j', function(){
             });
         });
     });
-    
+
+/*
+ describe('=> Add a Label to a Node', function(){
+		var nodeId;
+		before(function(done){            
+			db.insertNode({name:'Bruxelles'}, function(err, node){
+				nodeId = node.id;
+                done();
+            });            
+        });
+
+        describe('-> Add a non-existing Node to an Index', function(){
+            it('should throw an error', function(done){
+                db.addNodeToIndex(99999, 'add_node_test_index', 'test_index_key', 'test_index_value', function(err, result){
+                    should.exist(err);
+                    should.not.exist(result);
+                    done();
+                });
+            });
+        });
+
+  
+
+        after(function(done){
+            db.deleteNode(root_node_id, function(err, result){
+                if (err) throw err;
+                done();
+            });
+        });
+    }); 
+    */
     // describe('=> Remove all ')
 
     /* ADVANCED FUNCTIONS ---------- */
@@ -855,7 +1063,7 @@ describe('Testing Node specific operations for Neo4j', function(){
 
         describe('-> Run a cypher query against a non existing node', function(){
             it('should return an error since node does not exist', function(done){
-                db.cypherQuery("start x=node(100) return x", function(err, result){
+                db.cypherQuery("start x=node(100) return x", null, function(err, result){
                     should.exist(err);
                     should.not.exist(result);
                     done();
@@ -865,7 +1073,7 @@ describe('Testing Node specific operations for Neo4j', function(){
 
         describe('-> Run the cypher query from issue 2 from @glefloch against non existing nodes', function(done){
             it('should return a error since the nodes do not exist', function(done){
-                db.cypherQuery("START d=node(100), e=node(102) MATCH p=shortestPath(d -[*..15]-> e) RETURN p", function(err, result){
+                db.cypherQuery("START d=node(100), e=node(102) MATCH p=shortestPath(d -[*..15]-> e) RETURN p", null, function(err, result){
                     should.exist(err);
                     should.not.exist(result);
                     done();
@@ -875,7 +1083,7 @@ describe('Testing Node specific operations for Neo4j', function(){
 
         describe('-> Run the cypher query from issue 8 by @electrichead against non existing nodes', function(done){
             it('should return null since no data matches the query', function(done){
-                db.cypherQuery("start a=node(*) with a match a-[r1?:RELATED_TO]->o return a.name,o.name", function(err, result){
+                db.cypherQuery("start a=node(*) with a match a-[r1?:RELATED_TO]->o return a.name,o.name", null, function(err, result){
                     should.not.exist(err);
                     should.exist(result);
                     result.data.length.should.equal(0);
@@ -913,10 +1121,11 @@ describe('Testing Node specific operations for Neo4j', function(){
                 });
             });
         });
-
+        
         describe('-> Run a cypher query against an existing root node', function(){
             it('should return a dataset with a single node', function(done){
-                db.cypherQuery("START user = node(" + root_node_id + ") RETURN user", function(err, result){
+                db.cypherQuery("START user = node({id}) RETURN user", { id: root_node_id }, function(err, result){
+                	//console.log('RESULT IS: ' + util.inspect(result));
                     should.not.exist(err);
                     result.data.length.should.equal(1);
                     result.data[0].id.should.equal(root_node_id);
@@ -928,7 +1137,7 @@ describe('Testing Node specific operations for Neo4j', function(){
 
         describe('-> Run a cypher query against root_node retrieving all nodes related to it with a RELATED_TO type relationship', function(done){
             it('should return a dataset with 2 nodes', function(done){
-                db.cypherQuery("START user = node(" + root_node_id + ") MATCH user-[:RELATED_TO]->friends RETURN friends", function(err, result){
+                db.cypherQuery("START user = node({id}) MATCH user-[:RELATED_TO]->friends RETURN friends", { id: root_node_id }, function(err, result){
                     should.not.exist(err);
                     result.data.length.should.equal(2);
                     result.columns.length.should.equal(1);
@@ -941,7 +1150,8 @@ describe('Testing Node specific operations for Neo4j', function(){
 
         describe('-> Run the cypher query from issue 2 from @glefloch', function(done){
             it('should return a valid response', function(done){
-                db.cypherQuery("START d=node(" + root_node_id + "), e=node(" + other_node1_id + ") MATCH p=shortestPath(d -[*..15]-> e) RETURN p", function(err, result){
+                db.cypherQuery("START d=node({dId}), e=node({eId}) MATCH p=shortestPath(d -[*..15]-> e) RETURN p", 
+                	{ dId: root_node_id, eId: other_node1_id }, function(err, result){
                     should.not.exist(err);
                     result.data.length.should.equal(1);
                     result.columns.length.should.equal(1);
@@ -956,7 +1166,7 @@ describe('Testing Node specific operations for Neo4j', function(){
 
         describe('-> Run the cypher query from issue 8 by @electrichead against non existing nodes', function(done){
             it('should return a valid response', function(done){
-                db.cypherQuery("START a=node(*) match a-[r1?:RELATED_TO]->o return a.name,o.name", function(err, result){
+                db.cypherQuery("START a=node(*) match a-[r1?:RELATED_TO]->o RETURN a.name,o.name", function(err, result){
                     should.not.exist(err);
                     should.exist(result);
                     result.data.length.should.equal(8);
@@ -974,7 +1184,7 @@ describe('Testing Node specific operations for Neo4j', function(){
         describe('-> Run the cypher query from issue 7 from @Zaxnyd', function(done){
             it('should return a node and the relationships', function(done){
                 db.cypherQuery("START r=relationship(*) MATCH (s)-[r]->(t) RETURN *", function(err, result){
-                    should.not.exist(err);
+                	should.not.exist(err);
                     result.data.length.should.equal(6);
                     result.columns.length.should.equal(3);
                     done();
