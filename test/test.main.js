@@ -967,11 +967,6 @@ describe('Testing Node specific operations for Neo4j', function(){
 
 /* END => Replace all Labels on a Node -------*/
 
-
-
-
-
-
     // describe('=> Remove all ')
 
     /* ADVANCED FUNCTIONS ---------- */

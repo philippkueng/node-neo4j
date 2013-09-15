@@ -506,15 +506,15 @@ Neo4j.prototype.addLabelsToNode = function(nodeId, labels, callback){
 	replaceLabelsFromNode(77, ['User', ''], callback);
 	replaceLabelsFromNode(77, null, callback); 
 		returns an error! no empty string allowed	*/
-
+		
 Neo4j.prototype.replaceLabelsFromNode = function(nodeId, labels, callback){
 	var errorMsg = '"Labels" should be a non-empty string or an array of non-empty strings.';
 
 	if(typeof labels === 'string') {
-    	if(labels === '')
-    		return callback(new Error(errorMsg), null);
-    	labels = [labels];
-    }
+		if(labels === '')
+			return callback(new Error(errorMsg), null);
+		labels = [labels];
+	}
 
 	if(labels instanceof Array) {
 		request
