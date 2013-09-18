@@ -1,9 +1,9 @@
 var should = require('should'),
+	Step = require('step'),
 	neo4j = require('../main'),
 	util = require('util');
 
 var url = 'http://localhost:7474';
-
 var db = new neo4j(url);
 
 function debug (obj) {
@@ -22,28 +22,22 @@ db.deleteNode(0, function(err, node){
 	console.log('node 0 removed');
 });
 
-
-/*
- *
- * -------------------------------------------
- * RUN TESTS WITH AGAINST EMPTY NEO4J INSTANCE
- * -------------------------------------------
- *
- */
+console.log('* -------------------------------------------');
+console.log('* RUN TESTS WITH AGAINST EMPTY NEO4J INSTANCE');
+console.log('* SOME TESTS MAY FAIL BECAUSE SOME NEW FEATURES (INDEXES ON LABELS, LABELS, CONTRAINTS, STREAMING, ...) ARE SPECIFIC FOR VERSION NEO4J 2.0');
+console.log('* -------------------------------------------');
 
 describe('Testing Node specific operations for Neo4j', function(){
 
 // TODO: FIX BUG: numbers are failing when no label is provided
 // using cypher query works, posting json doesn't work ... why? 
 	describe('=> Create a Node', function(){
-		var node_id;
-		var secondNodeId;
-		var thirdNodeId;
+		var firstNodeId, secondNodeId, thirdNodeId, fourthNodeId, fifthNodeId;	
 
 		describe('-> A first simple valid node insertion with no labels', function(){
-			it('should return the JSON for the first node', function(done){
+			it('should return the JSON for this node', function(done){
 				db.insertNode({name:'foobar', level: 7}, function(err, result){
-					node_id = result.id;
+					firstNodeId = result.id;
 					should.not.exist(err);
 					should.exist(result);
 					result.data.name.should.equal('foobar');
@@ -55,10 +49,26 @@ describe('Testing Node specific operations for Neo4j', function(){
 			});
 		});
 
-		describe('-> A second valid node insertion with one label', function(){
-			it('should return the JSON for the second node', function(done){
-				db.insertNode({ name:'Philipp', level: 7 },['User'], function(err, result){					
+		describe('-> A second valid node insertion with one label (string)', function(){
+			it('should return the JSON for this node', function(done){
+				db.insertNode({ name:'Darth Vader', level: 99 }, 'User', function(err, result){					
 					secondNodeId = result.id;
+					should.not.exist(err);
+					should.exist(result);
+					should.exist(result.data);
+					result.data.name.should.equal('Darth Vader');
+					result.data.level.should.be.a('number');
+					result.data.level.should.equal(99);
+					result.id.should.be.a('number');
+					done();
+				});
+			});
+		});
+
+		describe('-> A third valid node insertion with one label (array with one string)', function(){
+			it('should return the JSON for this node', function(done){
+				db.insertNode({ name:'Philipp', level: 7 },['User'], function(err, result){					
+					thirdNodeId = result.id;
 					should.not.exist(err);
 					should.exist(result);
 					should.exist(result.data);
@@ -71,10 +81,10 @@ describe('Testing Node specific operations for Neo4j', function(){
 			});
 		});
 
-		describe('-> A third valid node insertion with three labels', function(){
-			it('should return the JSON for the third node', function(done){
+		describe('-> A fourth valid node insertion with three labels', function(){
+			it('should return the JSON for this node', function(done){
 				db.insertNode({ name:'Kristof' },['User','Student','Man'], function(err, result){					
-					thirdNodeId = result.id;
+					fourthNodeId = result.id;
 					should.not.exist(err);
 					should.exist(result);
 					result.data.name.should.equal('Kristof');
@@ -86,7 +96,7 @@ describe('Testing Node specific operations for Neo4j', function(){
 
 		describe('-> An invalid node insertion with wrong "labels" parameter', function(){
 			it('should give an error', function(done){
-				db.insertNode({ name:'Mister Error' }, ':Must:Be:Array', function(err, result){					
+				db.insertNode({ name:'Mister Error' }, ':Must:Be:Array:Or:String', function(err, result){					
 					should.exist(err);
 					should.not.exist(result);					
 					done();
@@ -107,9 +117,9 @@ describe('Testing Node specific operations for Neo4j', function(){
 			});
 		});
 
-		describe('-> Get labels of the third node', function(){
+		describe('-> Get labels of the fourth node', function(){
 			it('should return an array with three labels', function(done){
-				db.readLabels(thirdNodeId, function(err, result){
+				db.readLabels(fourthNodeId, function(err, result){
 					should.not.exist(err);
 					should.exist(result);
 					result.should.be.an.instanceOf(Array);
@@ -122,26 +132,10 @@ describe('Testing Node specific operations for Neo4j', function(){
 			});
 		});
 
-		// Remove these three nodes afterwards
-		after(function(done){
-			db.deleteNode(node_id, function(err, result){
-				if(err) throw err;
-				db.deleteNode(secondNodeId, function(err, result){
-					if(err) throw err;
-					db.deleteNode(thirdNodeId, function(err, result){
-						if(err) throw err;
-						done();
-					});
-				});
-			});
-		});
-
-		var second_node_id;
-
 		describe('-> A node with properties containing Unicode characters', function(){
 			it('should return the JSON for that node', function(done){
 				db.insertNode({name:'√ fööbar √'}, function(err, result){
-					second_node_id = result.id;
+					fifthNodeId = result.id;
 					should.exist(result);
 					result.data.name.should.equal('√ fööbar √');
 					result.id.should.be.a('number');
@@ -150,10 +144,21 @@ describe('Testing Node specific operations for Neo4j', function(){
 			});
 		});
 
+		// Remove these four nodes afterwards
 		after(function(done){
-			db.deleteNode(second_node_id, function(err, result){
-				done();
-			});
+			Step(
+				function deleteNodes() {
+					db.deleteNode(firstNodeId, this.parallel());
+					db.deleteNode(secondNodeId, this.parallel());
+					db.deleteNode(thirdNodeId, this.parallel());
+					db.deleteNode(fourthNodeId, this.parallel());
+					db.deleteNode(fifthNodeId, this.parallel());
+				},
+				function afterDelete(err) {
+					if (err) throw err;
+					done();
+				}
+			);
 		});
 	}); /* END => Create a Node */
 
@@ -582,12 +587,14 @@ describe('Testing Node specific operations for Neo4j', function(){
 
 		describe('-> Insert a non existing index on ONLY ONE property of a label', function(){
 			it('should return the index', function(done){
-				db.insertLabelIndex(test_index3_label, test_index3_property, function(err, result){
+				db.insertLabelIndex(test_index3_label, test_index3_property, function(err, result){					
 					should.not.exist(err);
 					should.exist(result);
 					result.should.have.property('label','Person');
-					result.should.have.property('property-keys');
-					result['property-keys']
+					result.should.have.property('property-keys');					
+					result['property-keys'].should.be.an.instanceOf(Array);					
+					result['property-keys'].should.have.lengthOf(1);
+					result['property-keys'].should.include('firstname');		
 					done();
 				});
 			});
@@ -749,7 +756,7 @@ describe('Testing Node specific operations for Neo4j', function(){
 				done();
 			});
 		});
-	}); /* END => Add a Node to an Index -------*/
+	}); /* END => Add a Node to an Index */
 
 	describe('=> Add one or multiple Labels to a Node', function(){
 		var nodeId;
@@ -982,8 +989,7 @@ describe('Testing Node specific operations for Neo4j', function(){
 
 			describe('-> Remove label from Node, given an invalid node id: null', function(){
 				it('should return an error', function(done){
-					db.deleteLabelFromNode(null, 'Capital', function(err, result){
-						console.log('ERROR: ' + util.inspect(result));
+					db.deleteLabelFromNode(null, 'Capital', function(err, result){						
 						should.exist(err);
 						should.not.exist(result);
 						done();
@@ -1247,6 +1253,74 @@ describe('Testing Node specific operations for Neo4j', function(){
 				});
 		});
 	}); /* END => listAllLabels:  List all labels -------*/
+
+	/*	Create a uniqueness constraint on a property.
+		Example:
+		createUniquenessContstraint('User','email', callback);
+			returns 	{
+						  "label" : "User",
+						  "type" : "UNIQUENESS",
+						  "property-keys" : [ "email" ]
+						}									*/
+
+	describe('=> createUniquenessContstraint: Create a uniqueness constraint on a property', function(){
+		var nodeIdOne;
+		var nodeIdTwo;
+
+		// Create two nodes with a different email
+		before(function(done){
+			db.insertNode({ email:'node_one@neo4j.be' }, 'User', function(err, node){
+				if (err) throw err;
+				nodeIdOne = node.id;
+				db.insertNode({ email:'node_two@neo4j.be' }, 'User', function(err, node){
+					if (err) throw err;
+					nodeIdTwo = node.id;
+					done();
+				});
+			});
+		});
+		
+		describe('-> Create a new uniqueness constraint on a property', function(){
+			it('should return JSON for this constraint', function(done){				
+				db.createUniquenessContstraint('User', 'email', function(err, result){					
+					should.not.exist(err);
+					should.exist(result);
+					result.should.have.property('label','User');
+					result.should.have.property('type','UNIQUENESS');
+					result.should.have.property('property-keys');
+					result['property-keys'].should.be.an.instanceOf(Array);
+					result['property-keys'].should.have.lengthOf(1);
+					result['property-keys'].should.include('email');
+					done();
+				});
+			});
+		});
+
+		describe('-> Create an existing uniqueness constraint on a property', function(){
+			it('should return false because the constraint already exists', function(done){				
+				db.createUniquenessContstraint('User', 'email', function(err, result){					
+					should.not.exist(err);
+					should.exist(result);
+					result.should.equal(false);							
+					done();
+				});
+			});
+		});
+
+		after(function(done){
+			Step(
+				function deleteNodes() {
+					db.deleteNode(nodeIdOne, this.parallel());
+					db.deleteNode(nodeIdTwo, this.parallel());
+					db.dropUniquenessContstraint('User', 'email', this.parallel())
+				},
+				function afterDelete(err) {
+					if (err) throw err;
+					done();
+				}
+			);
+		});		
+	}); /* END => createUniquenessContstraint:  Create a uniqueness constraint on a property */
 
 	// describe('=> Remove all ')
 

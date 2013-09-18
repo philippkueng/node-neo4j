@@ -14,7 +14,7 @@ function Neo4j(url){
 	}
 };
 
-/*	Insert a Node --------- 
+/*	Insert a Node
 	Examples:
 	Insert a Node with no label:
 		insertNode({ name: 'Kristof' }, callback);
@@ -41,6 +41,15 @@ Neo4j.prototype.insertNode = function(node, labels, callback){
 		
 			});
 	} else {
+		var val = new Validator();
+
+		if(val.labels(labels).hasErrors)
+			return callback(val.error(), null);
+
+		// Flexibility: make array of single string
+		if(typeof labels === 'string')
+			labels = [labels];
+
 		// Insert node and label(s) with cypher query
 		if(labels instanceof Array){ 
 			var query = 'CREATE (data'+  cypher.stringify(labels) + ' {' + cypher.params(node) + '}) RETURN data';		
@@ -55,9 +64,9 @@ Neo4j.prototype.insertNode = function(node, labels, callback){
 	}	
 };
 
-/*	Get an array of labels of a Node ---------
+/*	Get an array of labels of a Node
 	Example:
-		readLabels(77, callback); 
+	readLabels(77, callback); 
 		returns ['User','Student','Man']
 */
 
@@ -622,13 +631,13 @@ Neo4j.prototype.readNodesWithLabel = function(label, callback){
 		});
 };
 
-/*	Get all nodes with a label
-	Given a label (non-empty string)
-	returns an array of nodes with that label
+/*	Get all nodes with a label an a property
+	Given a label (non-empty string) and one property in json
+	returns an array of nodes with that label and property
 	Examples:
-	readNodesWithLabelAndProperty('User','firstname' callback);
-		returns an array with nodes with the label 'User' and property 'firstname'
-	readNodesWithLabelAndProperty('DoesNotExist', 'name' callback); 
+	readNodesWithLabelAndProperty('User',{ firstname: 'Sam' }, callback);
+		returns an array with nodes with the label 'User' and property firstname='Sam'
+	readNodesWithLabelAndProperty('User', { 'name': 'DoesNotExist'}, callback); 
 		returns an empty array	 		*/
 
 Neo4j.prototype.readNodesWithLabelAndProperties = function(label, properties, callback){
@@ -640,8 +649,7 @@ Neo4j.prototype.readNodesWithLabelAndProperties = function(label, properties, ca
 		return callback(val.error(), null);
 	
 	var props = cypher.jsonToURL(properties);
-	console.log('PROPS: ' + props);
-	console.log('URL: ' + this.url + '/db/data/label/' + label + '/nodes?' + props);
+	
 	request
 		.get(this.url + '/db/data/label/' + label + '/nodes?' + props)
 		.set('Accept', 'application/json')
@@ -674,7 +682,7 @@ Neo4j.prototype.readNodesWithLabelAndProperties = function(label, properties, ca
 };
 /*	List all labels.
 	Example:
-		listAllLabels(callback);
+	listAllLabels(callback);
 		returns [ "User", "Person", "Male", "Animal" ] */
 
 Neo4j.prototype.listAllLabels = function(callback){
@@ -695,6 +703,75 @@ Neo4j.prototype.listAllLabels = function(callback){
 	});
 };
 
+/* CONSTRAINTS */
+
+/*	Create a uniqueness constraint on a property.
+	Example:
+	createUniquenessContstraint('User','email', callback);
+		returns 	{
+					  "label" : "User",
+					  "type" : "UNIQUENESS",
+					  "property-keys" : [ "email" ]
+					}			*/
+
+Neo4j.prototype.createUniquenessContstraint = function(label, property_key, callback){	
+	var val = new Validator();
+	val.label(label).property(property_key);
+	
+	if(val.hasErrors)
+		return callback(val.error(), null);
+
+	request
+		.post(this.url + '/db/data/schema/constraint/' + label + '/uniqueness')
+		.send({ 'property_keys' : [property_key] })
+		.set('Accept', 'application/json')
+		.end(function(result){
+			switch(result.statusCode){
+				case 200:
+					callback(null, result.body);
+					break;
+				case 409:
+					callback(null, false); // Constraint already exists
+					break;					
+				default:
+					callback(new Error('HTTP Error ' + result.statusCode + ' when creating a uniqueness contraint.'), null);
+			} 
+		});
+};
+
+/*	Drop uniqueness constraint for a label and a property.
+	Example:
+	dropContstraint('User','email', callback);
+		returns 	{
+					  "label" : "User",
+					  "type" : "UNIQUENESS",
+					  "property-keys" : [ "email" ]
+					}			*/
+
+Neo4j.prototype.dropUniquenessContstraint = function(label, property_key, callback){	
+	var val = new Validator();
+	val.label(label).property(property_key);
+	
+	if(val.hasErrors)
+		return callback(val.error(), null);
+
+	request
+		.del(this.url + '/db/data/schema/constraint/' + label + '/uniqueness/' + property_key)
+		.send({ 'property_keys' : [property_key] })
+		.set('Accept', 'application/json')
+		.end(function(result){
+			switch(result.statusCode){
+				case 204:
+					callback(null, true); // Constraint was deleted.
+					break;
+				case 404:
+					callback(null, false); // Constraint doesn't exist.
+					break;
+				default:
+					callback(new Error('HTTP Error ' + result.statusCode + ' when removing a uniqueness contraint.'), null);
+			} 
+		});
+};
 
 
 /* ADVANCED FUNCTIONS ---------- */
