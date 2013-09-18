@@ -33,7 +33,6 @@ db.deleteNode(0, function(err, node){
 
 describe('Testing Node specific operations for Neo4j', function(){
 
-/* START => Create a Node */
 // TODO: FIX BUG: numbers are failing when no label is provided
 // using cypher query works, posting json doesn't work ... why? 
 	describe('=> Create a Node', function(){
@@ -126,8 +125,11 @@ describe('Testing Node specific operations for Neo4j', function(){
 		// Remove these three nodes afterwards
 		after(function(done){
 			db.deleteNode(node_id, function(err, result){
+				if(err) throw err;
 				db.deleteNode(secondNodeId, function(err, result){
+					if(err) throw err;
 					db.deleteNode(thirdNodeId, function(err, result){
+						if(err) throw err;
 						done();
 					});
 				});
@@ -153,11 +155,7 @@ describe('Testing Node specific operations for Neo4j', function(){
 				done();
 			});
 		});
-	});
-
-/* END => Create a Node */
-
-/* START => Delete a Node */
+	}); /* END => Create a Node */
 
 	describe('=> Delete a Node', function(){
 		var node_id;
@@ -193,11 +191,7 @@ describe('Testing Node specific operations for Neo4j', function(){
 				done();
 			});
 		});
-	});
-
-/* END => Delete a Node */
-
-/* START => Read a Node */
+	}); /* END => Delete a Node */
 
 	describe('=> Read a Node', function(){
 		var node_id;
@@ -220,7 +214,7 @@ describe('Testing Node specific operations for Neo4j', function(){
 			});
 		});
 
-		// Remove Node afterwards.
+		// Remove Node afterwards
 		after(function(done){
 			db.deleteNode(node_id, function(err, result){
 				done();
@@ -235,11 +229,7 @@ describe('Testing Node specific operations for Neo4j', function(){
 				});
 			});
 		});
-	});
-
-/* END => Read a Node */
-
-/* START => Update a Node */
+	}); /* END => Read a Node */
 
 	describe('=> Update a Node', function(){
 		var node_id;
@@ -296,11 +286,7 @@ describe('Testing Node specific operations for Neo4j', function(){
 				done();
 			});
 		});
-	});
-
-/* END => Update a Node */
-
-/* START => Insert a Relationship */
+	}); /* END => Update a Node */
 
 	describe('=> Insert a Relationship', function(){
 
@@ -386,11 +372,7 @@ describe('Testing Node specific operations for Neo4j', function(){
 				});
 			});
 		});
-	});
-
-/* END => Insert a Relationship */
-
-/* START => Delete a Relationship */
+	}); /* END => Insert a Relationship */
 
 	describe('=> Delete a Relationship', function(){
 
@@ -439,9 +421,7 @@ describe('Testing Node specific operations for Neo4j', function(){
 				});
 			});
 		});
-	});
-
-/* END => Delete a Relationship */
+	}); /* END => Delete a Relationship */ 
 
 	describe('=> Read a Relationship', function(){
 		describe('-> Read a non-existing Relationship', function(){
@@ -491,7 +471,7 @@ describe('Testing Node specific operations for Neo4j', function(){
 				});
 			});
 		});
-	});
+	}); /* END => Read a Relationship */ 
 
 	describe('=> Update a Relationship', function(){
 
@@ -550,7 +530,7 @@ describe('Testing Node specific operations for Neo4j', function(){
 				});
 			});
 		});
-	});
+	}); /* END => Update a Relationship */ 
 	
 	describe('=> Insert an Index', function(){
 		
@@ -625,9 +605,7 @@ describe('Testing Node specific operations for Neo4j', function(){
 				});
 			});
 		});
-	}); // END => Insert an Index
-
-/* START => List indexes */
+	}); /* END => Insert an Index */
 
 	describe('=> List indexes', function(){
 		var label = 'City';
@@ -684,11 +662,7 @@ describe('Testing Node specific operations for Neo4j', function(){
 				});
 			});
 		});
-	});
-
-/* END => List indexes */
-
-/* START => Delete an Index -------*/
+	}); /* END => List indexes */
 
 	describe('=> Delete an Index', function(){
 		var label = 'City';
@@ -733,11 +707,7 @@ describe('Testing Node specific operations for Neo4j', function(){
 				});
 			});
 		});
-	});
-
-/* END => Delete an Index -------*/
-
-/* START => Add a Node to an Index -------*/
+	}); /* END => Delete an Index -------*/
 
 	describe('=> Add a Node to an Index', function(){
 		root_node_id = null;
@@ -779,11 +749,7 @@ describe('Testing Node specific operations for Neo4j', function(){
 				done();
 			});
 		});
-	});
-
-/* END => Add a Node to an Index -------*/
-
-/* START => Add one or multiple Labels to a Node -------*/
+	}); /* END => Add a Node to an Index -------*/
 
 	describe('=> Add one or multiple Labels to a Node', function(){
 		var nodeId;
@@ -870,11 +836,7 @@ describe('Testing Node specific operations for Neo4j', function(){
 				done();
 			});
 		});
-	}); 
-
-/* END => Add one or multiple Labels to a Node -------*/
-
-/* START => Replace all Labels on a Node -------*/
+	}); /* END => Add one or multiple Labels to a Node -------*/
 
 	describe('=> Replace all Labels on a Node', function(){
 		var nodeId;
@@ -973,11 +935,7 @@ describe('Testing Node specific operations for Neo4j', function(){
 				done();
 			});
 		});
-	}); 
-
-/* END => Replace all Labels on a Node -------*/
-
-/* START => Remove label from a Node -------*/
+	}); /* END => Replace all Labels on a Node -------*/
 
 	describe('=> deleteLabelFromNode: Remove label from a Node', function(){
 			var nodeId;
@@ -1089,11 +1047,7 @@ describe('Testing Node specific operations for Neo4j', function(){
 					done();
 				});
 			});
-	});
-
-/* END => Remove label from a Node -------*/
-
-/* START => readNodesWithLabel: Get all nodes with a label -------*/
+	}); /* END => Remove label from a Node -------*/
 
 	describe('=> readNodesWithLabel: Get all nodes with a label', function(){
 		var nodeIdOne;
@@ -1145,7 +1099,7 @@ describe('Testing Node specific operations for Neo4j', function(){
 		describe('-> Get nodes with a non-existing label', function(){
 			it('should return no nodes (empty array)', function(done){
 				db.readNodesWithLabel('NotExisting', function(err, result){
-					debug(result);
+					//debug(result);
 					should.not.exist(err);
 					should.exist(result);
 					result.should.be.an.instanceOf(Array);
@@ -1164,11 +1118,7 @@ describe('Testing Node specific operations for Neo4j', function(){
 					});
 				});
 			});
-	});
-
-/* END => readNodesWithLabel: Get all nodes with a label -------*/
-
-/* START => readNodesWithLabelAndProperty:  Get nodes by label and property -------*/
+	}); /* END => readNodesWithLabel: Get all nodes with a label -------*/
 
 	describe('=> readNodesWithLabelAndProperties: Get nodes by label and property', function(){
 		var nodeIdOne;
@@ -1233,7 +1183,7 @@ describe('Testing Node specific operations for Neo4j', function(){
 		describe('-> Get nodes by label and invalid property: string (must be json)', function(){
 			it('should return an error because "property" needs to be json', function(done){
 				db.readNodesWithLabelAndProperties('Belgium', 'Nöt Existing √', function(err, result){
-					debug(err); debug(result);
+					//debug(err); debug(result);
 					should.exist(err);
 					should.not.exist(result);			
 					done();
@@ -1250,9 +1200,53 @@ describe('Testing Node specific operations for Neo4j', function(){
 					});
 				});
 		});
-	});
+	}); /* END => readNodesWithLabelAndProperty:  Get nodes by label and property -------*/
 
-/* END => readNodesWithLabelAndProperty:  Get nodes by label and property -------*/
+	describe('=> listAllLabels:  List all labels', function(){
+		var nodeIdOne;
+		var nodeIdTwo;
+
+		before(function(done){			
+			db.insertNode({name:'Brussels'}, function(err, node){
+				nodeIdOne = node.id;
+				db.addLabelsToNode(nodeIdOne, ['Capital','Belgium'], function(err, result){   
+					if (err) throw err;
+					db.insertNode({ name: 'Ghent', inhabitants: 650000}, function(err, node){
+						nodeIdTwo = node.id;
+						db.addLabelsToNode(nodeIdTwo, ['City','Belgium'], function(err, result){   
+							if (err) throw err;
+							done();
+						});
+					});
+				});
+			});
+		});
+		// TODO: issue, returns labels of non-existing nodes. Why?
+		describe('-> List all labels', function(){
+			it('should return three different labels', function(done){				
+				db.listAllLabels(function(err, result){					
+					should.not.exist(err);
+					should.exist(result);
+					result.should.be.an.instanceOf(Array);
+					result.should.have.lengthOf(3);
+					result.should.include('Capital');
+					result.should.include('City');
+					result.should.include('Belgium');
+					done();
+				});
+			});
+		});
+		
+		after(function(done){
+				db.deleteNode(nodeIdOne, function(err, result){
+					if (err) throw err;
+					db.deleteNode(nodeIdTwo, function(err, result){
+						if (err) throw err;
+						done();
+					});
+				});
+		});
+	}); /* END => listAllLabels:  List all labels -------*/
 
 	// describe('=> Remove all ')
 

@@ -629,20 +629,7 @@ Neo4j.prototype.readNodesWithLabel = function(label, callback){
 	readNodesWithLabelAndProperty('User','firstname' callback);
 		returns an array with nodes with the label 'User' and property 'firstname'
 	readNodesWithLabelAndProperty('DoesNotExist', 'name' callback); 
-		returns an empty array	 
-		http://localhost:7474/db/data/label/Person/nodes?name=%22bob+ross%22
-		*/
-
-function jsonToURL (jsonData) {
-	var result = '';
-	var notFirst = false;
-	for(var key in jsonData){
-		if(notFirst) result += '&'; else notFirst = true;
-		result += encodeURIComponent(key) + '=' + encodeURIComponent(JSON.stringify(jsonData[key]));		
-	}
-	return result;
-}
-
+		returns an empty array	 		*/
 
 Neo4j.prototype.readNodesWithLabelAndProperties = function(label, properties, callback){
 	var that = this;
@@ -652,7 +639,7 @@ Neo4j.prototype.readNodesWithLabelAndProperties = function(label, properties, ca
 	if(val.hasErrors)
 		return callback(val.error(), null);
 	
-	var props = jsonToURL(properties);
+	var props = cypher.jsonToURL(properties);
 	console.log('PROPS: ' + props);
 	console.log('URL: ' + this.url + '/db/data/label/' + label + '/nodes?' + props);
 	request
@@ -685,6 +672,30 @@ Neo4j.prototype.readNodesWithLabelAndProperties = function(label, properties, ca
 			}
 		});
 };
+/*	List all labels.
+	Example:
+		listAllLabels(callback);
+		returns [ "User", "Person", "Male", "Animal" ] */
+
+Neo4j.prototype.listAllLabels = function(callback){
+	request
+	.get(this.url + '/db/data/labels')
+	.set('Accept', 'application/json')
+	.end(function(result){
+		switch(result.statusCode){
+			case 200:
+				callback(null, result.body);
+				break;
+			case 404:
+				callback(null, false);
+				break;
+			default:
+				callback(new Error('HTTP Error ' + result.statusCode + ' when listing all labels.'), null);
+		} 
+	});
+};
+
+
 
 /* ADVANCED FUNCTIONS ---------- */
 
