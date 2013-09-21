@@ -34,16 +34,16 @@ describe('Testing Node specific operations for Neo4j', function(){
 	describe('=> Create a Node', function(){
 		var firstNodeId, secondNodeId, thirdNodeId, fourthNodeId, fifthNodeId;	
 
-		describe('-> A first simple valid node insertion with no labels', function(){
+		describe('-> FIX ME PLEASE: A first simple valid node insertion with no labels', function(){
 			it('should return the JSON for this node', function(done){
-				db.insertNode({name:'foobar', level: 7}, function(err, result){
+				db.insertNode({name:'foobar', level: 7.7}, function(err, result){
 					firstNodeId = result.id;
 					should.not.exist(err);
 					should.exist(result);
 					result.data.name.should.equal('foobar');
-					//result.data.level.should.be.a('number');
-					//result.data.level.should.equal(7);
-					//result.id.should.be.a('number');
+					result.data.level.should.be.a('number');
+					result.data.level.should.equal(7.7);
+					result.id.should.be.a('number');
 					done();
 				});
 			});
@@ -959,7 +959,7 @@ describe('Testing Node specific operations for Neo4j', function(){
 
 			describe('-> Remove label from existing Node', function(){
 				it('should return true if the label was successfully removed', function(done){
-					db.deleteLabelFromNode(nodeId, 'Frietjes', function(err, result){					
+					db.deleteLabelFromNode(nodeId, 'Frietjes', function(err, result){
 						should.not.exist(err);
 						should.exist(result);
 						result.should.equal(true);
@@ -980,7 +980,7 @@ describe('Testing Node specific operations for Neo4j', function(){
 				it('should return false because Node does not exist', function(done){
 					db.deleteLabelFromNode(123456789, 'Capital', function(err, result){
 						should.not.exist(err);
-						should.exist(result);						
+						should.exist(result);
 						result.should.equal(false);
 						done();
 					});
@@ -989,7 +989,7 @@ describe('Testing Node specific operations for Neo4j', function(){
 
 			describe('-> Remove label from Node, given an invalid node id: null', function(){
 				it('should return an error', function(done){
-					db.deleteLabelFromNode(null, 'Capital', function(err, result){						
+					db.deleteLabelFromNode(null, 'Capital', function(err, result){
 						should.exist(err);
 						should.not.exist(result);
 						done();
@@ -1208,7 +1208,7 @@ describe('Testing Node specific operations for Neo4j', function(){
 		});
 	}); /* END => readNodesWithLabelAndProperty:  Get nodes by label and property -------*/
 
-	describe('=> listAllLabels:  List all labels', function(){
+	describe('=> FIX ME PLEASE: listAllLabels:  List all labels', function(){
 		var nodeIdOne;
 		var nodeIdTwo;
 
@@ -1256,7 +1256,7 @@ describe('Testing Node specific operations for Neo4j', function(){
 
 	/*	Create a uniqueness constraint on a property.
 		Example:
-		createUniquenessContstraint('User','email', callback);
+			createUniquenessContstraint('User','email', callback);
 			returns 	{
 						  "label" : "User",
 						  "type" : "UNIQUENESS",
@@ -1282,7 +1282,7 @@ describe('Testing Node specific operations for Neo4j', function(){
 		
 		describe('-> Create a new uniqueness constraint on a property', function(){
 			it('should return JSON for this constraint', function(done){				
-				db.createUniquenessContstraint('User', 'email', function(err, result){					
+				db.createUniquenessContstraint('User', 'email', function(err, result){
 					should.not.exist(err);
 					should.exist(result);
 					result.should.have.property('label','User');
@@ -1319,8 +1319,264 @@ describe('Testing Node specific operations for Neo4j', function(){
 					done();
 				}
 			);
-		});		
+		});
 	}); /* END => createUniquenessContstraint:  Create a uniqueness constraint on a property */
+
+	/*	Get a specific uniqueness constraint for a label and a property
+		Example:
+		readUniquenessConstraint('User','email', callback);
+		returns [ {
+				  "label" : "User",
+				  "property-keys" : [ "email" ],
+				  "type" : "UNIQUENESS"
+				} ]						 		*/
+
+	describe('=> readUniquenessConstraint: Get a specific uniqueness constraint for a label and a property', function(){
+		// Create a constraint on user id and email
+		before(function(done){
+			db.createUniquenessContstraint('User', 'uid', function(err, result){
+				if (err) throw err;
+				db.createUniquenessContstraint('User', 'email', function(err, result){
+					if (err) throw err;
+					done();
+				});
+			});
+		});
+
+		describe('-> Get a specific uniqueness constraint for a label and a property', function(){
+			it('should return an array with one uniqueness constraint', function(done){
+				db.readUniquenessConstraint('User', 'email', function(err, result){
+					should.not.exist(err);
+					should.exist(result);
+					result.should.be.an.instanceOf(Array);
+					result.should.have.lengthOf(1);
+					result[0].should.have.property('label','User');
+					result[0].should.have.property('property-keys');
+					result[0].should.have.property('type','UNIQUENESS');
+					result[0]['property-keys'].should.have.lengthOf(1);
+					result[0]['property-keys'].should.include('email');
+					done();
+				});
+			});
+		});
+
+		describe('-> Get a specific uniqueness constraint for a label and a non-existing property', function(){
+			it('should return false because property does not exist', function(done){
+				db.readUniquenessConstraint('User', 'NotExisting', function(err, result){
+					should.not.exist(err);
+					should.exist(result);
+					result.should.equal(false);				
+					done();
+				});
+			});
+		});
+
+		describe('-> Get a specific uniqueness constraint for a non-existing label and a property', function(){
+			it('should return false because property does not exist', function(done){
+				db.readUniquenessConstraint('NotExisting', 'email', function(err, result){
+					should.not.exist(err);
+					should.exist(result);
+					result.should.equal(false);				
+					done();
+				});
+			});
+		});
+
+		after(function(done){
+			Step(
+				function deleteNodes() {
+					db.dropUniquenessContstraint('User', 'uid', this.parallel())
+					db.dropUniquenessContstraint('User', 'email', this.parallel())
+				},
+				function afterDelete(err) {
+					if (err) throw err;
+					db.listAllConstraints(function(err, result){
+						should.not.exist(err);
+						should.exist(result);
+						result.should.be.an.instanceOf(Array);
+						result.should.have.lengthOf(0);					
+						done();
+					});
+				}
+			);
+		});
+	}); /* END => readUniquenessConstraint: Get a specific uniqueness constraint for a label and a property */
+	
+	/*	Get all uniqueness constraints for a label.
+		returns an array of all uniqueness constraints.
+		Example:
+			listAllUniquenessConstraintsForLabel(callback);
+			returns [ {
+					  "label" : "User",
+					  "property-keys" : [ "uid" ],
+					  "type" : "UNIQUENESS"
+					}, {
+					  "label" : "User",
+					  "property-keys" : [ "email" ],
+					  "type" : "UNIQUENESS"
+					} ]								*/
+
+	describe('=> listAllUniquenessConstraintsForLabel: Get all uniqueness constraints for a label', function(){
+		// Create a constraint on user id and email
+		before(function(done){
+			db.createUniquenessContstraint('User', 'uid', function(err, result){
+				if (err) throw err;
+				db.createUniquenessContstraint('User', 'email', function(err, result){
+					if (err) throw err;
+					done();
+				});
+			});
+		});
+
+		describe('-> Get all uniqueness constraints', function(){
+			it('should return an array with two uniqueness constraints', function(done){
+				db.listAllUniquenessConstraintsForLabel('User', function(err, result){
+					should.not.exist(err);
+					should.exist(result);
+					result.should.be.an.instanceOf(Array);
+					result.should.have.lengthOf(2);
+					result[0].should.have.property('label');
+					result[0].should.have.property('property-keys');
+					result[0].should.have.property('type','UNIQUENESS');
+					result[0]['property-keys'].should.have.lengthOf(1);
+					result[1].should.have.property('label');
+					result[1].should.have.property('property-keys');
+					result[1].should.have.property('type','UNIQUENESS');
+					result[1]['property-keys'].should.have.lengthOf(1);
+					done();
+				});
+			});
+		});
+
+		after(function(done){
+			Step(
+				function deleteNodes() {
+					db.dropUniquenessContstraint('User', 'uid', this.parallel())
+					db.dropUniquenessContstraint('User', 'email', this.parallel())
+				},
+				function afterDelete(err) {
+					if (err) throw err;
+					db.listAllConstraints(function(err, result){
+						should.not.exist(err);
+						should.exist(result);
+						result.should.be.an.instanceOf(Array);
+						result.should.have.lengthOf(0);					
+						done();
+					});
+				}
+			);
+		});
+	}); /* END => listAllUniquenessConstraintsForLabel: Get all uniqueness constraints for a label */
+
+	/*	Get all constraints.
+		returns an array of all constraints.
+		Example:
+			listAllConstraints(callback);
+			returns [ {
+					  "label" : "Product",
+					  "property-keys" : [ "pid" ],
+					  "type" : "UNIQUENESS"
+					}, {
+					  "label" : "User",
+					  "property-keys" : [ "email" ],
+					  "type" : "UNIQUENESS"
+					} ]								*/
+
+	describe('=> listAllConstraints: Get all constraints', function(){
+		// Create a constraint on product id and email
+		before(function(done){
+			db.createUniquenessContstraint('Product', 'pid', function(err, result){					
+				if (err) throw err;
+				db.createUniquenessContstraint('User', 'email', function(err, result){					
+					if (err) throw err;
+					done();
+				});
+			});
+		});
+		
+		describe('-> Get all constraints', function(){
+			it('should return an array with two constraints', function(done){
+				db.listAllConstraints(function(err, result){					
+					should.not.exist(err);
+					should.exist(result);
+					result.should.be.an.instanceOf(Array);
+					result.should.have.lengthOf(2);
+					result[0].should.have.property('label');
+					result[0].should.have.property('property-keys');
+					result[0].should.have.property('type','UNIQUENESS');
+					result[0]['property-keys'].should.have.lengthOf(1);
+					result[1].should.have.property('label');
+					result[1].should.have.property('property-keys');
+					result[1].should.have.property('type','UNIQUENESS');
+					result[1]['property-keys'].should.have.lengthOf(1);
+					done();
+				});
+			});
+		});
+
+		after(function(done){
+			Step(
+				function deleteNodes() {
+					db.dropUniquenessContstraint('Product', 'pid', this.parallel())
+					db.dropUniquenessContstraint('User', 'email', this.parallel())
+				},
+				function afterDelete(err) {
+					if (err) throw err;
+					db.listAllConstraints(function(err, result){
+						should.not.exist(err);
+						should.exist(result);
+						result.should.be.an.instanceOf(Array);
+						result.should.have.lengthOf(0);					
+						done();
+					});
+				}
+			);
+		});
+
+	
+	}); /* END => listAllConstraints: Get all constraints */
+
+	/*	Drop uniqueness constraint for a label and a property.
+		Example:
+			createUniquenessContstraint('User','email', callback);
+			returns 	{
+						  "label" : "User",
+						  "type" : "UNIQUENESS",
+						  "property-keys" : [ "email" ]
+						}									*/
+
+	describe('=> dropUniquenessContstraint: Drop uniqueness constraint for a label and a property', function(){
+		// Create a constraint
+		before(function(done){
+			db.createUniquenessContstraint('User', 'email', function(err, result){					
+				if (err) throw err;
+				done();
+			});
+		});
+		
+		describe('-> Drop uniqueness constraint for a existing label and a property', function(){
+			it('should return true if the constraint was successfully removed', function(done){
+				db.dropUniquenessContstraint('User', 'email', function(err, result){
+					should.not.exist(err);
+					should.exist(result);
+					result.should.equal(true);			
+					done();
+				});
+			});
+		});
+
+		describe('-> Drop uniqueness constraint for a invalid label and a property', function(){
+			it('should return an error', function(done){
+				db.dropUniquenessContstraint(null, null, function(err, result){
+					should.exist(err);
+					should.not.exist(result);					
+					done();
+				});
+			});
+		});
+	}); /* END => dropUniquenessContstraint: Drop uniqueness constraint for a label and a property */
+
+
 
 	// describe('=> Remove all ')
 

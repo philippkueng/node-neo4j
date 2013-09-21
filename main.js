@@ -20,6 +20,7 @@ function Neo4j(url){
 		insertNode({ name: 'Kristof' }, callback);
 	Insert a Node with one label:	
 		insertNode({ name: 'Kristof' }, ['Student'], callback);
+		insertNode({ name: 'Kristof' }, 'Student', callback);
 	Insert a Node with three labels:
 		insertNode({ name: 'Kristof' }, ['User', 'Student' ,'Man'], callback);		*/
 
@@ -38,7 +39,6 @@ Neo4j.prototype.insertNode = function(node, labels, callback){
 					that.addNodeId(result.body, callback);
 				else 
 					callback(new Error('Response is empty'), null);
-		
 			});
 	} else {
 		var val = new Validator();
@@ -52,7 +52,7 @@ Neo4j.prototype.insertNode = function(node, labels, callback){
 
 		// Insert node and label(s) with cypher query
 		if(labels instanceof Array){ 
-			var query = 'CREATE (data'+  cypher.stringify(labels) + ' {' + cypher.params(node) + '}) RETURN data';		
+			var query = 'CREATE (data'+  cypher.stringify(labels) + ' {' + cypher.params(node) + '}) RETURN data';
 			this.cypherQuery(query, node, function(err, res) {
 				if(err) 
 					callback(err, null);
@@ -61,7 +61,7 @@ Neo4j.prototype.insertNode = function(node, labels, callback){
 			});		
 		} else
 			callback(new Error('The second parameter "labels" should be an array with strings OR "labels" should be a callback function.'), null);
-	}	
+	}
 };
 
 /*	Get an array of labels of a Node
@@ -707,7 +707,7 @@ Neo4j.prototype.listAllLabels = function(callback){
 
 /*	Create a uniqueness constraint on a property.
 	Example:
-	createUniquenessContstraint('User','email', callback);
+		createUniquenessContstraint('User','email', callback);
 		returns 	{
 					  "label" : "User",
 					  "type" : "UNIQUENESS",
@@ -716,7 +716,7 @@ Neo4j.prototype.listAllLabels = function(callback){
 
 Neo4j.prototype.createUniquenessContstraint = function(label, property_key, callback){	
 	var val = new Validator();
-	val.label(label).property(property_key);
+	val.label(label).property(property_key).callback(callback);
 	
 	if(val.hasErrors)
 		return callback(val.error(), null);
@@ -737,6 +737,141 @@ Neo4j.prototype.createUniquenessContstraint = function(label, property_key, call
 					callback(new Error('HTTP Error ' + result.statusCode + ' when creating a uniqueness contraint.'), null);
 			} 
 		});
+};
+
+/*	Get a specific uniqueness constraint for a label and a property
+	Example:
+		readUniquenessConstraint('User','email', callback);
+		returns [ {
+				  "label" : "User",
+				  "property-keys" : [ "email" ],
+				  "type" : "UNIQUENESS"
+				} ]						 		*/
+
+Neo4j.prototype.readUniquenessConstraint = function(label, property, callback){
+	var val = new Validator();
+	val.label(label).property(property).callback(callback);
+	
+	if(val.hasErrors)
+		return callback();
+
+	request
+	.get(this.url + '/db/data/schema/constraint/' + label + '/uniqueness/' + property)
+	.set('Accept', 'application/json')
+	.end(function(result){
+		switch(result.statusCode){
+			case 200:
+				callback(null, result.body);
+				break;
+			case 404:
+				callback(null, false);
+				break;
+			default:
+				callback(new Error('HTTP Error ' + result.statusCode + ' when reading uniqueness constraints'), null);
+		} 
+	});
+};
+
+/*	Get all uniqueness constraints for a label.
+	Example:
+		listAllUniquenessConstraintsForLabel('User', callback);
+		returns [ {
+				  "label" : "User",
+				  "property-keys" : [ "uid" ],
+				  "type" : "UNIQUENESS"
+				}, {
+				  "label" : "User",
+				  "property-keys" : [ "email" ],
+				  "type" : "UNIQUENESS"
+				} ]						 		*/
+
+Neo4j.prototype.listAllUniquenessConstraintsForLabel = function(label, callback){
+	var val = new Validator();
+	val.label(label);
+	if(val.hasErrors)
+		return callback();
+	request
+	.get(this.url + '/db/data/schema/constraint/' + label + '/uniqueness')
+	.set('Accept', 'application/json')
+	.end(function(result){
+		switch(result.statusCode){
+			case 200:
+				callback(null, result.body);
+				break;
+			case 404:
+				callback(null, false);
+				break;
+			default:
+				callback(new Error('HTTP Error ' + result.statusCode + ' when listing all uniqueness constraints.'), null);
+		} 
+	});
+};
+
+/*	Get all constraints for a label.
+	Example:
+		listAllConstraints(callback);
+		returns [ {
+				  "label" : "Product",
+				  "property-keys" : [ "pid" ],
+				  "type" : "UNIQUENESS"
+				}, {
+				  "label" : "User",
+				  "property-keys" : [ "email" ],
+				  "type" : "UNIQUENESS"
+				} ]						*/
+
+Neo4j.prototype.listAllConstraintsForLabel = function(label, callback){
+	var val = new Validator();
+	val.label(label);
+	if(val.hasErrors)
+		return callback()
+	request
+	.get(this.url + '/db/data/schema/constraint/' + label)
+	.set('Accept', 'application/json')
+	.end(function(result){
+		switch(result.statusCode){
+			case 200:
+				callback(null, result.body);
+				break;
+			case 404:
+				callback(null, false);
+				break;
+			default:
+				callback(new Error('HTTP Error ' + result.statusCode + ' when listing all constraints.'), null);
+		} 
+	});
+};
+
+
+/*	Get all constraints.
+	Example:
+		listAllConstraints(callback);
+		returns [ {
+				  "label" : "Product",
+				  "property-keys" : [ "pid" ],
+				  "type" : "UNIQUENESS"
+				}, {
+				  "label" : "User",
+				  "property-keys" : [ "email" ],
+				  "type" : "UNIQUENESS"
+				} ]								*/
+
+Neo4j.prototype.listAllConstraints = function(callback){
+	request
+	.get(this.url + '/db/data/schema/constraint')
+	.set('Accept', 'application/json')
+	.end(function(result){
+		switch(result.statusCode){
+			case 200:
+				callback(null, result.body);
+				break;
+			case 404:
+				callback(null, false);
+				break;
+			default:
+				callback(new Error('HTTP Error ' + result.statusCode + ' when listing all constraints.'), null);
+		} 
+	});
 };
 
 /*	Drop uniqueness constraint for a label and a property.
