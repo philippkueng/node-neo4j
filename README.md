@@ -21,30 +21,47 @@ In order to use the library you either have to create a [heroku](http://www.hero
 ### NEW Features
 
 1) √ ADDED: Node id is now an integer not a string (used: parseInt)
+
 2) √ ADDED: insertNode: now supports labels (used: cypher query, REST API doesn't support it directly)
+
 3) √ ADDED: cypherQuery: now supports parameters, Neo4j will cache query and reuse it with different parameters
 
 **Labels and indexes**
+
 4) √ NEW: readLabels: get the labels of a node given the node id. It returns an array of strings
+
 5) √ NEW: insertLabelIndex: Create a label index on ONE property 
 	(use array ['firstname'] or just string 'firstname', only one property currently supported by Neo4j)
+
 6) √ NEW: deleteLabelIndex: Delete a label index for a property
+
 7) √ NEW: listLabelIndexes: List indexes for a label	
+
 8) √ NEW: addLabelsToNode: Adding one or multiple labels to a node.
+
 9) √ NEW: replaceLabelsFromNode: Replacing labels on a node.
+
 10) √ NEW: deleteLabelFromNode: Removing a label from a node.
+
 11) √ NEW: readNodesWithLabel: Get all nodes with a label.
+
 12) √ NEW: readNodesWithLabelAndProperties: Get nodes by label and property 
 	(property: JSON with one property, only one property currently supported by Neo4j)
+
 13) √ NEW: listAllLabels: List all labels.
 
 **Constraints**
 	See: http://docs.neo4j.org/chunked/milestone/rest-api-schema-constraints.html#rest-api-get-a-specific-uniqueness-constraint
 14) √ NEW: createUniquenessContstraint: Create a uniqueness constraint on a property.
+
 15) √ NEW: readUniquenessConstraint: Get a specific uniqueness constraint for a label and a property.
+
 16) √ NEW: listAllUniquenessConstraintsForLabel: Get all uniqueness constraints for a label
+
 17) √ NEW: listContraintsForLabel: Get all constraints for a label 
+
 18) √ NEW: listAllConstraints: List all constraints.
+
 19) √ NEW: dropUniquenessContstraint: Drop uniqueness constraint for a label and a property.
 
 **TODO**
