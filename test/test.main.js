@@ -1631,9 +1631,8 @@ describe('Testing Node specific operations for Neo4j', function(){
 		describe('-> addStatementsToTransaction: Add an invalid statement to an open transaction', function(){
 			it('should return false because transaction does not exist', function(done){
 				db.addStatementsToTransaction(transactionId, {}, function(err, result){
-					should.not.exist(err);
-					should.exist(result);
-					result.should.equal(false);
+					should.exist(err);
+					should.exist(result);					
 					done();
 				});
 			});
@@ -1650,44 +1649,33 @@ describe('Testing Node specific operations for Neo4j', function(){
 			});
 		});
 
+		describe('-> resetTimeoutTransaction: Reset transaction timeout of an open transaction', function(){
+			it('should return false because transaction does not exist', function(done){
+				db.resetTimeoutTransaction(transactionId, function(err, result){
+					should.not.exist(err);
+					should.exist(result);
+					result.should.equal(false);
+					done();
+				});
+			});
+		});
+
+		describe('-> resetTimeoutTransaction: Reset transaction timeout of an open transaction', function(){
+			it('should return false because transaction does not exist', function(done){
+				db.resetTimeoutTransaction(123456789, function(err, result){
+					should.not.exist(err);
+					should.exist(result);
+					result.should.equal(false);
+					done();
+				});
+			});
+		});
+
 
 	}); 
 	
 
-	describe('=> addStatementsToTransaction: Execute statements in an open transaction', function(){
-		var statementsOne = {	
-								statements : [ {
-									statement : "CREATE (person {props}) RETURN person",
-										parameters : {
-											props : {
-												name : "Fred",
-												age: 24
-											}
-										}
-									}]
-							};
-
-		// Create a constraint
-		/*before(function(done){
-			db.createUniquenessContstraint('User', 'email', function(err, result){					
-				if (err) throw err;
-				done();
-			});
-		});*/
-		
-		/*describe('-> Add one statement to an open transaction', function(){
-			it('should return the json of that transaction', function(done){
-				db.addStatementsToTransaction(statementsOne, function(err, result){
-					should.not.exist(err);
-					should.exist(result);
-					result.should.equal(true);			
-					done();
-				});
-			});
-		});*/
-
-	}); 
-
+	
 
 	// describe('=> Remove all ')
 

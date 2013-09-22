@@ -965,7 +965,12 @@ Neo4j.prototype.addStatementsToTransaction = function(transactionId, statements,
 			console.log('ERRORCODE: ' + result.statusCode + '\n');
 			switch(result.statusCode){
 				case 200:
-					that.addTransactionId(result.body, callback);
+					that.addTransactionId(result.body, function afterAddingTransactionId (err, res) {
+						if(res.errors && res.errors.length > 0)
+							callback(new Error('An error occured when adding statements to the transaction. See "errors" inside the result for more details.'), res);
+						else
+							callback(null, res);
+					});
 					break;
 				case 404:
 					callback(null, false); // Transaction doesn't exist.
@@ -975,6 +980,36 @@ Neo4j.prototype.addStatementsToTransaction = function(transactionId, statements,
 			} 
 		});
 };
+
+// Reset transaction timeout of an open transaction
+
+Neo4j.prototype.resetTimeoutTransaction = function(transactionId, callback){
+	var that = this;
+	var val = new Validator();
+	val.transaction(transactionId);
+
+	if(val.hasErrors)
+		return callback(val.error(), null);
+
+	request
+		.post(this.url + '/db/data/transaction/' + transactionId)
+		.send({ statements : [ ]})
+		.set('Accept', 'application/json')
+		.end(function(result){
+			console.log('ERRORCODE: ' + result.statusCode + '\n');
+			switch(result.statusCode){
+				case 200:
+					that.addTransactionId(result.body, callback);
+					break;
+				case 404:
+					callback(null, false); // Transaction doesn't exist.
+					break;
+				default:
+					callback(new Error('HTTP Error ' + result.statusCode + ' when resetting transaction timeout.'), null);
+			} 
+		});
+};
+
 
 /* ADVANCED FUNCTIONS ---------- */
 
