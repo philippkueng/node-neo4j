@@ -1577,6 +1577,117 @@ describe('Testing Node specific operations for Neo4j', function(){
 	}); /* END => dropUniquenessContstraint: Drop uniqueness constraint for a label and a property */
 
 
+	describe('=> Transactions', function(){
+		var transactionId;
+		var statementsOne = {	
+								statements : [ {
+									statement : "CREATE (person {props}) RETURN person",
+										parameters : {
+											props : {
+												name : "Adam",
+												age: 22
+											}
+										}
+									}]
+							};
+		var statementsTwo = {	
+								statements : [ {
+									statement : "CREATE (person {props}) RETURN person",
+										parameters : {
+											props : {
+												name : "Eva",
+												age: 23
+											}
+										}
+									}]
+							};
+
+		describe('-> beginTransaction: Start a transaction', function(){
+			it('should return the json of that transaction', function(done){
+				db.beginTransaction(statementsOne, function(err, result){					
+					should.not.exist(err);
+					should.exist(result);
+					should.exist(result.transactionId);
+					result.transactionId.should.be.a('number');
+					transactionId = result.transactionId;
+					done();
+				});
+			});
+		});
+
+		describe('-> addStatementsToTransaction: Add one statement to an open transaction', function(){
+			it('should return the json of that transaction', function(done){
+				db.addStatementsToTransaction(transactionId, statementsTwo, function(err, result){
+					should.not.exist(err);
+					should.exist(result);
+					should.exist(result.transactionId);
+					result.transactionId.should.be.a('number');
+					result.transactionId.should.equal(transactionId);
+					done();
+				});
+			});
+		});
+
+		describe('-> addStatementsToTransaction: Add an invalid statement to an open transaction', function(){
+			it('should return false because transaction does not exist', function(done){
+				db.addStatementsToTransaction(transactionId, {}, function(err, result){
+					should.not.exist(err);
+					should.exist(result);
+					result.should.equal(false);
+					done();
+				});
+			});
+		});
+
+		describe('-> addStatementsToTransaction: Add one statement to an non-existing transaction', function(){
+			it('should return false because transaction does not exist', function(done){
+				db.addStatementsToTransaction(123456789, statementsTwo, function(err, result){
+					should.not.exist(err);
+					should.exist(result);
+					result.should.equal(false);
+					done();
+				});
+			});
+		});
+
+
+	}); 
+	
+
+	describe('=> addStatementsToTransaction: Execute statements in an open transaction', function(){
+		var statementsOne = {	
+								statements : [ {
+									statement : "CREATE (person {props}) RETURN person",
+										parameters : {
+											props : {
+												name : "Fred",
+												age: 24
+											}
+										}
+									}]
+							};
+
+		// Create a constraint
+		/*before(function(done){
+			db.createUniquenessContstraint('User', 'email', function(err, result){					
+				if (err) throw err;
+				done();
+			});
+		});*/
+		
+		/*describe('-> Add one statement to an open transaction', function(){
+			it('should return the json of that transaction', function(done){
+				db.addStatementsToTransaction(statementsOne, function(err, result){
+					should.not.exist(err);
+					should.exist(result);
+					result.should.equal(true);			
+					done();
+				});
+			});
+		});*/
+
+	}); 
+
 
 	// describe('=> Remove all ')
 

@@ -386,12 +386,11 @@ function listIndexes (url, callback) {
 	});
 }
 
-/* REMOVE?
 Neo4j.prototype.listIndexes = function(indexType, callback){
 	var url = this.url + '/db/data/index/' + indexType;
 	listIndexes(url, callback);	
 };
-*/
+
 
 Neo4j.prototype.listNodeIndexes = function(callback){
 	var url = this.url + '/db/data/index/node';
@@ -716,7 +715,7 @@ Neo4j.prototype.listAllLabels = function(callback){
 
 Neo4j.prototype.createUniquenessContstraint = function(label, property_key, callback){	
 	var val = new Validator();
-	val.label(label).property(property_key).callback(callback);
+	val.label(label).property(property_key);
 	
 	if(val.hasErrors)
 		return callback(val.error(), null);
@@ -750,8 +749,8 @@ Neo4j.prototype.createUniquenessContstraint = function(label, property_key, call
 
 Neo4j.prototype.readUniquenessConstraint = function(label, property, callback){
 	var val = new Validator();
-	val.label(label).property(property).callback(callback);
-	
+	val.label(label).property(property);
+
 	if(val.hasErrors)
 		return callback();
 
@@ -908,6 +907,74 @@ Neo4j.prototype.dropUniquenessContstraint = function(label, property_key, callba
 		});
 };
 
+/* TRANSACTIONS */
+
+//http://localhost:7474/db/data/transaction
+
+/*	Begin a transaction
+	You begin a new transaction by posting zero or more Cypher statements to the transaction endpoint. 
+	The server will respond with the result of your statements, as well as the location of your open transaction.
+	{
+  "statements" : [ {
+    "statement" : "CREATE (n {props}) RETURN n",
+    "parameters" : {
+      "props" : {
+        "name" : "My Node"
+      }
+    }
+  } ]
+}
+	Example:
+		beginTransaction(, callback);
+		*/
+
+
+Neo4j.prototype.beginTransaction = function(statements, callback){	
+	var that = this;
+	request
+		.post(this.url + '/db/data/transaction')
+		.send(statements)
+		.set('Accept', 'application/json')
+		.end(function(result){
+			switch(result.statusCode){
+				case 201:
+					that.addTransactionId(result.body, callback);
+					break;
+				case 404:
+					callback(null, false);
+					break;
+				default:
+					callback(new Error('HTTP Error ' + result.statusCode + ' when beginning transaction.'), null);
+			} 
+		});
+};
+
+Neo4j.prototype.addStatementsToTransaction = function(transactionId, statements, callback){
+	var that = this;
+	var val = new Validator();
+	val.transaction(transactionId);
+
+	if(val.hasErrors)
+		return callback(val.error(), null);
+
+	request
+		.post(this.url + '/db/data/transaction/' + transactionId)
+		.send(statements)
+		.set('Accept', 'application/json')
+		.end(function(result){
+			console.log('ERRORCODE: ' + result.statusCode + '\n');
+			switch(result.statusCode){
+				case 200:
+					that.addTransactionId(result.body, callback);
+					break;
+				case 404:
+					callback(null, false); // Transaction doesn't exist.
+					break;
+				default:
+					callback(new Error('HTTP Error ' + result.statusCode + ' when adding statements to transaction.'), null);
+			} 
+		});
+};
 
 /* ADVANCED FUNCTIONS ---------- */
 
@@ -1094,6 +1161,14 @@ Neo4j.prototype.addNodeId = function(node, callback){
 	callback(null, node);
 };
 
+/* Extract transactionId and add it as a property. */
+
+Neo4j.prototype.addTransactionId = function(node, callback){
+	var from = this.url.length + 21; // length of url and '/db/data/transaction/'
+	var to = node.commit.indexOf('/', from); // next slash	
+	node.transactionId = parseInt(node.commit.substring(from, to));	
+	callback(null, node);
+};
 
 /* Extract relationship_id and add it as a property. */
 
