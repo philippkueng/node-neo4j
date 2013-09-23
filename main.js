@@ -4,6 +4,7 @@ var request = require('superagent'),
 	cypher = require('./lib/utils/cypher'),
 	Validator = require('./lib/utils/validator');
 
+
 module.exports = Neo4j;
 
 function Neo4j(url){
@@ -23,6 +24,9 @@ function Neo4j(url){
 		insertNode({ name: 'Kristof' }, 'Student', callback);
 	Insert a Node with three labels:
 		insertNode({ name: 'Kristof' }, ['User', 'Student' ,'Man'], callback);		*/
+function debug (obj) {
+	console.info(util.inspect(obj) + '\n\n');
+}
 
 Neo4j.prototype.insertNode = function(node, labels, callback){
 	var that = this;
@@ -31,15 +35,14 @@ Neo4j.prototype.insertNode = function(node, labels, callback){
 		callback = labels;		
 		request
 			.post(this.url + '/db/data/node')
-			.send(node)
-			.type('form')
-			.set('Accept', 'application/json')
+			.send(node)			//  content-type:application/json;charset=utf-8						
 			.end(function(result){
-				if(typeof result.body !== 'undefined')
+				if(result.body)
 					that.addNodeId(result.body, callback);
 				else 
 					callback(new Error('Response is empty'), null);
 			});
+
 	} else {
 		var val = new Validator();
 
@@ -51,9 +54,9 @@ Neo4j.prototype.insertNode = function(node, labels, callback){
 			labels = [labels];
 
 		// Insert node and label(s) with cypher query
-		if(labels instanceof Array){ 
-			var query = 'CREATE (data'+  cypher.stringify(labels) + ' {' + cypher.params(node) + '}) RETURN data';
-			this.cypherQuery(query, node, function(err, res) {
+		if(labels instanceof Array){ //cypher.params(node)
+			var query = 'CREATE (data'+  cypher.stringify(labels) + ' {params}) RETURN data';
+			this.cypherQuery(query, { params: node }, function(err, res) {
 				if(err) 
 					callback(err, null);
 				else
@@ -73,9 +76,8 @@ Neo4j.prototype.insertNode = function(node, labels, callback){
 Neo4j.prototype.readLabels = function(node_id, callback){		
 	request
 		.get(this.url + '/db/data/node/' + node_id + '/labels')		
-		.set('Accept', 'application/json')
 		.end(function(result){
-			if(typeof result.body !== 'undefined')
+			if(result.body)
 				callback(null, result.body);
 			else 
 				callback(new Error('Response is empty'), null);	
@@ -89,8 +91,7 @@ Neo4j.prototype.readLabels = function(node_id, callback){
 Neo4j.prototype.deleteNode = function(node_id, callback){
 	request
 		.del(this.url + '/db/data/node/' + node_id)
-		.set('Accept', 'application/json')
-		.end(function(result){
+				.end(function(result){
 			switch(result.statusCode){
 				case 204:
 					callback(null, true); // Node was deleted.
@@ -113,9 +114,8 @@ Neo4j.prototype.readNode = function(node_id, callback){
 	var that = this;
 	request
 		.get(this.url + '/db/data/node/' + node_id)
-		.set('Accept', 'application/json')
-		.end(function(result){
-			if(typeof result.body !== 'undefined'){
+				.end(function(result){
+			if(result.body){
 				if(result.statusCode === 200){
 					that.addNodeId(result.body, callback);
 				} else if(result.statusCode === 404){
@@ -123,9 +123,8 @@ Neo4j.prototype.readNode = function(node_id, callback){
 				} else {
 					callback(new Error('HTTP Error ' + result.statusCode + ' occurred.'), null);
 				}
-			} else {
-				callback(new Error('Response is empty'), null);
-			}
+			} else
+				callback(new Error('Response is empty'), null);			
 		});
 };
 
@@ -136,8 +135,7 @@ Neo4j.prototype.updateNode = function(node_id, node_data, callback){
 	request
 		.put(this.url + '/db/data/node/' + node_id + '/properties')
 		.send(that.stringifyValueObjects(that.replaceNullWithString(node_data)))
-		.set('Accept', 'application/json')
-		.end(function(result){
+				.end(function(result){
 			switch(result.statusCode){
 				case 204:
 					callback(null, true);
@@ -162,8 +160,7 @@ Neo4j.prototype.insertRelationship = function(root_node_id, other_node_id, relat
 			type: relationship_type,
 			data: that.stringifyValueObjects(that.replaceNullWithString(relationship_data))
 		})
-		.set('Accept', 'application/json')
-		.end(function(result){
+				.end(function(result){
 			switch(result.statusCode){
 				case 201:
 					that.addRelationshipId(result.body, callback);
@@ -186,8 +183,7 @@ Neo4j.prototype.deleteRelationship = function(relationship_id, callback){
 	var that = this;
 	request
 		.del(that.url + '/db/data/relationship/' + relationship_id)
-		.set('Accept', 'application/json')
-		.end(function(result){
+				.end(function(result){
 			switch(result.statusCode){
 				case 204:
 					callback(null, true);
@@ -208,8 +204,7 @@ Neo4j.prototype.readRelationship = function(relationship_id, callback){
 
 	request
 		.get(that.url + '/db/data/relationship/' + relationship_id)
-		.set('Accept', 'application/json')
-		.end(function(result){
+				.end(function(result){
 			switch(result.statusCode){
 				case 200:
 					that.addRelationshipId(result.body, callback);
@@ -231,8 +226,7 @@ Neo4j.prototype.updateRelationship = function(relationship_id, relationship_data
 	request
 		.put(that.url + '/db/data/relationship/' + relationship_id + '/properties')
 		.send(that.stringifyValueObjects(that.replaceNullWithString(relationship_data)))
-		.set('Accept', 'application/json')
-		.end(function(result){
+				.end(function(result){
 			switch(result.statusCode){
 				case 204:
 					callback(null, true);
@@ -257,8 +251,7 @@ Neo4j.prototype.insertIndex = function(index, callback){
 			'name': index.index,
 			'config': index.config
 		})
-		.set('Accept', 'application/json')
-		.end(function(result){
+				.end(function(result){
 			switch(result.statusCode){
 				case 201:
 					callback(null, result.body);
@@ -287,11 +280,9 @@ Neo4j.prototype.insertIndex = function(index, callback){
 Neo4j.prototype.insertLabelIndex = function(label, property_key, callback){
 	request
 			.post(this.url + '/db/data/schema/index/' + label)
-			.send({ 'property_keys' : [property_key] })
-			.type('form')
-			.set('Accept', 'application/json')
+			.send({ 'property_keys' : [property_key] })	
 			.end(function(result){
-				if(typeof result.body !== 'undefined')
+				if(result.body)
 					callback(null, result.body);
 				else 
 					callback(new Error('Response is empty'), null);		
@@ -327,8 +318,7 @@ Neo4j.prototype.deleteIndex = function(index, callback){
 	
 	request
 	.del(this.url + '/db/data/index/' + index.type + '/' + index.index)
-	.set('Accept', 'application/json')
-	.end(function(result){
+		.end(function(result){
 		switch(result.statusCode){
 			case 204:
 				callback(null, true); // Index was deleted.
@@ -353,8 +343,7 @@ Neo4j.prototype.deleteRelationshipIndex = function(index, callback){
 Neo4j.prototype.deleteLabelIndex = function(label, property_key, callback){
 	request
 	.del(this.url + '/db/data/schema/index/' + label + '/' + property_key)
-	.set('Accept', 'application/json')
-	.end(function(result){
+		.end(function(result){
 		switch(result.statusCode){
 			case 204:
 				callback(null, true); // Index was deleted.
@@ -371,8 +360,7 @@ Neo4j.prototype.deleteLabelIndex = function(label, property_key, callback){
 function listIndexes (url, callback) {
 	request
 	.get(url)
-	.set('Accept', 'application/json')
-	.end(function(result){
+		.end(function(result){
 		switch(result.statusCode){
 			case 200:
 				callback(null, result.body);
@@ -425,8 +413,7 @@ Neo4j.prototype.addItemToIndex = function(arguments, callback){
 			'key': arguments.indexKey,
 			'value': arguments.indexValue
 		})
-		.set('Accept', 'application/json')
-		.end(function(result){
+				.end(function(result){
 			switch(result.statusCode){
 				case 200:
 					callback(null, result.body);
@@ -484,8 +471,7 @@ Neo4j.prototype.addLabelsToNode = function(nodeId, labels, callback){
 		request
 			.post(url)
 			.send(labels)
-			.set('Accept', 'application/json')
-			.end(function(result){
+						.end(function(result){
 			switch(result.statusCode){
 				case 204:
 					callback(null, true); // Labels added
@@ -529,8 +515,7 @@ Neo4j.prototype.replaceLabelsFromNode = function(nodeId, labels, callback){
 		request
 			.put(this.url + '/db/data/node/' + nodeId + '/labels')
 			.send(labels)
-			.set('Accept', 'application/json')
-			.end(function(result){
+						.end(function(result){
 				switch(result.statusCode){
 					case 204:
 						callback(null, true);
@@ -568,8 +553,7 @@ Neo4j.prototype.deleteLabelFromNode = function(nodeId, label, callback){
 		 	
 	request
 		.del(this.url + '/db/data/node/' + nodeId + '/labels/'+ label)
-		.set('Accept', 'application/json')
-		.end(function(result){
+				.end(function(result){
 			switch(result.statusCode){
 				case 204:
 					callback(null, true); // Label was deleted.
@@ -601,8 +585,7 @@ Neo4j.prototype.readNodesWithLabel = function(label, callback){
 
 	request
 		.get(this.url + '/db/data/label/' + label + '/nodes')
-		.set('Accept', 'application/json')
-		.end(function(result){
+				.end(function(result){
 			var body = result.body;			
 			switch(result.statusCode){
 			case 200:
@@ -651,8 +634,7 @@ Neo4j.prototype.readNodesWithLabelAndProperties = function(label, properties, ca
 	
 	request
 		.get(this.url + '/db/data/label/' + label + '/nodes?' + props)
-		.set('Accept', 'application/json')
-		.end(function(result){
+				.end(function(result){
 			var body = result.body;				
 			switch(result.statusCode){
 			case 200:
@@ -687,8 +669,7 @@ Neo4j.prototype.readNodesWithLabelAndProperties = function(label, properties, ca
 Neo4j.prototype.listAllLabels = function(callback){
 	request
 	.get(this.url + '/db/data/labels')
-	.set('Accept', 'application/json')
-	.end(function(result){
+		.end(function(result){
 		switch(result.statusCode){
 			case 200:
 				callback(null, result.body);
@@ -723,8 +704,7 @@ Neo4j.prototype.createUniquenessContstraint = function(label, property_key, call
 	request
 		.post(this.url + '/db/data/schema/constraint/' + label + '/uniqueness')
 		.send({ 'property_keys' : [property_key] })
-		.set('Accept', 'application/json')
-		.end(function(result){
+				.end(function(result){
 			switch(result.statusCode){
 				case 200:
 					callback(null, result.body);
@@ -755,9 +735,8 @@ Neo4j.prototype.readUniquenessConstraint = function(label, property, callback){
 		return callback();
 
 	request
-	.get(this.url + '/db/data/schema/constraint/' + label + '/uniqueness/' + property)
-	.set('Accept', 'application/json')
-	.end(function(result){
+		.get(this.url + '/db/data/schema/constraint/' + label + '/uniqueness/' + property)
+		.end(function(result){
 		switch(result.statusCode){
 			case 200:
 				callback(null, result.body);
@@ -790,9 +769,8 @@ Neo4j.prototype.listAllUniquenessConstraintsForLabel = function(label, callback)
 	if(val.hasErrors)
 		return callback();
 	request
-	.get(this.url + '/db/data/schema/constraint/' + label + '/uniqueness')
-	.set('Accept', 'application/json')
-	.end(function(result){
+		.get(this.url + '/db/data/schema/constraint/' + label + '/uniqueness')
+		.end(function(result){
 		switch(result.statusCode){
 			case 200:
 				callback(null, result.body);
@@ -826,8 +804,7 @@ Neo4j.prototype.listAllConstraintsForLabel = function(label, callback){
 		return callback()
 	request
 	.get(this.url + '/db/data/schema/constraint/' + label)
-	.set('Accept', 'application/json')
-	.end(function(result){
+		.end(function(result){
 		switch(result.statusCode){
 			case 200:
 				callback(null, result.body);
@@ -858,8 +835,7 @@ Neo4j.prototype.listAllConstraintsForLabel = function(label, callback){
 Neo4j.prototype.listAllConstraints = function(callback){
 	request
 	.get(this.url + '/db/data/schema/constraint')
-	.set('Accept', 'application/json')
-	.end(function(result){
+		.end(function(result){
 		switch(result.statusCode){
 			case 200:
 				callback(null, result.body);
@@ -875,7 +851,7 @@ Neo4j.prototype.listAllConstraints = function(callback){
 
 /*	Drop uniqueness constraint for a label and a property.
 	Example:
-	dropContstraint('User','email', callback);
+		dropContstraint('User','email', callback);
 		returns 	{
 					  "label" : "User",
 					  "type" : "UNIQUENESS",
@@ -892,8 +868,7 @@ Neo4j.prototype.dropUniquenessContstraint = function(label, property_key, callba
 	request
 		.del(this.url + '/db/data/schema/constraint/' + label + '/uniqueness/' + property_key)
 		.send({ 'property_keys' : [property_key] })
-		.set('Accept', 'application/json')
-		.end(function(result){
+				.end(function(result){
 			switch(result.statusCode){
 				case 204:
 					callback(null, true); // Constraint was deleted.
@@ -909,33 +884,35 @@ Neo4j.prototype.dropUniquenessContstraint = function(label, property_key, callba
 
 /* TRANSACTIONS */
 
-//http://localhost:7474/db/data/transaction
-
 /*	Begin a transaction
 	You begin a new transaction by posting zero or more Cypher statements to the transaction endpoint. 
 	The server will respond with the result of your statements, as well as the location of your open transaction.
-	{
-  "statements" : [ {
-    "statement" : "CREATE (n {props}) RETURN n",
-    "parameters" : {
-      "props" : {
-        "name" : "My Node"
-      }
-    }
-  } ]
-}
 	Example:
-		beginTransaction(, callback);
-		*/
-
+	beginTransaction({
+					  statements : [ {
+					    statement : "CREATE (n {props}) RETURN n",
+					    parameters : {
+					      props : {
+					        name : "Adamn",
+					        age: 22
+					      }
+					    }
+					  } ]
+					}, calback);	
+	returns { 
+				commit: 'http://localhost:7474/db/data/transaction/18/commit',
+			  	results: [ { columns: [ 'person' ], data: [ { row: [ { age: 22, name: 'Adam' } ] } ] } ],
+			  	transaction: { expires: 'Sun, 22 Sep 2013 19:31:17 +0000' },
+			  	errors: [],
+			  	transactionId: 18 
+			}	*/
 
 Neo4j.prototype.beginTransaction = function(statements, callback){	
 	var that = this;
 	request
 		.post(this.url + '/db/data/transaction')
 		.send(statements)
-		.set('Accept', 'application/json')
-		.end(function(result){
+				.end(function(result){
 			switch(result.statusCode){
 				case 201:
 					that.addTransactionId(result.body, callback);
@@ -960,9 +937,7 @@ Neo4j.prototype.addStatementsToTransaction = function(transactionId, statements,
 	request
 		.post(this.url + '/db/data/transaction/' + transactionId)
 		.send(statements)
-		.set('Accept', 'application/json')
-		.end(function(result){
-			console.log('ERRORCODE: ' + result.statusCode + '\n');
+				.end(function(result){			
 			switch(result.statusCode){
 				case 200:
 					that.addTransactionId(result.body, function afterAddingTransactionId (err, res) {
@@ -981,7 +956,14 @@ Neo4j.prototype.addStatementsToTransaction = function(transactionId, statements,
 		});
 };
 
-// Reset transaction timeout of an open transaction
+/*	Reset transaction timeout of an open transaction
+	Every orphaned transaction is automatically expired after a period of inactivity. 
+	This may be prevented by resetting the transaction timeout.
+	This request will reset the transaction timeout and return the new time at which 
+	the transaction will expire as an RFC1123 formatted timestamp value in the “transaction” section of the response.
+	Example:
+		resetTimeoutTransaction(7, callback);
+	*/
 
 Neo4j.prototype.resetTimeoutTransaction = function(transactionId, callback){
 	var that = this;
@@ -994,9 +976,7 @@ Neo4j.prototype.resetTimeoutTransaction = function(transactionId, callback){
 	request
 		.post(this.url + '/db/data/transaction/' + transactionId)
 		.send({ statements : [ ]})
-		.set('Accept', 'application/json')
-		.end(function(result){
-			console.log('ERRORCODE: ' + result.statusCode + '\n');
+				.end(function(result){			
 			switch(result.statusCode){
 				case 200:
 					that.addTransactionId(result.body, callback);
@@ -1010,6 +990,90 @@ Neo4j.prototype.resetTimeoutTransaction = function(transactionId, callback){
 		});
 };
 
+/*	Commit an open transaction
+	Given you have an open transaction, you can send a commit request. 
+	Optionally, you submit additional statements along with the request that will 
+	be executed before committing the transaction.
+
+	*/
+
+Neo4j.prototype.commitTransaction = function(transactionId, statements, callback){
+	var that = this;
+	var val = new Validator();
+	val.transaction(transactionId);
+
+	if(val.hasErrors)
+		return callback(val.error(), null);
+
+	request
+		.post(this.url + '/db/data/transaction/' + transactionId + '/commit')
+		.send(statements)
+				.end(function(result){			
+			switch(result.statusCode){
+				case 200:
+					callback(null, res);
+					break;
+				case 404:
+					callback(null, false); // Transaction doesn't exist.
+					break;
+				default:
+					callback(new Error('HTTP Error ' + result.statusCode + ' when commiting transaction.'), null);
+			} 
+		});
+};
+
+/*	Rollback an open transaction
+	Given that you have an open transaction, you can send a roll back request. 
+	The server will roll back the transaction. */
+
+Neo4j.prototype.rollbackTransaction = function(transactionId, statements, callback){
+	var that = this;
+	var val = new Validator();
+	val.transaction(transactionId);
+
+	if(val.hasErrors)
+		return callback(val.error(), null);
+
+	request
+		.del(this.url + '/db/data/transaction/' + transactionId)
+		.send(statements)
+				.end(function(result){			
+			switch(result.statusCode){
+				case 200:					
+					callback(null, true);					
+					break;
+				case 404:
+					callback(null, false); // Transaction doesn't exist.
+					break;
+				default:
+					callback(new Error('HTTP Error ' + result.statusCode + ' when adding statements to transaction.'), null);
+			} 
+		});
+};
+
+/*	Begin and commit a transaction in one request
+	If there is no need to keep a transaction open across multiple HTTP requests, you can begin a transaction, 
+	execute statements, and commit with just a single HTTP request. */
+
+Neo4j.prototype.beginAndCommitTransaction = function(statements, callback){	
+	request
+		.post(this.url + '/db/data/transaction/commit')
+		.send(statements)
+				.end(function(result){			
+			switch(result.statusCode){
+				case 200:
+					that.addTransactionId(result.body, callback);
+					break;
+				case 404:
+					callback(null, false); // Transaction doesn't exist.
+					break;
+				default:
+					callback(new Error('HTTP Error ' + result.statusCode + ' when commiting transaction.'), null);
+			} 
+		});
+};
+
+
 
 /* ADVANCED FUNCTIONS ---------- */
 
@@ -1020,8 +1084,7 @@ Neo4j.prototype.readRelationshipTypes = function(callback){
 
 	request
 		.get(that.url + '/db/data/relationship/types')
-		.set('Accept', 'application/json')
-		.end(function(result){
+				.end(function(result){
 			switch(result.statusCode){
 				case 200:
 					callback(null, result.body);
@@ -1039,8 +1102,7 @@ Neo4j.prototype.readAllRelationshipsOfNode = function(node_id, callback){
 
 	request
 		.get(that.url + '/db/data/node/' + node_id + '/relationships/all')
-		.set('Accept', 'application/json')
-		.end(function(result){
+				.end(function(result){
 			switch(result.statusCode){
 				case 200:
 					that.addRelationshipIdForArray(result.body, callback);
@@ -1061,8 +1123,7 @@ Neo4j.prototype.readIncomingRelationshipsOfNode = function(node_id, callback){
 
 	request
 		.get(that.url + '/db/data/node/' + node_id + '/relationships/in')
-		.set('Accept', 'application/json')
-		.end(function(result){
+				.end(function(result){
 			switch(result.statusCode){
 				case 200:
 					that.addRelationshipIdForArray(result.body, callback);
@@ -1083,8 +1144,7 @@ Neo4j.prototype.readOutgoingRelationshipsOfNode = function(node_id, callback){
 
 	request
 		.get(that.url + '/db/data/node/' + node_id + '/relationships/out')
-		.set('Accept', 'application/json')
-		.end(function(result){
+				.end(function(result){
 			switch(result.statusCode){
 				case 200:
 					that.addRelationshipIdForArray(result.body, callback);

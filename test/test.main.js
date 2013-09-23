@@ -29,20 +29,23 @@ console.log('* -------------------------------------------');
 
 describe('Testing Node specific operations for Neo4j', function(){
 
-// TODO: FIX BUG: numbers are failing when no label is provided
-// using cypher query works, posting json doesn't work ... why? 
 	describe('=> Create a Node', function(){
 		var firstNodeId, secondNodeId, thirdNodeId, fourthNodeId, fifthNodeId;	
 
-		describe('-> FIX ME PLEASE: A first simple valid node insertion with no labels', function(){
+		describe('-> A first simple valid node insertion with no labels', function(){
 			it('should return the JSON for this node', function(done){
-				db.insertNode({name:'foobar', level: 7.7}, function(err, result){
+				db.insertNode({name:'Crazy Taco', age: 7, favoriteColors: ['red', 'orange']}, function(err, result){					
 					firstNodeId = result.id;
 					should.not.exist(err);
 					should.exist(result);
-					result.data.name.should.equal('foobar');
-					result.data.level.should.be.a('number');
-					result.data.level.should.equal(7.7);
+					should.exist(result.data);
+					result.data.should.have.keys('name', 'age', 'favoriteColors');
+					result.data.name.should.equal('Crazy Taco');
+					result.data.age.should.equal(7);
+					result.data.favoriteColors.should.be.an.instanceOf(Array);
+					result.data.favoriteColors.should.have.lengthOf(2);
+					result.data.favoriteColors.should.include('red');
+					result.data.favoriteColors.should.include('orange');
 					result.id.should.be.a('number');
 					done();
 				});
@@ -51,14 +54,22 @@ describe('Testing Node specific operations for Neo4j', function(){
 
 		describe('-> A second valid node insertion with one label (string)', function(){
 			it('should return the JSON for this node', function(done){
-				db.insertNode({ name:'Darth Vader', level: 99 }, 'User', function(err, result){					
+				db.insertNode({ name:'Darth Vader', level: 99, hobbies: ['lightsaber fighting', 'cycling in space'], shipIds: [123, 321] }, 'User', function(err, result){					
 					secondNodeId = result.id;
 					should.not.exist(err);
 					should.exist(result);
 					should.exist(result.data);
+					result.data.should.have.keys('name', 'level', 'hobbies', 'shipIds');
 					result.data.name.should.equal('Darth Vader');
-					result.data.level.should.be.a('number');
 					result.data.level.should.equal(99);
+					result.data.hobbies.should.be.an.instanceOf(Array);
+					result.data.hobbies.should.have.lengthOf(2);
+					result.data.hobbies.should.include('lightsaber fighting');
+					result.data.hobbies.should.include('cycling in space');
+					result.data.shipIds.should.be.an.instanceOf(Array);
+					result.data.shipIds.should.have.lengthOf(2);
+					result.data.shipIds.should.include(123);
+					result.data.shipIds.should.include(321);
 					result.id.should.be.a('number');
 					done();
 				});
@@ -134,9 +145,11 @@ describe('Testing Node specific operations for Neo4j', function(){
 
 		describe('-> A node with properties containing Unicode characters', function(){
 			it('should return the JSON for that node', function(done){
-				db.insertNode({name:'√ fööbar √'}, function(err, result){
+				db.insertNode({name:'√ fööbar √'}, function(err, result){					
 					fifthNodeId = result.id;
 					should.exist(result);
+					should.exist(result.data);
+					should.exist(result.data.name);
 					result.data.name.should.equal('√ fööbar √');
 					result.id.should.be.a('number');
 					done();
@@ -1104,8 +1117,7 @@ describe('Testing Node specific operations for Neo4j', function(){
 
 		describe('-> Get nodes with a non-existing label', function(){
 			it('should return no nodes (empty array)', function(done){
-				db.readNodesWithLabel('NotExisting', function(err, result){
-					//debug(result);
+				db.readNodesWithLabel('NotExisting', function(err, result){					
 					should.not.exist(err);
 					should.exist(result);
 					result.should.be.an.instanceOf(Array);
@@ -1189,7 +1201,6 @@ describe('Testing Node specific operations for Neo4j', function(){
 		describe('-> Get nodes by label and invalid property: string (must be json)', function(){
 			it('should return an error because "property" needs to be json', function(done){
 				db.readNodesWithLabelAndProperties('Belgium', 'Nöt Existing √', function(err, result){
-					//debug(err); debug(result);
 					should.exist(err);
 					should.not.exist(result);			
 					done();
@@ -1208,7 +1219,7 @@ describe('Testing Node specific operations for Neo4j', function(){
 		});
 	}); /* END => readNodesWithLabelAndProperty:  Get nodes by label and property -------*/
 
-	describe('=> FIX ME PLEASE: listAllLabels:  List all labels', function(){
+	describe('=> listAllLabels:  List all labels', function(){
 		var nodeIdOne;
 		var nodeIdTwo;
 
@@ -1227,14 +1238,13 @@ describe('Testing Node specific operations for Neo4j', function(){
 				});
 			});
 		});
-		// TODO: issue, returns labels of non-existing nodes. Why?
+
 		describe('-> List all labels', function(){
-			it('should return three different labels', function(done){				
-				db.listAllLabels(function(err, result){					
+			it('should return all labels ever used', function(done){
+				db.listAllLabels(function(err, result){
 					should.not.exist(err);
 					should.exist(result);
 					result.should.be.an.instanceOf(Array);
-					result.should.have.lengthOf(3);
 					result.should.include('Capital');
 					result.should.include('City');
 					result.should.include('Belgium');
@@ -1601,10 +1611,22 @@ describe('Testing Node specific operations for Neo4j', function(){
 										}
 									}]
 							};
+		var statementsThree = {	
+								statements : [ {
+									statement : "CREATE (person {props}) RETURN person",
+										parameters : {
+											props : {
+												name : "Julia",
+												age: 24,
+												favoriteColors: ['Green', 'Vanilla White']
+											}
+										}
+									}]
+							};
 
 		describe('-> beginTransaction: Start a transaction', function(){
 			it('should return the json of that transaction', function(done){
-				db.beginTransaction(statementsOne, function(err, result){					
+				db.beginTransaction(statementsOne, function(err, result){
 					should.not.exist(err);
 					should.exist(result);
 					should.exist(result.transactionId);
@@ -1629,7 +1651,7 @@ describe('Testing Node specific operations for Neo4j', function(){
 		});
 
 		describe('-> addStatementsToTransaction: Add an invalid statement to an open transaction', function(){
-			it('should return false because transaction does not exist', function(done){
+			it('should return an error and an more details in result.errors', function(done){
 				db.addStatementsToTransaction(transactionId, {}, function(err, result){
 					should.exist(err);
 					should.exist(result);					
@@ -1671,12 +1693,22 @@ describe('Testing Node specific operations for Neo4j', function(){
 			});
 		});
 
+		/*describe('-> commitTransaction: Commit an open transaction', function(){
+			it('should return the json of that transaction', function(done){
+				db.commitTransaction(transactionId, statementsThree, function(err, result){
+					debug(err);debug(result);
+					should.not.exist(err);
+					should.exist(result);
+					should.exist(result.transactionId);					
+					result.transactionId.should.equal(transactionId);
+					done();
+				});
+			});
+		});*/
+
 
 	}); 
 	
-
-	
-
 	// describe('=> Remove all ')
 
 	/* ADVANCED FUNCTIONS ---------- */
@@ -2002,8 +2034,7 @@ describe('Testing Node specific operations for Neo4j', function(){
 		
 		describe('-> Run a cypher query against an existing root node', function(){
 			it('should return a dataset with a single node', function(done){
-				db.cypherQuery("START user = node({id}) RETURN user", { id: root_node_id }, function(err, result){
-					//console.log('RESULT IS: ' + util.inspect(result));
+				db.cypherQuery("START user = node({id}) RETURN user", { id: root_node_id }, function(err, result){					
 					should.not.exist(err);
 					result.data.length.should.equal(1);
 					result.data[0].id.should.equal(root_node_id);
