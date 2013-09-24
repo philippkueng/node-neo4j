@@ -7,7 +7,7 @@ var url = 'http://localhost:7474';
 var db = new neo4j(url);
 
 function debug (obj) {
-	console.info(util.inspect(obj));
+	console.info(util.inspect(obj, { depth: 10 }));
 }
 
 /*
@@ -195,7 +195,7 @@ describe('Testing Node specific operations for Neo4j', function(){
 			});
 		});
 
-		describe('-> Delete an non-existig Node', function(){
+		describe('-> Delete an non-existing Node', function(){
 		   it('should return false as a result since Node cannot be found', function(done){
 			   db.deleteNode(node_id, function(err, result){
 				  result.should.equal(false);
@@ -1531,12 +1531,12 @@ describe('Testing Node specific operations for Neo4j', function(){
 					db.dropUniquenessContstraint('User', 'email', this.parallel())
 				},
 				function afterDelete(err) {
-					if (err) throw err;
+					should.not.exist(err);
 					db.listAllConstraints(function(err, result){
 						should.not.exist(err);
 						should.exist(result);
 						result.should.be.an.instanceOf(Array);
-						result.should.have.lengthOf(0);					
+						result.should.have.lengthOf(0);
 						done();
 					});
 				}
@@ -1559,7 +1559,7 @@ describe('Testing Node specific operations for Neo4j', function(){
 		// Create a constraint
 		before(function(done){
 			db.createUniquenessContstraint('User', 'email', function(err, result){					
-				if (err) throw err;
+				should.not.exist(err);
 				done();
 			});
 		});
@@ -1588,10 +1588,10 @@ describe('Testing Node specific operations for Neo4j', function(){
 
 
 	describe('=> Transactions', function(){
-		var transactionId;
+		var transactionIdOne, transactionIdTwo, transactionIdThree;
 		var statementsOne = {	
 								statements : [ {
-									statement : "CREATE (person {props}) RETURN person",
+									statement : "CREATE (p:Person {props}) RETURN p",
 										parameters : {
 											props : {
 												name : "Adam",
@@ -1602,10 +1602,10 @@ describe('Testing Node specific operations for Neo4j', function(){
 							};
 		var statementsTwo = {	
 								statements : [ {
-									statement : "CREATE (person {props}) RETURN person",
+									statement : "CREATE (p:Person {props}) RETURN p",
 										parameters : {
 											props : {
-												name : "Eva",
+												name : "Adam",
 												age: 23
 											}
 										}
@@ -1613,25 +1613,38 @@ describe('Testing Node specific operations for Neo4j', function(){
 							};
 		var statementsThree = {	
 								statements : [ {
-									statement : "CREATE (person {props}) RETURN person",
+									statement : "CREATE (p:Person {props}) RETURN p",
 										parameters : {
 											props : {
-												name : "Julia",
+												name : "Adam",
 												age: 24,
 												favoriteColors: ['Green', 'Vanilla White']
 											}
 										}
 									}]
 							};
+		var statementsFour = {	
+						statements : [ {
+							statement : "CREATE (p:Person {props}) RETURN p",
+								parameters : {
+									props : {
+										name : "Adam",
+										age: 21.17,
+										favoriteNumbers: [123, 456789],
+										gender: true
+									}
+								}
+							}]
+					};
 
-		describe('-> beginTransaction: Start a transaction', function(){
+		describe('-> beginTransaction: Start a first transaction', function(){
 			it('should return the json of that transaction', function(done){
-				db.beginTransaction(statementsOne, function(err, result){
+				db.beginTransaction(statementsOne, function(err, result){					
 					should.not.exist(err);
 					should.exist(result);
 					should.exist(result.transactionId);
 					result.transactionId.should.be.a('number');
-					transactionId = result.transactionId;
+					transactionIdOne = result.transactionId;
 					done();
 				});
 			});
@@ -1639,22 +1652,12 @@ describe('Testing Node specific operations for Neo4j', function(){
 
 		describe('-> addStatementsToTransaction: Add one statement to an open transaction', function(){
 			it('should return the json of that transaction', function(done){
-				db.addStatementsToTransaction(transactionId, statementsTwo, function(err, result){
+				db.addStatementsToTransaction(transactionIdOne, statementsTwo, function(err, result){					
 					should.not.exist(err);
 					should.exist(result);
 					should.exist(result.transactionId);
 					result.transactionId.should.be.a('number');
-					result.transactionId.should.equal(transactionId);
-					done();
-				});
-			});
-		});
-
-		describe('-> addStatementsToTransaction: Add an invalid statement to an open transaction', function(){
-			it('should return an error and an more details in result.errors', function(done){
-				db.addStatementsToTransaction(transactionId, {}, function(err, result){
-					should.exist(err);
-					should.exist(result);					
+					result.transactionId.should.equal(transactionIdOne);
 					done();
 				});
 			});
@@ -1672,17 +1675,20 @@ describe('Testing Node specific operations for Neo4j', function(){
 		});
 
 		describe('-> resetTimeoutTransaction: Reset transaction timeout of an open transaction', function(){
-			it('should return false because transaction does not exist', function(done){
-				db.resetTimeoutTransaction(transactionId, function(err, result){
+			it('should return true if timout has been reset', function(done){
+				db.resetTimeoutTransaction(transactionIdOne, function(err, result){
 					should.not.exist(err);
-					should.exist(result);
-					result.should.equal(false);
+					should.exist(result); // should contains some keys with empty arrays
+					result.should.have.keys('commit', 'results', 'transaction', 'errors', 'transactionId');
+					result.transactionId.should.equal(transactionIdOne);
+					result.errors.should.be.an.instanceOf(Array);
+					result.errors.should.have.lengthOf(0);
 					done();
 				});
 			});
 		});
 
-		describe('-> resetTimeoutTransaction: Reset transaction timeout of an open transaction', function(){
+		describe('-> resetTimeoutTransaction: Reset transaction timeout of an non-existing transaction', function(){
 			it('should return false because transaction does not exist', function(done){
 				db.resetTimeoutTransaction(123456789, function(err, result){
 					should.not.exist(err);
@@ -1693,22 +1699,114 @@ describe('Testing Node specific operations for Neo4j', function(){
 			});
 		});
 
-		/*describe('-> commitTransaction: Commit an open transaction', function(){
+		describe('-> commitTransaction: Commit an open transaction with one statement', function(){
 			it('should return the json of that transaction', function(done){
-				db.commitTransaction(transactionId, statementsThree, function(err, result){
-					debug(err);debug(result);
+				db.commitTransaction(transactionIdOne, function(err, result){
 					should.not.exist(err);
 					should.exist(result);
-					should.exist(result.transactionId);					
-					result.transactionId.should.equal(transactionId);
+					result.should.not.equal(false);
 					done();
 				});
 			});
-		});*/
+		});
 
+		describe('-> beginTransaction: Start a second transaction with no statements', function(){
+			it('should return the json of that transaction', function(done){
+				db.beginTransaction(function(err, result){
+					debug(result);		
+					should.not.exist(err);
+					should.exist(result);
+					should.exist(result.transactionId);
+					result.transactionId.should.be.a('number');
+					transactionIdTwo = result.transactionId;
+					done();
+				});
+			});
+		});
 
-	}); 
-	
+		describe('-> commitTransaction: Commit an second open transaction with no statements', function(){
+			it('should return the json of that transaction', function(done){
+				db.commitTransaction(transactionIdTwo, statementsThree, function(err, result){
+					should.not.exist(err);
+					should.exist(result);
+					result.should.have.keys('results', 'errors');
+					result.errors.should.be.an.instanceOf(Array);
+					result.errors.should.have.lengthOf(0);
+					done();
+				});
+			});
+		});
+
+		describe('-> beginAndCommitTransaction: Begin a transaction, execute statements, and commit transaction', function(){
+			it('should return the json of that transaction', function(done){
+				db.beginAndCommitTransaction(statementsFour, function(err, result){
+					should.not.exist(err);
+					should.exist(result);
+					result.should.have.keys('results', 'errors');
+					result.errors.should.be.an.instanceOf(Array);
+					result.errors.should.have.lengthOf(0);
+					done();
+				});
+			});
+		});
+
+		describe('-> beginTransaction: Start a third transaction', function(){
+			it('should return the json of that transaction', function(done){
+				db.beginTransaction(statementsOne, function(err, result){					
+					should.not.exist(err);
+					should.exist(result);
+					should.exist(result.transactionId);
+					result.transactionId.should.be.a('number');
+					transactionIdThree = result.transactionId;
+					done();
+				});
+			});
+		});
+
+		describe('-> rollbackTransaction: Rollback an non-existing transaction', function(){
+			it('should return false because transaction does not exist', function(done){
+				db.rollbackTransaction(123456789, function(err, result){					
+					should.not.exist(err);
+					should.exist(result);
+					result.should.equal(false);
+					done();
+				});
+			});
+		});
+
+		describe('-> rollbackTransaction: Rollback an open transaction', function(){
+			it('should return true if rollback was successful', function(done){
+				db.rollbackTransaction(transactionIdThree, function(err, result){					
+					should.not.exist(err);
+					should.exist(result);
+					result.should.equal(true);
+					done();
+				});
+			});
+		});
+
+		after(function(done){
+			db.readNodesWithLabelAndProperties('Person', { name: 'Adam' }, function(err, result){					
+					should.not.exist(err);
+					should.exist(result);
+					result.should.be.an.instanceOf(Array);
+					result.should.have.lengthOf(4);
+					for(var i=0; i < 4; i++)
+						should.exist(result[i].id);
+					Step(
+						function deleteNodes() {
+							for(var j=0; j < 4; j++)
+								db.deleteNode(result[j].id, this.parallel());							
+						},
+						function afterDelete(err) {
+							should.not.exist(err);
+							done();
+						}
+					);
+			});
+		}); // after
+	});
+
 	// describe('=> Remove all ')
 
 	/* ADVANCED FUNCTIONS ---------- */

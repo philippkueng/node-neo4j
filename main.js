@@ -887,7 +887,17 @@ Neo4j.prototype.dropUniquenessContstraint = function(label, property_key, callba
 /*	Begin a transaction
 	You begin a new transaction by posting zero or more Cypher statements to the transaction endpoint. 
 	The server will respond with the result of your statements, as well as the location of your open transaction.
-	Example:
+
+	Examples:
+	beginTransaction(callback);
+	returns  {
+				commit: 'http://localhost:7474/db/data/transaction/10/commit',
+				results: [],
+				transaction: { expires: 'Tue, 24 Sep 2013 19:43:31 +0000' },
+				errors: [],
+				transactionId: 10
+			}
+
 	beginTransaction({
 					  statements : [ {
 					    statement : "CREATE (n {props}) RETURN n",
@@ -905,14 +915,18 @@ Neo4j.prototype.dropUniquenessContstraint = function(label, property_key, callba
 			  	transaction: { expires: 'Sun, 22 Sep 2013 19:31:17 +0000' },
 			  	errors: [],
 			  	transactionId: 18 
-			}	*/
+			}																								*/
 
-Neo4j.prototype.beginTransaction = function(statements, callback){	
+Neo4j.prototype.beginTransaction = function(statements, callback){
 	var that = this;
+	if(!statements || typeof statements === 'function') {
+		callback = statements;
+		statements = { statements : [] };
+	}
 	request
 		.post(this.url + '/db/data/transaction')
 		.send(statements)
-				.end(function(result){
+		.end(function(result){
 			switch(result.statusCode){
 				case 201:
 					that.addTransactionId(result.body, callback);
@@ -926,6 +940,23 @@ Neo4j.prototype.beginTransaction = function(statements, callback){
 		});
 };
 
+/*	Execute statements in an open transaction
+	Given that you have an open transaction, you can make a number of requests, 
+	each of which executes additional statements, and keeps the transaction open by resetting the transaction timeout. 
+
+	Example:
+	db.addStatementsToTransaction(7, {	
+										statements : [ {
+											statement : "CREATE (p:Person {props}) RETURN p",
+												parameters : {
+													props : {
+														name : "Adam",
+														age: 23
+													}
+												}
+											}]
+									}, callback);		*/
+
 Neo4j.prototype.addStatementsToTransaction = function(transactionId, statements, callback){
 	var that = this;
 	var val = new Validator();
@@ -937,7 +968,7 @@ Neo4j.prototype.addStatementsToTransaction = function(transactionId, statements,
 	request
 		.post(this.url + '/db/data/transaction/' + transactionId)
 		.send(statements)
-				.end(function(result){			
+		.end(function(result){
 			switch(result.statusCode){
 				case 200:
 					that.addTransactionId(result.body, function afterAddingTransactionId (err, res) {
@@ -961,9 +992,16 @@ Neo4j.prototype.addStatementsToTransaction = function(transactionId, statements,
 	This may be prevented by resetting the transaction timeout.
 	This request will reset the transaction timeout and return the new time at which 
 	the transaction will expire as an RFC1123 formatted timestamp value in the “transaction” section of the response.
+
 	Example:
 		resetTimeoutTransaction(7, callback);
-	*/
+		returns {
+					commit: 'http://localhost:7474/db/data/transaction/7/commit',
+					results: [],
+					transaction: { expires: 'Tue, 24 Sep 2013 18:13:43 +0000' },
+					errors: [],
+  					transactionId: 7 
+  				}																	*/
 
 Neo4j.prototype.resetTimeoutTransaction = function(transactionId, callback){
 	var that = this;
@@ -976,7 +1014,7 @@ Neo4j.prototype.resetTimeoutTransaction = function(transactionId, callback){
 	request
 		.post(this.url + '/db/data/transaction/' + transactionId)
 		.send({ statements : [ ]})
-				.end(function(result){			
+				.end(function(result){
 			switch(result.statusCode){
 				case 200:
 					that.addTransactionId(result.body, callback);
@@ -995,7 +1033,27 @@ Neo4j.prototype.resetTimeoutTransaction = function(transactionId, callback){
 	Optionally, you submit additional statements along with the request that will 
 	be executed before committing the transaction.
 
-	*/
+	Example:
+	commitTransaction(7, {	
+								statements : [ {
+									statement : "CREATE (p:Person {props}) RETURN p",
+										parameters : {
+											props : {
+												name : "Adam",
+												age: 24,
+												favoriteColors: ['Green', 'Vanilla White']
+											}
+										}
+									}]
+							});
+	returns	{
+				results: [ { columns: [ 'p' ],
+				data: [ { row: [ {  name: 'Adam',
+									age: 24,
+									favoriteColors: [ 'Green', 'Vanilla White' ] } ] } ]
+						} ],
+				errors: [] 
+			}					*/
 
 Neo4j.prototype.commitTransaction = function(transactionId, statements, callback){
 	var that = this;
@@ -1005,13 +1063,18 @@ Neo4j.prototype.commitTransaction = function(transactionId, statements, callback
 	if(val.hasErrors)
 		return callback(val.error(), null);
 
+	if(!statements || typeof statements === 'function') {
+		callback = statements;
+		statements = { statements : [] };
+	}
+
 	request
 		.post(this.url + '/db/data/transaction/' + transactionId + '/commit')
 		.send(statements)
-				.end(function(result){			
+		.end(function(result){
 			switch(result.statusCode){
 				case 200:
-					callback(null, res);
+					callback(null, result.body);
 					break;
 				case 404:
 					callback(null, false); // Transaction doesn't exist.
@@ -1026,7 +1089,7 @@ Neo4j.prototype.commitTransaction = function(transactionId, statements, callback
 	Given that you have an open transaction, you can send a roll back request. 
 	The server will roll back the transaction. */
 
-Neo4j.prototype.rollbackTransaction = function(transactionId, statements, callback){
+Neo4j.prototype.rollbackTransaction = function(transactionId, callback){
 	var that = this;
 	var val = new Validator();
 	val.transaction(transactionId);
@@ -1036,17 +1099,16 @@ Neo4j.prototype.rollbackTransaction = function(transactionId, statements, callba
 
 	request
 		.del(this.url + '/db/data/transaction/' + transactionId)
-		.send(statements)
-				.end(function(result){			
+		.end(function(result){
 			switch(result.statusCode){
-				case 200:					
-					callback(null, true);					
+				case 200:
+					callback(null, true);
 					break;
 				case 404:
 					callback(null, false); // Transaction doesn't exist.
 					break;
 				default:
-					callback(new Error('HTTP Error ' + result.statusCode + ' when adding statements to transaction.'), null);
+					callback(new Error('HTTP Error ' + result.statusCode + ' when rolling back transaction.'), null);
 			} 
 		});
 };
@@ -1059,32 +1121,28 @@ Neo4j.prototype.beginAndCommitTransaction = function(statements, callback){
 	request
 		.post(this.url + '/db/data/transaction/commit')
 		.send(statements)
-				.end(function(result){			
+		.end(function(result){
 			switch(result.statusCode){
 				case 200:
-					that.addTransactionId(result.body, callback);
+					callback(null, result.body);
 					break;
 				case 404:
 					callback(null, false); // Transaction doesn't exist.
 					break;
 				default:
-					callback(new Error('HTTP Error ' + result.statusCode + ' when commiting transaction.'), null);
+					callback(new Error('HTTP Error ' + result.statusCode + ' when beginning and commiting transaction.'), null);
 			} 
 		});
 };
-
-
 
 /* ADVANCED FUNCTIONS ---------- */
 
 /* Get all Relationship Types -------- */
 
-Neo4j.prototype.readRelationshipTypes = function(callback){
-	var that = this;
-
+Neo4j.prototype.readRelationshipTypes = function(callback){	
 	request
-		.get(that.url + '/db/data/relationship/types')
-				.end(function(result){
+		.get(this.url + '/db/data/relationship/types')
+		.end(function(result){
 			switch(result.statusCode){
 				case 200:
 					callback(null, result.body);
