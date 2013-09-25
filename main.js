@@ -31,18 +31,17 @@ function debug (obj) {
 Neo4j.prototype.insertNode = function(node, labels, callback){
 	var that = this;
 	// Insert node without a label with post request
-	if(typeof labels === 'function') {
+	if(typeof callback === 'undefined') {
 		callback = labels;		
 		request
 			.post(this.url + '/db/data/node')
-			.send(node)			//  content-type:application/json;charset=utf-8						
+			.send(node)
 			.end(function(result){
 				if(result.body)
 					that.addNodeId(result.body, callback);
 				else 
 					callback(new Error('Response is empty'), null);
 			});
-
 	} else {
 		var val = new Validator();
 

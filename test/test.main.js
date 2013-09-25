@@ -32,7 +32,8 @@ describe('Testing Node specific operations for Neo4j', function(){
 
 		describe('-> A first simple valid node insertion with no labels', function(){
 			it('should return the JSON for this node', function(done){
-				db.insertNode({name:'Crazy Taco', age: 7, favoriteColors: ['red', 'orange']}, function(err, result){					
+				db.insertNode({name:'Crazy Taco', age: 7, favoriteColors: ['red', 'orange']}, function(err, result){
+					debug(result);				
 					firstNodeId = result.id;
 					should.not.exist(err);
 					should.exist(result);
