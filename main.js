@@ -14,6 +14,7 @@ function Neo4j(url){
 	}
 };
 
+
 function debug (obj) {
 	console.info(util.inspect(obj) + '\n\n');
 }
