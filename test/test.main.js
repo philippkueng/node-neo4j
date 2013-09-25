@@ -1589,55 +1589,56 @@ describe('Testing Node specific operations for Neo4j', function(){
 
 	describe('=> Transactions', function(){
 		var transactionIdOne, transactionIdTwo, transactionIdThree;
-		var statementsOne = {	
+		var statementsOne = {
 								statements : [ {
-									statement : "CREATE (p:Person {props}) RETURN p",
-										parameters : {
-											props : {
-												name : "Adam",
-												age: 22
-											}
+									statement : 'CREATE (p:Person {props}) RETURN p',
+									parameters : {
+										props : {
+											name : 'Adam',
+											age: 22
 										}
-									}]
-							};
-		var statementsTwo = {	
-								statements : [ {
-									statement : "CREATE (p:Person {props}) RETURN p",
-										parameters : {
-											props : {
-												name : "Adam",
-												age: 23
-											}
-										}
-									}]
-							};
-		var statementsThree = {	
-								statements : [ {
-									statement : "CREATE (p:Person {props}) RETURN p",
-										parameters : {
-											props : {
-												name : "Adam",
-												age: 24,
-												favoriteColors: ['Green', 'Vanilla White']
-											}
-										}
-									}]
-							};
-		var statementsFour = {	
-						statements : [ {
-							statement : "CREATE (p:Person {props}) RETURN p",
-								parameters : {
-									props : {
-										name : "Adam",
-										age: 21.17,
-										favoriteNumbers: [123, 456789],
-										gender: true
 									}
-								}
-							}]
-					};
+								}]
+							};
+		var statementsTwo = {
+								statements : [ {
+								statement : 'CREATE (p:Person {props}) RETURN p',
+									parameters : {
+										props : {
+											name : 'Adam',
+											age: 23
+										}
+									}
+								}]
+							};
+		var statementsThree = {
+								statements : [ {
+									statement : 'CREATE (p:Person {props}) RETURN p',
+									parameters : {
+										props : {
+											name : 'Adam',
+											age: 24,
+											favoriteColors: ['Green', 'Vanilla White']
+										}
+									}
+								}]
+							};
+		var statementsFour = {
+								statements : [ {
+									statement : 'CREATE (p:Person {props}) RETURN p',
+									parameters : {
+										props : {
+											name : 'Adam',
+											age: 21.17,
+											favoriteNumbers: [123, 456789],
+											gender: true
+										}
+									},
+									resultDataContents : [ 'row', 'graph' ]
+								}]
+							};
 
-		describe('-> beginTransaction: Start a first transaction', function(){
+		describe('-> beginTransaction: Start a transaction with on statement', function(){
 			it('should return the json of that transaction', function(done){
 				db.beginTransaction(statementsOne, function(err, result){					
 					should.not.exist(err);
@@ -1650,9 +1651,9 @@ describe('Testing Node specific operations for Neo4j', function(){
 			});
 		});
 
-		describe('-> addStatementsToTransaction: Add one statement to an open transaction', function(){
+		describe('-> addStatementsToTransaction: Add a statement to an open transaction', function(){
 			it('should return the json of that transaction', function(done){
-				db.addStatementsToTransaction(transactionIdOne, statementsTwo, function(err, result){					
+				db.addStatementsToTransaction(transactionIdOne, statementsTwo, function(err, result){
 					should.not.exist(err);
 					should.exist(result);
 					should.exist(result.transactionId);
@@ -1713,7 +1714,6 @@ describe('Testing Node specific operations for Neo4j', function(){
 		describe('-> beginTransaction: Start a second transaction with no statements', function(){
 			it('should return the json of that transaction', function(done){
 				db.beginTransaction(function(err, result){
-					debug(result);		
 					should.not.exist(err);
 					should.exist(result);
 					should.exist(result.transactionId);
@@ -1752,7 +1752,7 @@ describe('Testing Node specific operations for Neo4j', function(){
 
 		describe('-> beginTransaction: Start a third transaction', function(){
 			it('should return the json of that transaction', function(done){
-				db.beginTransaction(statementsOne, function(err, result){					
+				db.beginTransaction(statementsOne, function(err, result){
 					should.not.exist(err);
 					should.exist(result);
 					should.exist(result.transactionId);

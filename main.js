@@ -15,6 +15,10 @@ function Neo4j(url){
 	}
 };
 
+function debug (obj) {
+	console.info(util.inspect(obj) + '\n\n');
+}
+
 /*	Insert a Node
 	Examples:
 	Insert a Node with no label:
@@ -24,9 +28,6 @@ function Neo4j(url){
 		insertNode({ name: 'Kristof' }, 'Student', callback);
 	Insert a Node with three labels:
 		insertNode({ name: 'Kristof' }, ['User', 'Student' ,'Man'], callback);		*/
-function debug (obj) {
-	console.info(util.inspect(obj) + '\n\n');
-}
 
 Neo4j.prototype.insertNode = function(node, labels, callback){
 	var that = this;
@@ -270,8 +271,8 @@ Neo4j.prototype.insertIndex = function(index, callback){
 	Create an index on the first name of a person.
 		insertLabelIndex('Person', 'firstname', callback);
 		returns {
-				  "label" : "Person",
-				  "property-keys" : [ "firstname" ]
+				  'label' : 'Person',
+				  'property-keys' : [ 'firstname' ]
 				}
 	Note:
 	Compound indexes are not yet supported, only one property per index is allowed.
@@ -664,7 +665,7 @@ Neo4j.prototype.readNodesWithLabelAndProperties = function(label, properties, ca
 /*	List all labels.
 	Example:
 	listAllLabels(callback);
-		returns [ "User", "Person", "Male", "Animal" ] */
+		returns [ 'User', 'Person', 'Male', 'Animal' ] */
 
 Neo4j.prototype.listAllLabels = function(callback){
 	request
@@ -689,9 +690,9 @@ Neo4j.prototype.listAllLabels = function(callback){
 	Example:
 		createUniquenessContstraint('User','email', callback);
 		returns 	{
-					  "label" : "User",
-					  "type" : "UNIQUENESS",
-					  "property-keys" : [ "email" ]
+					  'label' : 'User',
+					  'type' : 'UNIQUENESS',
+					  'property-keys' : [ 'email' ]
 					}			*/
 
 Neo4j.prototype.createUniquenessContstraint = function(label, property_key, callback){	
@@ -722,9 +723,9 @@ Neo4j.prototype.createUniquenessContstraint = function(label, property_key, call
 	Example:
 		readUniquenessConstraint('User','email', callback);
 		returns [ {
-				  "label" : "User",
-				  "property-keys" : [ "email" ],
-				  "type" : "UNIQUENESS"
+				  'label' : 'User',
+				  'property-keys' : [ 'email' ],
+				  'type' : 'UNIQUENESS'
 				} ]						 		*/
 
 Neo4j.prototype.readUniquenessConstraint = function(label, property, callback){
@@ -754,13 +755,13 @@ Neo4j.prototype.readUniquenessConstraint = function(label, property, callback){
 	Example:
 		listAllUniquenessConstraintsForLabel('User', callback);
 		returns [ {
-				  "label" : "User",
-				  "property-keys" : [ "uid" ],
-				  "type" : "UNIQUENESS"
+				  'label' : 'User',
+				  'property-keys' : [ 'uid' ],
+				  'type' : 'UNIQUENESS'
 				}, {
-				  "label" : "User",
-				  "property-keys" : [ "email" ],
-				  "type" : "UNIQUENESS"
+				  'label' : 'User',
+				  'property-keys' : [ 'email' ],
+				  'type' : 'UNIQUENESS'
 				} ]						 		*/
 
 Neo4j.prototype.listAllUniquenessConstraintsForLabel = function(label, callback){
@@ -788,13 +789,13 @@ Neo4j.prototype.listAllUniquenessConstraintsForLabel = function(label, callback)
 	Example:
 		listAllConstraints(callback);
 		returns [ {
-				  "label" : "Product",
-				  "property-keys" : [ "pid" ],
-				  "type" : "UNIQUENESS"
+				  'label' : 'Product',
+				  'property-keys' : [ 'pid' ],
+				  'type' : 'UNIQUENESS'
 				}, {
-				  "label" : "User",
-				  "property-keys" : [ "email" ],
-				  "type" : "UNIQUENESS"
+				  'label' : 'User',
+				  'property-keys' : [ 'email' ],
+				  'type' : 'UNIQUENESS'
 				} ]						*/
 
 Neo4j.prototype.listAllConstraintsForLabel = function(label, callback){
@@ -823,13 +824,13 @@ Neo4j.prototype.listAllConstraintsForLabel = function(label, callback){
 	Example:
 		listAllConstraints(callback);
 		returns [ {
-				  "label" : "Product",
-				  "property-keys" : [ "pid" ],
-				  "type" : "UNIQUENESS"
+				  'label' : 'Product',
+				  'property-keys' : [ 'pid' ],
+				  'type' : 'UNIQUENESS'
 				}, {
-				  "label" : "User",
-				  "property-keys" : [ "email" ],
-				  "type" : "UNIQUENESS"
+				  'label' : 'User',
+				  'property-keys' : [ 'email' ],
+				  'type' : 'UNIQUENESS'
 				} ]								*/
 
 Neo4j.prototype.listAllConstraints = function(callback){
@@ -853,9 +854,9 @@ Neo4j.prototype.listAllConstraints = function(callback){
 	Example:
 		dropContstraint('User','email', callback);
 		returns 	{
-					  "label" : "User",
-					  "type" : "UNIQUENESS",
-					  "property-keys" : [ "email" ]
+					  'label' : 'User',
+					  'type' : 'UNIQUENESS',
+					  'property-keys' : [ 'email' ]
 					}			*/
 
 Neo4j.prototype.dropUniquenessContstraint = function(label, property_key, callback){	
@@ -884,9 +885,33 @@ Neo4j.prototype.dropUniquenessContstraint = function(label, property_key, callba
 
 /* TRANSACTIONS */
 
+/*	NOTE:
+	Details 'statements' property in beginTransaction, addStatementsToTransaction,
+	commitTransaction and beginAndCommitTransaction:
+
+	Return results in graph format by adding	resultDataContents : [ 'row', 'graph' ]	to a statement.
+	If you want to understand the graph structure of nodes and relationships returned by your query,
+	you can specify the 'graph' results data format. 
+	For example, this is useful when you want to visualise the graph structure.
+	The format collates all the nodes and relationships from all columns of the result,
+	and also flattens collections of nodes and relationships, including paths.
+
+	Note the resultDataContents property.
+
+	Example of a 'statements' parameter:
+	{
+		statements:	[ { statement : 'CREATE ( bike:Bike { weight: 10 } )CREATE ( frontWheel:Wheel { spokes: 3 } )CREATE ( backWheel:Wheel { spokes: 32 } )CREATE p1 = bike -[:HAS { position: 1 } ]-> frontWheel CREATE p2 = bike -[:HAS { position: 2 } ]-> backWheel RETURN bike, p1, p2',
+    					resultDataContents : [ 'row', 'graph' ]
+					} ]
+	}
+
+
 /*	Begin a transaction
 	You begin a new transaction by posting zero or more Cypher statements to the transaction endpoint. 
 	The server will respond with the result of your statements, as well as the location of your open transaction.
+	In the 'transaction' section you will find the expire date of the transaction. It's a RFC1123 formatted timestamp.
+	The transactionId will be added to the result.
+	Check the above 'NOTE' for more details about the statements parameter.
 
 	Examples:
 	beginTransaction(callback);
@@ -900,10 +925,10 @@ Neo4j.prototype.dropUniquenessContstraint = function(label, property_key, callba
 
 	beginTransaction({
 					  statements : [ {
-					    statement : "CREATE (n {props}) RETURN n",
+					    statement : 'CREATE (n {props}) RETURN n',
 					    parameters : {
 					      props : {
-					        name : "Adamn",
+					        name : 'Adam',
 					        age: 22
 					      }
 					    }
@@ -942,20 +967,31 @@ Neo4j.prototype.beginTransaction = function(statements, callback){
 
 /*	Execute statements in an open transaction
 	Given that you have an open transaction, you can make a number of requests, 
-	each of which executes additional statements, and keeps the transaction open by resetting the transaction timeout. 
+	each of which executes additional statements, and keeps the transaction open by resetting the transaction timeout.
+	If the transaction in rolled back or it does not exist false will be returned (to callback)
+	In the 'transaction' section you will find the expire date of the transaction. It's a RFC1123 formatted timestamp.
+	The transactionId will be added to the result.
+	Check the above 'NOTE' for more details about the statements parameter.
 
 	Example:
-	db.addStatementsToTransaction(7, {	
-										statements : [ {
-											statement : "CREATE (p:Person {props}) RETURN p",
-												parameters : {
-													props : {
-														name : "Adam",
-														age: 23
+		db.addStatementsToTransaction(7, {	
+											statements : [ {
+												statement : 'CREATE (p:Person {props}) RETURN p',
+													parameters : {
+														props : {
+															name : 'Adam',
+															age: 23
+														}
 													}
-												}
-											}]
-									}, callback);		*/
+												}]
+										}, callback);
+		returns {
+					commit: 'http://localhost:7474/db/data/transaction/22/commit',
+					results: [],
+					transaction: { expires: 'Wed, 25 Sep 2013 13:45:17 +0000' },
+					errors: [],
+					transactionId: 22
+				}																		*/
 
 Neo4j.prototype.addStatementsToTransaction = function(transactionId, statements, callback){
 	var that = this;
@@ -992,6 +1028,8 @@ Neo4j.prototype.addStatementsToTransaction = function(transactionId, statements,
 	This may be prevented by resetting the transaction timeout.
 	This request will reset the transaction timeout and return the new time at which 
 	the transaction will expire as an RFC1123 formatted timestamp value in the “transaction” section of the response.
+	If the transaction in rolled back or it does not exist false will be returned (to callback)
+	The transactionId will be added to the result.
 
 	Example:
 		resetTimeoutTransaction(7, callback);
@@ -1032,14 +1070,16 @@ Neo4j.prototype.resetTimeoutTransaction = function(transactionId, callback){
 	Given you have an open transaction, you can send a commit request. 
 	Optionally, you submit additional statements along with the request that will 
 	be executed before committing the transaction.
-
+	If the transaction in rolled back or it does not exist false will be returned (to callback)
+	Check the above 'NOTE' for more details about the statements parameter.
+	
 	Example:
 	commitTransaction(7, {	
 								statements : [ {
-									statement : "CREATE (p:Person {props}) RETURN p",
+									statement : 'CREATE (p:Person {props}) RETURN p',
 										parameters : {
 											props : {
-												name : "Adam",
+												name : 'Adam',
 												age: 24,
 												favoriteColors: ['Green', 'Vanilla White']
 											}
@@ -1087,7 +1127,15 @@ Neo4j.prototype.commitTransaction = function(transactionId, statements, callback
 
 /*	Rollback an open transaction
 	Given that you have an open transaction, you can send a roll back request. 
-	The server will roll back the transaction. */
+	The server will roll back the transaction.
+	If the transaction was already rolled back or it does not exist false will be returned (to callback)
+	If the transaction has been rolled back true will be returned.		
+
+	Examples:
+		rollbackTransaction(10, callback); // transaction 10 exists
+		returns true
+		rollbackTransaction(12345, callback); // transaction 12345 doesn't exist
+		returns false																*/
 
 Neo4j.prototype.rollbackTransaction = function(transactionId, callback){
 	var that = this;
@@ -1115,13 +1163,68 @@ Neo4j.prototype.rollbackTransaction = function(transactionId, callback){
 
 /*	Begin and commit a transaction in one request
 	If there is no need to keep a transaction open across multiple HTTP requests, you can begin a transaction, 
-	execute statements, and commit with just a single HTTP request. */
+	execute statements, and commit with just a single HTTP request.
+	If the transaction in rolled back or it does not exist false will be returned (to callback)
+	Check the above 'NOTE' for more details about the statements parameter.
 
-Neo4j.prototype.beginAndCommitTransaction = function(statements, callback){	
+	Examples:
+		beginAndCommitTransaction({	
+									statements : [ {
+										statement : 'CREATE (p:Person {props}) RETURN p',
+											parameters : {
+												props : {
+													name : 'Adam',
+													age: 21.17,
+													favoriteNumbers: [123, 456789],
+													gender: true
+												}
+											}
+										}]
+								}, callback);
+		returns {	
+					results: [ { columns: [ 'p' ],
+					data: [ { row: [ {	gender: true,
+										name: 'Adam',
+										favoriteNumbers: [ 123, 456789 ],
+										age: 21.17 } ] } ] } ],
+					errors: []
+				}
+
+		beginAndCommitTransaction({	
+									statements : [ {
+										statement : 'CREATE (p:Person {props}) RETURN p',
+										parameters : {
+											props : {
+												name : 'Adam',
+												age: 21.17,
+												favoriteNumbers: [123, 456789],
+												gender: true
+											}
+										},
+										resultDataContents : [ 'row', 'graph' ]
+									}]
+								}, callback);
+
+		returns {	results: [ { columns: [ 'p' ],
+					data: [ { row: [ {	gender: true,
+										name: 'Adam',
+										favoriteNumbers: [ 123, 456789 ],
+										age: 21.17 } ],
+										graph:{ nodes: [ {	id: '382',
+															labels: [ 'Person' ],
+															properties: {	gender: true,
+																			name: 'Adam',
+																			favoriteNumbers: [ 123, 456789 ],
+																			age: 21.17 } } ],
+																			relationships: [] } } ] } ],
+					errors: [] }																				*/
+
+Neo4j.prototype.beginAndCommitTransaction = function(statements, callback){
 	request
 		.post(this.url + '/db/data/transaction/commit')
+		.set('X-Stream', true)
 		.send(statements)
-		.end(function(result){
+		.end(function(result){			
 			switch(result.statusCode){
 				case 200:
 					callback(null, result.body);
