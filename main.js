@@ -4,7 +4,6 @@ var request = require('superagent'),
 	cypher = require('./lib/utils/cypher'),
 	Validator = require('./lib/utils/validator');
 
-
 module.exports = Neo4j;
 
 function Neo4j(url){

@@ -11,11 +11,9 @@ function debug (obj) {
 }
 
 /*
- *
  * ---------------------------
  * MAKE SURE NODE 0 IS REMOVED
- * ---------------------------
- *
+ * --------------------------- 
  */
 
 db.deleteNode(0, function(err, node){
