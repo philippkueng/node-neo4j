@@ -32,20 +32,18 @@ describe('Testing Node specific operations for Neo4j', function(){
 
 		describe('-> A first simple valid node insertion with no labels', function(){
 			it('should return the JSON for this node', function(done){
-				db.insertNode({name:'Crazy Taco', age: 7, favoriteColors: ['red', 'orange']}, function(err, result){
-					debug(result);				
-					firstNodeId = result.id;
+				db.insertNode({name:'Crazy Taco', age: 7, favoriteColors: ['red', 'orange']}, function(err, result){			
+					firstNodeId = result._id;
 					should.not.exist(err);
 					should.exist(result);
-					should.exist(result.data);
-					result.data.should.have.keys('name', 'age', 'favoriteColors');
-					result.data.name.should.equal('Crazy Taco');
-					result.data.age.should.equal(7);
-					result.data.favoriteColors.should.be.an.instanceOf(Array);
-					result.data.favoriteColors.should.have.lengthOf(2);
-					result.data.favoriteColors.should.include('red');
-					result.data.favoriteColors.should.include('orange');
-					result.id.should.be.a('number');
+					result.should.have.keys('_id', 'name', 'age', 'favoriteColors');
+					result.name.should.equal('Crazy Taco');
+					result.age.should.equal(7);
+					result.favoriteColors.should.be.an.instanceOf(Array);
+					result.favoriteColors.should.have.lengthOf(2);
+					result.favoriteColors.should.include('red');
+					result.favoriteColors.should.include('orange');
+					result._id.should.be.a('number');
 					done();
 				});
 			});
@@ -54,22 +52,21 @@ describe('Testing Node specific operations for Neo4j', function(){
 		describe('-> A second valid node insertion with one label (string)', function(){
 			it('should return the JSON for this node', function(done){
 				db.insertNode({ name:'Darth Vader', level: 99, hobbies: ['lightsaber fighting', 'cycling in space'], shipIds: [123, 321] }, 'User', function(err, result){					
-					secondNodeId = result.id;
+					secondNodeId = result._id;
 					should.not.exist(err);
 					should.exist(result);
-					should.exist(result.data);
-					result.data.should.have.keys('name', 'level', 'hobbies', 'shipIds');
-					result.data.name.should.equal('Darth Vader');
-					result.data.level.should.equal(99);
-					result.data.hobbies.should.be.an.instanceOf(Array);
-					result.data.hobbies.should.have.lengthOf(2);
-					result.data.hobbies.should.include('lightsaber fighting');
-					result.data.hobbies.should.include('cycling in space');
-					result.data.shipIds.should.be.an.instanceOf(Array);
-					result.data.shipIds.should.have.lengthOf(2);
-					result.data.shipIds.should.include(123);
-					result.data.shipIds.should.include(321);
-					result.id.should.be.a('number');
+					result.should.have.keys('_id', 'name', 'level', 'hobbies', 'shipIds');
+					result.name.should.equal('Darth Vader');
+					result.level.should.equal(99);
+					result.hobbies.should.be.an.instanceOf(Array);
+					result.hobbies.should.have.lengthOf(2);
+					result.hobbies.should.include('lightsaber fighting');
+					result.hobbies.should.include('cycling in space');
+					result.shipIds.should.be.an.instanceOf(Array);
+					result.shipIds.should.have.lengthOf(2);
+					result.shipIds.should.include(123);
+					result.shipIds.should.include(321);
+					result._id.should.be.a('number');
 					done();
 				});
 			});
@@ -78,14 +75,13 @@ describe('Testing Node specific operations for Neo4j', function(){
 		describe('-> A third valid node insertion with one label (array with one string)', function(){
 			it('should return the JSON for this node', function(done){
 				db.insertNode({ name:'Philipp', level: 7 },['User'], function(err, result){					
-					thirdNodeId = result.id;
+					thirdNodeId = result._id;
 					should.not.exist(err);
 					should.exist(result);
-					should.exist(result.data);
-					result.data.name.should.equal('Philipp');
-					result.data.level.should.be.a('number');
-					result.data.level.should.equal(7);
-					result.id.should.be.a('number');
+					result.name.should.equal('Philipp');
+					result.level.should.be.a('number');
+					result.level.should.equal(7);
+					result._id.should.be.a('number');
 					done();
 				});
 			});
@@ -94,11 +90,11 @@ describe('Testing Node specific operations for Neo4j', function(){
 		describe('-> A fourth valid node insertion with three labels', function(){
 			it('should return the JSON for this node', function(done){
 				db.insertNode({ name:'Kristof' },['User','Student','Man'], function(err, result){					
-					fourthNodeId = result.id;
+					fourthNodeId = result._id;
 					should.not.exist(err);
 					should.exist(result);
-					result.data.name.should.equal('Kristof');
-					result.id.should.be.a('number');
+					result.name.should.equal('Kristof');
+					result._id.should.be.a('number');
 					done();
 				});
 			});
@@ -145,12 +141,11 @@ describe('Testing Node specific operations for Neo4j', function(){
 		describe('-> A node with properties containing Unicode characters', function(){
 			it('should return the JSON for that node', function(done){
 				db.insertNode({name:'√ fööbar √'}, function(err, result){					
-					fifthNodeId = result.id;
+					fifthNodeId = result._id;
 					should.exist(result);
-					should.exist(result.data);
-					should.exist(result.data.name);
-					result.data.name.should.equal('√ fööbar √');
-					result.id.should.be.a('number');
+					should.exist(result.name);
+					result.name.should.equal('√ fööbar √');
+					result._id.should.be.a('number');
 					done();
 				});
 			});
@@ -167,7 +162,7 @@ describe('Testing Node specific operations for Neo4j', function(){
 					db.deleteNode(fifthNodeId, this.parallel());
 				},
 				function afterDelete(err) {
-					if (err) throw err;
+					should.not.exist(err);
 					done();
 				}
 			);
@@ -180,7 +175,7 @@ describe('Testing Node specific operations for Neo4j', function(){
 		// Insert a Node.
 		before(function(done){
 			db.insertNode({name:'foobar'}, function(err, result){
-				node_id = result.id;
+				node_id = result._id;
 				done();
 			});
 		})
@@ -216,7 +211,7 @@ describe('Testing Node specific operations for Neo4j', function(){
 		//Insert a Node.
 		before(function(done){
 			db.insertNode({name:'foobar'}, function(err, node){
-				node_id = node.id;
+				node_id = node._id;
 				done();
 			});
 		});
@@ -224,8 +219,8 @@ describe('Testing Node specific operations for Neo4j', function(){
 		describe('-> Read an existing Node', function(){
 			it('should return the JSON for that node', function(done){
 				db.readNode(node_id, function(err, result){
-					result.data.name.should.equal('foobar');
-					result.id.should.equal(node_id);
+					result.name.should.equal('foobar');
+					result._id.should.equal(node_id);
 					done();
 				});
 			});
@@ -254,7 +249,7 @@ describe('Testing Node specific operations for Neo4j', function(){
 		//Insert a Node.
 		before(function(done){
 			db.insertNode({name:'foobar'}, function(err, node){
-				node_id = node.id;
+				node_id = node._id;
 				done();
 			});
 		});
@@ -330,7 +325,7 @@ describe('Testing Node specific operations for Neo4j', function(){
 
 		before(function(done){
 			db.insertNode({name:'foobar'}, function(err, node){
-				root_node_id = node.id;
+				root_node_id = node._id;
 				done();
 			});
 		});
@@ -362,19 +357,21 @@ describe('Testing Node specific operations for Neo4j', function(){
 
 		before(function(done){
 			db.insertNode({name:'foobar2'}, function(err, node){
-				other_node_id = node.id;
+				other_node_id = node._id;
 				done();
 			});
 		});
 
 		describe('-> Insert a Relationship with both nodes existing', function(){
-			it('should return true', function(done){
+			it('should return the relationship', function(done){
 				db.insertRelationship(root_node_id, other_node_id, 'RELATED_TO', test_obj, function(err, result){
-					relationship_id = result.id; // Used for later cleanup process.
+					should.exist(result);
 					should.not.exist(err);
-					result.type.should.equal('RELATED_TO');
-					result.data.importance.should.equal('high');
-					result.data.age.should.equal('');
+					result.should.have.keys('_id', '_start', '_end', '_type', 'importance', 'description', 'age');
+					result._type.should.equal('RELATED_TO');
+					result.importance.should.equal('high');
+					result.age.should.equal('');
+					relationship_id = result._id; // Used for later cleanup process.
 					done();
 				});
 			});
@@ -410,11 +407,11 @@ describe('Testing Node specific operations for Neo4j', function(){
 		// Creating 2 Nodes and a Relationship connecting them.
 		before(function(done){
 			db.insertNode({name:'foobar'},function(err, node1){
-				root_node_id = node1.id;
+				root_node_id = node1._id;
 				db.insertNode({name:'foobar2'}, function(err, node2){
-					other_node_id = node2.id;
+					other_node_id = node2._id;
 					db.insertRelationship(root_node_id, other_node_id, 'RELATED_TO', {}, function(err, result){
-						relationship_id = result.id;
+						relationship_id = result._id;
 						done();
 					});
 				});
@@ -441,9 +438,26 @@ describe('Testing Node specific operations for Neo4j', function(){
 	}); /* END => Delete a Relationship */ 
 
 	describe('=> Read a Relationship', function(){
+		var root_node_id;
+		var other_node_id;
+		var relationship_id;
+
+		before(function(done){
+			db.insertNode({name:'foobar'}, function(err, node1){
+				root_node_id = node1._id;
+				db.insertNode({name:'foobar2'}, function(err, node2){
+					other_node_id = node2._id;
+					db.insertRelationship(root_node_id, other_node_id, 'RELATED_TO', {}, function(err, relationship){
+						relationship_id = relationship._id;
+						done();
+					});
+				});
+			});
+		});
+
 		describe('-> Read a non-existing Relationship', function(){
 			it('should return false', function(done){
-				db.readRelationship(99999999, function(err, result){
+				db.readRelationship(123456789, function(err, result){
 					should.not.exist(err);
 					result.should.equal(false);
 					done();
@@ -451,29 +465,13 @@ describe('Testing Node specific operations for Neo4j', function(){
 			});
 		});
 
-		var root_node_id;
-		var other_node_id;
-		var relationship_id;
-
-		before(function(done){
-			db.insertNode({name:'foobar'}, function(err, node1){
-				root_node_id = node1.id;
-				db.insertNode({name:'foobar2'}, function(err, node2){
-					other_node_id = node2.id;
-					db.insertRelationship(root_node_id, other_node_id, 'RELATED_TO', {}, function(err, relationship){
-						relationship_id = relationship.id;
-						done();
-					});
-				});
-			});
-		});
-
-		describe('-> Read an existing Node', function(){
+		describe('-> Read an existing Relationship', function(){
 			it('should return relationship data', function(done){
 				db.readRelationship(relationship_id, function(err, result){
+					should.exist(result);
 					should.not.exist(err);
-					result.should.not.equal(false);
-					result.type.should.equal('RELATED_TO');
+					result.should.have.keys('_id', '_start', '_end', '_type');
+					result._type.should.equal('RELATED_TO');
 					done();
 				});
 			});
@@ -517,11 +515,11 @@ describe('Testing Node specific operations for Neo4j', function(){
 
 		before(function(done){
 			db.insertNode({name:'foobar'}, function(err, node1){
-				root_node_id = node1.id;
+				root_node_id = node1._id;
 				db.insertNode({name:'foobar2'}, function(err, node2){
-					other_node_id = node2.id;
+					other_node_id = node2._id;
 					db.insertRelationship(root_node_id, other_node_id, 'RELATED_TO', {}, function(err, relationship){
-						relationship_id = relationship.id;
+						relationship_id = relationship._id;
 						done();
 					});
 				});
@@ -614,11 +612,11 @@ describe('Testing Node specific operations for Neo4j', function(){
 		
 		after(function(done){
 			db.deleteIndex(test_index2, function(err, result){
-				if (err) throw err;
+				should.not.exist(err);
 				db.deleteIndex({type: 'node', index: test_index1}, function(err, result){
-					if (err) throw err;
+					should.not.exist(err);
 					db.deleteLabelIndex(test_index3_label, test_index3_property, function(err, result){
-						if (err) throw err;
+						should.not.exist(err);
 						done();
 					});
 				});
@@ -633,12 +631,12 @@ describe('Testing Node specific operations for Neo4j', function(){
 
 		before(function(done){
 			db.insertIndex({type: 'node', index: 'list_test_index'}, function(err, result){
-				if (err) throw err;
+				should.not.exist(err);
 				/* Create an index on postalcode & an index on name of a City */
 				db.insertLabelIndex('City', 'postalcode', function(err, result){
-					if (err) throw err;
+					should.not.exist(err);
 					db.insertLabelIndex('City', 'name', function(err, result){
-						if (err) throw err;
+						should.not.exist(err);
 						done();
 					});
 				});
@@ -671,11 +669,11 @@ describe('Testing Node specific operations for Neo4j', function(){
 		
 		after(function(done){
 			db.deleteIndex({type: 'node', index: 'list_test_index'}, function(err, result){
-				if (err) throw err;
+				should.not.exist(err);
 				db.deleteLabelIndex(label, propertyOne, function(err, result){
-					if (err) throw err;
+					should.not.exist(err);
 					db.deleteLabelIndex(label, propertyTwo, function(err, result){
-						if (err) throw err;
+						should.not.exist(err);
 						done(); 
 					});
 				});
@@ -689,9 +687,9 @@ describe('Testing Node specific operations for Neo4j', function(){
 
 		before(function(done){
 			db.insertNodeIndex('delete_test_index', function(err, result){
-				if (err) throw err;
+				should.not.exist(err);
 				db.insertLabelIndex(label, property, function(err, result){
-					if (err) throw err;
+					should.not.exist(err);
 					done();
 				});
 			});
@@ -732,9 +730,9 @@ describe('Testing Node specific operations for Neo4j', function(){
 		root_node_id = null;
 		before(function(done){
 			db.insertNodeIndex('add_node_test_index', function(err, result){
-				if (err) throw err;
+				should.not.exist(err);
 				db.insertNode({name:'foobar'}, function(err, node1){
-					root_node_id = node1.id;
+					root_node_id = node1._id;
 					done();
 				});
 			});
@@ -753,10 +751,12 @@ describe('Testing Node specific operations for Neo4j', function(){
 		describe('-> Add an existing Node to an Index', function(){
 			it('should throw an error', function(done){
 				db.addNodeToIndex(root_node_id, 'add_node_test_index', 'test_index_key', 'test_index_value', function(err, result){
+					debug(result);
 					should.not.exist(err);
 					should.exist(result);
-					should.exist(result.indexed);
-					result.data.name.should.equal('foobar');
+					result.should.have.keys('_id', 'name');
+					result.name.should.equal('foobar');
+					result._id.should.be.a('number');
 					done();
 				});
 			});
@@ -764,7 +764,7 @@ describe('Testing Node specific operations for Neo4j', function(){
 
 		after(function(done){
 			db.deleteNode(root_node_id, function(err, result){
-				if (err) throw err;
+				should.not.exist(err);
 				done();
 			});
 		});
@@ -774,7 +774,7 @@ describe('Testing Node specific operations for Neo4j', function(){
 		var nodeId;
 		before(function(done){
 			db.insertNode({name:'Brussels'}, function(err, node){
-				nodeId = node.id;
+				nodeId = node._id;
 				done();
 			});
 		});
@@ -851,7 +851,7 @@ describe('Testing Node specific operations for Neo4j', function(){
 
 		after(function(done){
 			db.deleteNode(nodeId, function(err, result){
-				if (err) throw err;
+				should.not.exist(err);
 				done();
 			});
 		});
@@ -861,9 +861,9 @@ describe('Testing Node specific operations for Neo4j', function(){
 		var nodeId;
 		before(function(done){
 			db.insertNode({name:'Brussels'}, function(err, node){
-				nodeId = node.id;
+				nodeId = node._id;
 				db.addLabelsToNode(nodeId, ['Capital','Belgium','Frietjes'], function(err, result){   
-					if (err) throw err;
+					should.not.exist(err);
 					done();
 				});
 			});
@@ -950,7 +950,7 @@ describe('Testing Node specific operations for Neo4j', function(){
 
 		after(function(done){
 			db.deleteNode(nodeId, function(err, result){
-				if (err) throw err;
+				should.not.exist(err);
 				done();
 			});
 		});
@@ -961,9 +961,9 @@ describe('Testing Node specific operations for Neo4j', function(){
 
 			before(function(done){
 				db.insertNode({name:'Brussels'}, function(err, node){
-					nodeId = node.id;
+					nodeId = node._id;
 					db.addLabelsToNode(nodeId, ['Capital','Belgium','Frietjes'], function(err, result){   
-						if (err) throw err;
+						should.not.exist(err);
 						done();
 					});
 				});
@@ -1061,7 +1061,7 @@ describe('Testing Node specific operations for Neo4j', function(){
 
 			after(function(done){
 				db.deleteNode(nodeId, function(err, result){
-					if (err) throw err;
+					should.not.exist(err);
 					done();
 				});
 			});
@@ -1073,13 +1073,13 @@ describe('Testing Node specific operations for Neo4j', function(){
 
 		before(function(done){
 			db.insertNode({name:'Brussels'}, function(err, node){
-				nodeIdOne = node.id;
+				nodeIdOne = node._id;
 				db.addLabelsToNode(nodeIdOne, ['Capital','Belgium'], function(err, result){   
-					if (err) throw err;
+					should.not.exist(err);
 					db.insertNode({name:'Ghent'}, function(err, node){
-						nodeIdTwo = node.id;
+						nodeIdTwo = node._id;
 						db.addLabelsToNode(nodeIdTwo, ['City','Belgium'], function(err, result){   
-							if (err) throw err;
+							should.not.exist(err);
 							done();
 						});
 					});
@@ -1094,8 +1094,8 @@ describe('Testing Node specific operations for Neo4j', function(){
 					should.exist(result);
 					result.should.be.an.instanceOf(Array);
 					result.should.have.lengthOf(2);
-					result[0].id.should.equal(nodeIdOne);
-					result[1].id.should.equal(nodeIdTwo);
+					result[0]._id.should.equal(nodeIdOne);
+					result[1]._id.should.equal(nodeIdTwo);
 					done();
 				});
 			});
@@ -1108,7 +1108,7 @@ describe('Testing Node specific operations for Neo4j', function(){
 					should.exist(result);
 					result.should.be.an.instanceOf(Array);
 					result.should.have.lengthOf(1);
-					result[0].id.should.equal(nodeIdOne);
+					result[0]._id.should.equal(nodeIdOne);
 					done();
 				});
 			});
@@ -1128,9 +1128,9 @@ describe('Testing Node specific operations for Neo4j', function(){
 
 		after(function(done){
 				db.deleteNode(nodeIdOne, function(err, result){
-					if (err) throw err;
+					should.not.exist(err);
 					db.deleteNode(nodeIdTwo, function(err, result){
-						if (err) throw err;
+						should.not.exist(err);
 						done();
 					});
 				});
@@ -1143,13 +1143,13 @@ describe('Testing Node specific operations for Neo4j', function(){
 
 		before(function(done){			
 			db.insertNode({name:'√ Kört&rijk'}, function(err, node){
-				nodeIdOne = node.id;
+				nodeIdOne = node._id;
 				db.addLabelsToNode(nodeIdOne, ['Capital','Belgium'], function(err, result){   
-					if (err) throw err;
+					should.not.exist(err);
 					db.insertNode({inhabitants: 650000}, function(err, node){
-						nodeIdTwo = node.id;
+						nodeIdTwo = node._id;
 						db.addLabelsToNode(nodeIdTwo, ['City','Belgium'], function(err, result){   
-							if (err) throw err;
+							should.not.exist(err);
 							done();
 						});
 					});
@@ -1160,34 +1160,35 @@ describe('Testing Node specific operations for Neo4j', function(){
 		describe('-> Get nodes by label and property with special characters', function(){
 			it('should return one node with that label and property', function(done){
 				// label = 'Belgium', property = 'name'
-				db.readNodesWithLabelAndProperties('Belgium', { name: '√ Kört&rijk' }, function(err, result){					
+				db.readNodesWithLabelAndProperties('Belgium', { name: '√ Kört&rijk' }, function(err, result){
 					should.not.exist(err);
 					should.exist(result);
 					result.should.be.an.instanceOf(Array);
 					result.should.have.lengthOf(1);
-					result[0].id.should.equal(nodeIdOne);
+					should.exist(result[0]._id);
+					result[0]._id.should.equal(nodeIdOne);
 					done();
 				});
 			});
 		});
-		// TODO: fix: when inserting node with number, in database it's a string
-		/*describe('-> Get nodes by label and property', function(){
-			it('should return one node with that label and property', function(done){
-				// label = 'Belgium', property = 'name'
-				db.readNodesWithLabelAndProperties('City',  {inhabitants: '650000'}, function(err, result){					
+		
+		describe('-> Get nodes by label and property', function(){
+			it('should return one node with that label and property', function(done){		
+				db.readNodesWithLabelAndProperties('City',  {inhabitants: 650000}, function(err, result){	
 					should.not.exist(err);
 					should.exist(result);
 					result.should.be.an.instanceOf(Array);
 					result.should.have.lengthOf(1);
-					result[0].id.should.equal(nodeIdTwo);
+					should.exist(result[0]._id);
+					result[0]._id.should.equal(nodeIdTwo);
 					done();
 				});
 			});
-		});*/
+		});
 
-		describe('-> Get nodes by label and property', function(){
+		describe('-> Get nodes by label and non-existing property', function(){
 			it('should return no nodes (empty array)', function(done){
-				db.readNodesWithLabelAndProperties('Belgium', { 'NotExisting': 123456789 }, function(err, result){					
+				db.readNodesWithLabelAndProperties('Belgium', { 'NotExisting': 123456789 }, function(err, result){
 					should.not.exist(err);
 					should.exist(result);
 					result.should.be.an.instanceOf(Array);
@@ -1209,9 +1210,9 @@ describe('Testing Node specific operations for Neo4j', function(){
 
 		after(function(done){
 				db.deleteNode(nodeIdOne, function(err, result){
-					if (err) throw err;
+					should.not.exist(err);
 					db.deleteNode(nodeIdTwo, function(err, result){
-						if (err) throw err;
+						should.not.exist(err);
 						done();
 					});
 				});
@@ -1224,13 +1225,13 @@ describe('Testing Node specific operations for Neo4j', function(){
 
 		before(function(done){			
 			db.insertNode({name:'Brussels'}, function(err, node){
-				nodeIdOne = node.id;
+				nodeIdOne = node._id;
 				db.addLabelsToNode(nodeIdOne, ['Capital','Belgium'], function(err, result){   
-					if (err) throw err;
+					should.not.exist(err);
 					db.insertNode({ name: 'Ghent', inhabitants: 650000}, function(err, node){
-						nodeIdTwo = node.id;
+						nodeIdTwo = node._id;
 						db.addLabelsToNode(nodeIdTwo, ['City','Belgium'], function(err, result){   
-							if (err) throw err;
+							should.not.exist(err);
 							done();
 						});
 					});
@@ -1254,9 +1255,9 @@ describe('Testing Node specific operations for Neo4j', function(){
 		
 		after(function(done){
 				db.deleteNode(nodeIdOne, function(err, result){
-					if (err) throw err;
+					should.not.exist(err);
 					db.deleteNode(nodeIdTwo, function(err, result){
-						if (err) throw err;
+						should.not.exist(err);
 						done();
 					});
 				});
@@ -1279,11 +1280,11 @@ describe('Testing Node specific operations for Neo4j', function(){
 		// Create two nodes with a different email
 		before(function(done){
 			db.insertNode({ email:'node_one@neo4j.be' }, 'User', function(err, node){
-				if (err) throw err;
-				nodeIdOne = node.id;
+				should.not.exist(err);
+				nodeIdOne = node._id;
 				db.insertNode({ email:'node_two@neo4j.be' }, 'User', function(err, node){
-					if (err) throw err;
-					nodeIdTwo = node.id;
+					should.not.exist(err);
+					nodeIdTwo = node._id;
 					done();
 				});
 			});
@@ -1324,7 +1325,7 @@ describe('Testing Node specific operations for Neo4j', function(){
 					db.dropUniquenessContstraint('User', 'email', this.parallel())
 				},
 				function afterDelete(err) {
-					if (err) throw err;
+					should.not.exist(err);
 					done();
 				}
 			);
@@ -1344,9 +1345,9 @@ describe('Testing Node specific operations for Neo4j', function(){
 		// Create a constraint on user id and email
 		before(function(done){
 			db.createUniquenessContstraint('User', 'uid', function(err, result){
-				if (err) throw err;
+				should.not.exist(err);
 				db.createUniquenessContstraint('User', 'email', function(err, result){
-					if (err) throw err;
+					should.not.exist(err);
 					done();
 				});
 			});
@@ -1398,7 +1399,7 @@ describe('Testing Node specific operations for Neo4j', function(){
 					db.dropUniquenessContstraint('User', 'email', this.parallel())
 				},
 				function afterDelete(err) {
-					if (err) throw err;
+					should.not.exist(err);
 					db.listAllConstraints(function(err, result){
 						should.not.exist(err);
 						should.exist(result);
@@ -1429,9 +1430,9 @@ describe('Testing Node specific operations for Neo4j', function(){
 		// Create a constraint on user id and email
 		before(function(done){
 			db.createUniquenessContstraint('User', 'uid', function(err, result){
-				if (err) throw err;
+				should.not.exist(err);
 				db.createUniquenessContstraint('User', 'email', function(err, result){
-					if (err) throw err;
+					should.not.exist(err);
 					done();
 				});
 			});
@@ -1464,7 +1465,7 @@ describe('Testing Node specific operations for Neo4j', function(){
 					db.dropUniquenessContstraint('User', 'email', this.parallel())
 				},
 				function afterDelete(err) {
-					if (err) throw err;
+					should.not.exist(err);
 					db.listAllConstraints(function(err, result){
 						should.not.exist(err);
 						should.exist(result);
@@ -1495,9 +1496,9 @@ describe('Testing Node specific operations for Neo4j', function(){
 		// Create a constraint on product id and email
 		before(function(done){
 			db.createUniquenessContstraint('Product', 'pid', function(err, result){					
-				if (err) throw err;
+				should.not.exist(err);
 				db.createUniquenessContstraint('User', 'email', function(err, result){					
-					if (err) throw err;
+					should.not.exist(err);
 					done();
 				});
 			});
@@ -1639,12 +1640,12 @@ describe('Testing Node specific operations for Neo4j', function(){
 
 		describe('-> beginTransaction: Start a transaction with on statement', function(){
 			it('should return the json of that transaction', function(done){
-				db.beginTransaction(statementsOne, function(err, result){					
+				db.beginTransaction(statementsOne, function(err, result){
 					should.not.exist(err);
 					should.exist(result);
-					should.exist(result.transactionId);
-					result.transactionId.should.be.a('number');
-					transactionIdOne = result.transactionId;
+					should.exist(result._id);
+					result._id.should.be.a('number');
+					transactionIdOne = result._id;
 					done();
 				});
 			});
@@ -1655,9 +1656,9 @@ describe('Testing Node specific operations for Neo4j', function(){
 				db.addStatementsToTransaction(transactionIdOne, statementsTwo, function(err, result){
 					should.not.exist(err);
 					should.exist(result);
-					should.exist(result.transactionId);
-					result.transactionId.should.be.a('number');
-					result.transactionId.should.equal(transactionIdOne);
+					should.exist(result._id);
+					result._id.should.be.a('number');
+					result._id.should.equal(transactionIdOne);
 					done();
 				});
 			});
@@ -1679,8 +1680,8 @@ describe('Testing Node specific operations for Neo4j', function(){
 				db.resetTimeoutTransaction(transactionIdOne, function(err, result){
 					should.not.exist(err);
 					should.exist(result); // should contains some keys with empty arrays
-					result.should.have.keys('commit', 'results', 'transaction', 'errors', 'transactionId');
-					result.transactionId.should.equal(transactionIdOne);
+					result.should.have.keys('_id', 'results', 'transaction', 'errors');
+					result._id.should.equal(transactionIdOne);
 					result.errors.should.be.an.instanceOf(Array);
 					result.errors.should.have.lengthOf(0);
 					done();
@@ -1715,9 +1716,9 @@ describe('Testing Node specific operations for Neo4j', function(){
 				db.beginTransaction(function(err, result){
 					should.not.exist(err);
 					should.exist(result);
-					should.exist(result.transactionId);
-					result.transactionId.should.be.a('number');
-					transactionIdTwo = result.transactionId;
+					should.exist(result._id);
+					result._id.should.be.a('number');
+					transactionIdTwo = result._id;
 					done();
 				});
 			});
@@ -1754,9 +1755,9 @@ describe('Testing Node specific operations for Neo4j', function(){
 				db.beginTransaction(statementsOne, function(err, result){
 					should.not.exist(err);
 					should.exist(result);
-					should.exist(result.transactionId);
-					result.transactionId.should.be.a('number');
-					transactionIdThree = result.transactionId;
+					should.exist(result._id);
+					result._id.should.be.a('number');
+					transactionIdThree = result._id;
 					done();
 				});
 			});
@@ -1791,11 +1792,11 @@ describe('Testing Node specific operations for Neo4j', function(){
 					result.should.be.an.instanceOf(Array);
 					result.should.have.lengthOf(4);
 					for(var i=0; i < 4; i++)
-						should.exist(result[i].id);
+						should.exist(result[i]._id);
 					Step(
 						function deleteNodes() {
 							for(var j=0; j < 4; j++)
-								db.deleteNode(result[j].id, this.parallel());							
+								db.deleteNode(result[j]._id, this.parallel());							
 						},
 						function afterDelete(err) {
 							should.not.exist(err);
@@ -1818,11 +1819,11 @@ describe('Testing Node specific operations for Neo4j', function(){
 
 		before(function(done){
 			db.insertNode({name:'foobar'}, function(err, node1){
-				root_node_id = node1.id;
+				root_node_id = node1._id;
 				db.insertNode({name:'foobar2'}, function(err, node2){
-					other_node_id = node2.id;
+					other_node_id = node2._id;
 					db.insertRelationship(root_node_id, other_node_id, 'RELATED_TO', {}, function(err, relationship){
-						relationship_id = relationship.id;
+						relationship_id = relationship._id;
 						done();
 					});
 				});
@@ -1873,16 +1874,16 @@ describe('Testing Node specific operations for Neo4j', function(){
 
 		before(function(done){
 			db.insertNode({name:'foobar'}, function(err, node1){
-				root_node_id = node1.id;
+				root_node_id = node1._id;
 				db.insertNode({name:'foobar2'}, function(err, node2){
-					other_node1_id = node2.id;
+					other_node1_id = node2._id;
 					db.insertRelationship(root_node_id, other_node1_id, 'RELATED_TO', {}, function(err, relationship1){
-						relationship1_id = relationship1.id;
+						relationship1_id = relationship1._id;
 
 						db.insertNode({name:'foobar3'}, function(err, node3){
-							other_node2_id = node3.id;
+							other_node2_id = node3._id;
 							db.insertRelationship(root_node_id, other_node2_id, 'RELATED_TO', {}, function(err, relationship2){
-								relationship2_id = relationship2.id;
+								relationship2_id = relationship2._id;
 								done();
 							});
 						});
@@ -1938,16 +1939,16 @@ describe('Testing Node specific operations for Neo4j', function(){
 
 		before(function(done){
 			db.insertNode({name:'foobar'}, function(err, node1){
-				root_node_id = node1.id;
+				root_node_id = node1._id;
 				db.insertNode({name:'foobar2'}, function(err, node2){
-					other_node1_id = node2.id;
+					other_node1_id = node2._id;
 					db.insertRelationship(other_node1_id, root_node_id, 'RELATED_TO', {}, function(err, relationship1){
-						relationship1_id = relationship1.id;
+						relationship1_id = relationship1._id;
 
 						db.insertNode({name:'foobar3'}, function(err, node3){
-							other_node2_id = node3.id;
+							other_node2_id = node3._id;
 							db.insertRelationship(other_node2_id, root_node_id, 'RELATED_TO', {}, function(err, relationship2){
-								relationship2_id = relationship2.id;
+								relationship2_id = relationship2._id;
 								done();
 							});
 						});
@@ -2012,16 +2013,16 @@ describe('Testing Node specific operations for Neo4j', function(){
 
 		before(function(done){
 			db.insertNode({name:'foobar'}, function(err, node1){
-				root_node_id = node1.id;
+				root_node_id = node1._id;
 				db.insertNode({name:'foobar2'}, function(err, node2){
-					other_node1_id = node2.id;
+					other_node1_id = node2._id;
 					db.insertRelationship(root_node_id, other_node1_id, 'RELATED_TO', {}, function(err, relationship1){
-						relationship1_id = relationship1.id;
+						relationship1_id = relationship1._id;
 
 						db.insertNode({name:'foobar3'}, function(err, node3){
-							other_node2_id = node3.id;
+							other_node2_id = node3._id;
 							db.insertRelationship(root_node_id, other_node2_id, 'RELATED_TO', {}, function(err, relationship2){
-								relationship2_id = relationship2.id;
+								relationship2_id = relationship2._id;
 								done();
 							});
 						});
@@ -2093,9 +2094,13 @@ describe('Testing Node specific operations for Neo4j', function(){
 				db.cypherQuery("start a=node(*) with a match a-[r1?:RELATED_TO]->o return a.name,o.name", null, function(err, result){
 					should.not.exist(err);
 					should.exist(result);
-					result.data.length.should.equal(0);
-					result.columns.length.should.equal(2);
-					result.columns[0].should.equal('a.name');
+					result.should.have.keys('columns', 'data');
+					result.data.should.be.an.instanceOf(Array);
+					result.data.should.have.lengthOf(0);
+					result.columns.should.be.an.instanceOf(Array);
+					result.columns.should.have.lengthOf(2);
+					result.columns.should.include('a.name');
+					result.columns.should.include('o.name');
 					done();
 				});
 			});
@@ -2111,16 +2116,15 @@ describe('Testing Node specific operations for Neo4j', function(){
 
 		before(function(done){
 			db.insertNode({name:'foobar'}, function(err, node1){
-				root_node_id = node1.id;
+				root_node_id = node1._id;
 				db.insertNode({name:'foobar2'}, function(err, node2){
-					other_node1_id = node2.id;
+					other_node1_id = node2._id;
 					db.insertRelationship(root_node_id, other_node1_id, 'RELATED_TO', {}, function(err, relationship1){
-						relationship1_id = relationship1.id;
-
+						relationship1_id = relationship1._id;
 						db.insertNode({name:'foobar3'}, function(err, node3){
-							other_node2_id = node3.id;
+							other_node2_id = node3._id;
 							db.insertRelationship(root_node_id, other_node2_id, 'RELATED_TO', {}, function(err, relationship2){
-								relationship2_id = relationship2.id;
+								relationship2_id = relationship2._id;
 								done();
 							});
 						});
@@ -2131,11 +2135,17 @@ describe('Testing Node specific operations for Neo4j', function(){
 		
 		describe('-> Run a cypher query against an existing root node', function(){
 			it('should return a dataset with a single node', function(done){
-				db.cypherQuery("START user = node({id}) RETURN user", { id: root_node_id }, function(err, result){					
+				db.cypherQuery("START user = node({id}) RETURN user", { id: root_node_id }, function(err, result){
 					should.not.exist(err);
-					result.data.length.should.equal(1);
-					result.data[0].id.should.equal(root_node_id);
-					result.columns.length.should.equal(1);
+					should.exist(result);
+					result.should.have.keys('columns', 'data');
+					result.data.should.be.an.instanceOf(Array);
+					result.data.should.have.lengthOf(1);
+					result.columns.should.be.an.instanceOf(Array);
+					result.columns.should.have.lengthOf(1);
+					result.columns.should.include('user');
+					should.exist(result.data[0]._id);
+					result.data[0]._id.should.equal(root_node_id);
 					done();
 				});
 			});
@@ -2145,10 +2155,17 @@ describe('Testing Node specific operations for Neo4j', function(){
 			it('should return a dataset with 2 nodes', function(done){
 				db.cypherQuery("START user = node({id}) MATCH user-[:RELATED_TO]->friends RETURN friends", { id: root_node_id }, function(err, result){
 					should.not.exist(err);
-					result.data.length.should.equal(2);
-					result.columns.length.should.equal(1);
-					should.exist(result.data[0].id);
-					should.exist(result.data[1].id);
+					should.exist(result);
+					result.should.have.keys('columns', 'data');
+					result.data.should.be.an.instanceOf(Array);
+					result.data.should.have.lengthOf(2);
+					result.columns.should.be.an.instanceOf(Array);
+					result.columns.should.have.lengthOf(1);
+					result.columns.should.include('friends');	
+					should.exist(result.data[0].name);
+					should.exist(result.data[1].name);
+					should.exist(result.data[0]._id);
+					should.exist(result.data[1]._id);
 					done();
 				});
 			});
@@ -2159,12 +2176,17 @@ describe('Testing Node specific operations for Neo4j', function(){
 				db.cypherQuery("START d=node({dId}), e=node({eId}) MATCH p=shortestPath(d -[*..15]-> e) RETURN p", 
 					{ dId: root_node_id, eId: other_node1_id }, function(err, result){
 					should.not.exist(err);
-					result.data.length.should.equal(1);
-					result.columns.length.should.equal(1);
+					should.exist(result);
+					result.should.have.keys('columns', 'data');
+					result.data.should.be.an.instanceOf(Array);
+					result.data.should.have.lengthOf(1);
+					result.columns.should.be.an.instanceOf(Array);
+					result.columns.should.have.lengthOf(1);
+					result.columns.should.include('p');
 					should.exist(result.data[0].start);
-					result.data[0].nodes.length.should.equal(2);
-					result.data[0].relationships.length.should.equal(1);
 					should.exist(result.data[0].end);
+					result.data[0].nodes.should.have.lengthOf(2);
+					result.data[0].relationships.should.have.lengthOf(1);					
 					done();
 				});
 			});
@@ -2191,7 +2213,7 @@ describe('Testing Node specific operations for Neo4j', function(){
 			it('should return a node and the relationships', function(done){
 				db.cypherQuery("START r=relationship(*) MATCH (s)-[r]->(t) RETURN *", function(err, result){
 					should.not.exist(err);
-					result.data.length.should.equal(6);
+					result.length.should.equal(6);
 					result.columns.length.should.equal(3);
 					done();
 				});
@@ -2242,16 +2264,16 @@ describe('Testing Node specific operations for Neo4j', function(){
 
 		before(function(done){
 			db.insertNode({name:'foobar'}, function(err, node1){
-				root_node_id = node1.id;
+				root_node_id = node1._id;
 				db.insertNode({name:'foobar2'}, function(err, node2){
-					other_node1_id = node2.id;
+					other_node1_id = node2._id;
 					db.insertRelationship(root_node_id, other_node1_id, 'RELATED_TO', {}, function(err, relationship1){
-						relationship1_id = relationship1.id;
+						relationship1_id = relationship1._id;
 
 						db.insertNode({name:'foobar3'}, function(err, node3){
-							other_node2_id = node3.id;
+							other_node2_id = node3._id;
 							db.insertRelationship(root_node_id, other_node2_id, 'RELATED_TO', {}, function(err, relationship2){
-								relationship2_id = relationship2.id;
+								relationship2_id = relationship2._id;
 								done();
 							});
 						});
@@ -2350,20 +2372,18 @@ describe('Testing Node specific operations for Neo4j', function(){
 
 		describe('-> Extend the response', function(){
 			it('should return an extended array', function(done){
-				db.addRelationshipIdForArray(relationships, function(err, results){
+				db.addRelationshipIdForArray(relationships, function(err, results){					
 					should.not.exist(err);
 					results.length.should.equal(2);
-					results[0].id.should.equal('54');
-					results[1].id.should.equal('55');
-					results[0].start_node_id.should.equal('147');
-					results[0].end_node_id.should.equal('148');
-					results[1].start_node_id.should.equal('147');
-					results[1].end_node_id.should.equal('149');
+					results[0]._id.should.equal(54);
+					results[1]._id.should.equal(55);
+					results[0]._start.should.equal(147);
+					results[0]._end.should.equal(148);
+					results[1]._start.should.equal(147);
+					results[1]._end.should.equal(149);
 					done();
 				});
 			});
 		});
 	});
-
-
 });
