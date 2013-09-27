@@ -24,14 +24,17 @@ function debug (obj) {
 }
 
 /*	Insert a Node
+	Returns the node that is inserted and his node id (property: _id)
 	Examples:
 	Insert a Node with no label:
 		insertNode({ name: 'Kristof' }, callback);
 	Insert a Node with one label:	
 		insertNode({ name: 'Kristof' }, ['Student'], callback);
 		insertNode({ name: 'Kristof' }, 'Student', callback);
+		returns { _id: 14, name: 'Kristof' }
 	Insert a Node with three labels:
-		insertNode({ name: 'Kristof' }, ['User', 'Student' ,'Man'], callback);		*/
+		insertNode({ name:'Darth Vader', level: 99, hobbies: ['lightsaber fighting', 'cycling in space'], shipIds: [123, 321] }, ['User', 'Evil' ,'Man'], callback);
+		returns { _id: 17, name:'Darth Vader', level: 99, hobbies: ['lightsaber fighting', 'cycling in space'], shipIds: [123, 321] }	*/
 
 Neo4j.prototype.insertNode = function(node, labels, callback){
 	var that = this;
@@ -73,7 +76,8 @@ Neo4j.prototype.insertNode = function(node, labels, callback){
 
 /*	Get an array of labels of a Node
 	Example:
-	readLabels(77, callback); 
+	Get all labels of node 77:
+		readLabels(77, callback); 
 		returns ['User','Student','Man']
 */
 
@@ -95,7 +99,7 @@ Neo4j.prototype.readLabels = function(node_id, callback){
 Neo4j.prototype.deleteNode = function(node_id, callback){
 	request
 		.del(this.url + '/db/data/node/' + node_id)
-				.end(function(result){
+		.end(function(result){
 			switch(result.statusCode){
 				case 204:
 					callback(null, true); // Node was deleted.
@@ -107,7 +111,7 @@ Neo4j.prototype.deleteNode = function(node_id, callback){
 					callback(null, false); // Node has Relationships and cannot be deleted.
 					break;
 				default:
-					callback(new Error('Unknown Error while deleting Node'), null);
+					callback(new Error('HTTP Error ' + result.statusCode + ' occurred while deleting a node.'), null);
 			}
 		});
 };
@@ -118,17 +122,17 @@ Neo4j.prototype.readNode = function(node_id, callback){
 	var that = this;
 	request
 		.get(this.url + '/db/data/node/' + node_id)
-				.end(function(result){
-			if(result.body){
-				if(result.statusCode === 200){
-					that.addNodeId(result.body, callback);
-				} else if(result.statusCode === 404){
-					callback(null, null);
-				} else {
-					callback(new Error('HTTP Error ' + result.statusCode + ' occurred.'), null);
-				}
-			} else
-				callback(new Error('Response is empty'), null);			
+		.end(function(result){
+			switch(result.statusCode){
+				case 200:
+					that.addNodeId(result.body, callback); // Node found.
+					break;
+				case 404:
+					callback(null, false); // Node doesn't exist.
+					break;
+				default:
+					callback(new Error('HTTP Error ' + result.statusCode + ' occurred while reading a node.'), null);
+			}			
 		});
 };
 
@@ -230,7 +234,7 @@ Neo4j.prototype.updateRelationship = function(relationship_id, relationship_data
 	request
 		.put(that.url + '/db/data/relationship/' + relationship_id + '/properties')
 		.send(that.stringifyValueObjects(that.replaceNullWithString(relationship_data)))
-				.end(function(result){
+		.end(function(result){
 			switch(result.statusCode){
 				case 204:
 					callback(null, true);
@@ -318,10 +322,8 @@ Neo4j.prototype.insertRelationshipIndex = function(index, callback){
 /* Delete an Index ---------- */
 
 Neo4j.prototype.deleteIndex = function(index, callback){
-	var that = this;
-	
 	request
-	.del(this.url + '/db/data/index/' + index.type + '/' + index.index)
+		.del(this.url + '/db/data/index/' + index.type + '/' + index.index)
 		.end(function(result){
 		switch(result.statusCode){
 			case 204:
