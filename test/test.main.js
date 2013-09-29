@@ -2206,7 +2206,7 @@ describe('Testing Node specific operations for Neo4j', function(){
 				});
 			});
 		});
-	});
+	}); /* END => Test Cypher Query Functionality against existing nodes and relationships */
 
 
 	describe('\n=> Test Batch Query Functionality', function(){
