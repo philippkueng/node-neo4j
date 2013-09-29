@@ -2073,7 +2073,7 @@ describe('Testing Node specific operations for Neo4j', function(){
 				});
 			});
 		});
-	});
+	}); /* END => Test Cyper Query Functionality against non existing nodes */
 
 	describe('\n=> Test Cypher Query Functionality against existing nodes and relationships', function(){
 		var root_node_id, other_node1_id, other_node2_id, relationship1_id, relationship2_id;
