@@ -1761,24 +1761,24 @@ describe('Testing Node specific operations for Neo4j', function(){
 					);
 			});
 		}); // after
-	});
+	}); /* END => Transactions  */
 
 	// describe('\n=> Remove all ')
 
 	/* ADVANCED FUNCTIONS ---------- */
 
 	describe('\n=> Read Relationship Types already within the DB', function(){
-
-		var root_node_id;
-		var other_node_id;
-		var relationship_id;
+		var root_node_id, other_node_id, relationship_id;
 
 		before(function(done){
 			db.insertNode({name:'foobar'}, function(err, node1){
+				onlyResult(err, node1);
 				root_node_id = node1._id;
 				db.insertNode({name:'foobar2'}, function(err, node2){
+					onlyResult(err, node2);
 					other_node_id = node2._id;
 					db.insertRelationship(root_node_id, other_node_id, 'RELATED_TO', {}, function(err, relationship){
+						onlyResult(err, relationship);
 						relationship_id = relationship._id;
 						done();
 					});
@@ -1788,10 +1788,10 @@ describe('Testing Node specific operations for Neo4j', function(){
 
 		describe('-> Retrieve types', function(){
 			it('should return an array of types', function(done){
-				db.readRelationshipTypes(function(err, result){debug(err);debug(result);
-
-					should.not.exist(err);
-					result.length.should.equal(1);
+				db.readRelationshipTypes(function(err, result){
+					onlyResult(err, result);
+					result.should.be.an.instanceOf(Array);
+					result.should.have.lengthOf(1);
 					result[0].should.equal('RELATED_TO');
 					done();
 				});
@@ -1799,46 +1799,48 @@ describe('Testing Node specific operations for Neo4j', function(){
 		});
 
 		after(function(done){
-			db.deleteRelationship(relationship_id, function(err, result){debug(err);debug(result);
-				db.deleteNode(other_node_id, function(err, result){debug(err);debug(result);
-					db.deleteNode(root_node_id, function(err, result){debug(err);debug(result);
+			db.deleteRelationship(relationship_id, function(err, result){
+				isTrue(err, result);
+				db.deleteNode(other_node_id, function(err, result){
+					isTrue(err, result);
+					db.deleteNode(root_node_id, function(err, result){
+						isTrue(err, result);
 						done();
 					});
 				});
 			});
 		});
+	}); /* END => Read Relationship Types already within the DB */
 
-	});
 
 	describe('\n=> Read all Relationships of a Node', function(){
+		var root_node_id, other_node1_id, other_node2_id;
+		var relationship1_id, relationship2_id;
 
 		describe('-> Read all Relationships of an non-existing node', function(){
 			it('should return false', function(done){
-				db.readAllRelationshipsOfNode(99999999, function(err, result){debug(err);debug(result);
-					should.not.exist(err);
-					result.should.equal(false);
+				db.readAllRelationshipsOfNode(99999999, function(err, result){
+					isFalse(err, result);
 					done();
 				});
 			});
 		});
 
-		var root_node_id;
-		var other_node1_id;
-		var other_node2_id;
-		var relationship1_id;
-		var relationship2_id;
-
 		before(function(done){
 			db.insertNode({name:'foobar'}, function(err, node1){
+				onlyResult(err, node1);
 				root_node_id = node1._id;
 				db.insertNode({name:'foobar2'}, function(err, node2){
+					onlyResult(err, node2);
 					other_node1_id = node2._id;
 					db.insertRelationship(root_node_id, other_node1_id, 'RELATED_TO', {}, function(err, relationship1){
+						onlyResult(err, relationship1);
 						relationship1_id = relationship1._id;
-
 						db.insertNode({name:'foobar3'}, function(err, node3){
+							onlyResult(err, node3);
 							other_node2_id = node3._id;
 							db.insertRelationship(root_node_id, other_node2_id, 'RELATED_TO', {}, function(err, relationship2){
+								onlyResult(err, relationship2);
 								relationship2_id = relationship2._id;
 								done();
 							});
@@ -1850,20 +1852,26 @@ describe('Testing Node specific operations for Neo4j', function(){
 
 		describe('-> Read Relationships of root_node', function(){
 			it('should return 2 relationships', function(done){
-				db.readAllRelationshipsOfNode(root_node_id, function(err, result){debug(err);debug(result);
-					should.not.exist(err);
-					result.length.should.equal(2);
+				db.readAllRelationshipsOfNode(root_node_id, function(err, result){
+					onlyResult(err, result);
+					result.should.be.an.instanceOf(Array);
+					result.should.have.lengthOf(2);
 					done();
 				});
 			});
 		});
 
 		after(function(done){
-			db.deleteRelationship(relationship1_id, function(err, result){debug(err);debug(result);
-				db.deleteRelationship(relationship2_id, function(err, result){debug(err);debug(result);
-					db.deleteNode(other_node1_id, function(err, result){debug(err);debug(result);
-						db.deleteNode(other_node2_id, function(err, result){debug(err);debug(result);
-							db.deleteNode(root_node_id, function(err, result){debug(err);debug(result);
+			db.deleteRelationship(relationship1_id, function(err, result){
+				isTrue(err, result);
+				db.deleteRelationship(relationship2_id, function(err, result){
+					isTrue(err, result);
+					db.deleteNode(other_node1_id, function(err, result){
+						isTrue(err, result);
+						db.deleteNode(other_node2_id, function(err, result){
+							isTrue(err, result);
+							db.deleteNode(root_node_id, function(err, result){
+								isTrue(err, result);
 								done();
 							});
 						});
@@ -1871,39 +1879,36 @@ describe('Testing Node specific operations for Neo4j', function(){
 				});
 			});
 		});
-
-	});
-
+	}); /* END => Read all Relationships of a Node */
 
 	describe('\n=> Read incoming Relationships of a Node', function(){
+		var root_node_id, other_node1_id, other_node2_id;
+		var relationship1_id, relationship2_id;
 
 		describe('-> Read incoming Relationships of an non-existing node', function(){
 			it('should return false', function(done){
-				db.readIncomingRelationshipsOfNode(99999999, function(err, result){debug(err);debug(result);
-					should.not.exist(err);
-					result.should.equal(false);
+				db.readIncomingRelationshipsOfNode(99999999, function(err, result){
+					isFalse(err, result);
 					done();
 				});
 			});
 		});
-
-		var root_node_id;
-		var other_node1_id;
-		var other_node2_id;
-		var relationship1_id;
-		var relationship2_id;
-
+		
 		before(function(done){
 			db.insertNode({name:'foobar'}, function(err, node1){
+				onlyResult(err, node1);
 				root_node_id = node1._id;
 				db.insertNode({name:'foobar2'}, function(err, node2){
+					onlyResult(err, node2);
 					other_node1_id = node2._id;
 					db.insertRelationship(other_node1_id, root_node_id, 'RELATED_TO', {}, function(err, relationship1){
+						onlyResult(err, relationship1);
 						relationship1_id = relationship1._id;
-
 						db.insertNode({name:'foobar3'}, function(err, node3){
+							onlyResult(err, node3);
 							other_node2_id = node3._id;
 							db.insertRelationship(other_node2_id, root_node_id, 'RELATED_TO', {}, function(err, relationship2){
+								onlyResult(err, relationship2);
 								relationship2_id = relationship2._id;
 								done();
 							});
@@ -1915,9 +1920,10 @@ describe('Testing Node specific operations for Neo4j', function(){
 
 		describe('-> Read Relationships of root_node', function(){
 			it('should return 2 relationships', function(done){
-				db.readIncomingRelationshipsOfNode(root_node_id, function(err, result){debug(err);debug(result);
-					should.not.exist(err);
-					result.length.should.equal(2);
+				db.readIncomingRelationshipsOfNode(root_node_id, function(err, result){
+					onlyResult(err, result);
+					result.should.be.an.instanceOf(Array);
+					result.should.have.lengthOf(2);
 					done();
 				});
 			});
@@ -1925,20 +1931,26 @@ describe('Testing Node specific operations for Neo4j', function(){
 
 		describe('-> Read Relationships of other_node1', function(){
 			it('should return 0 relationships', function(done){
-				db.readIncomingRelationshipsOfNode(other_node1_id, function(err, result){debug(err);debug(result);
-					should.not.exist(err);
-					result.length.should.equal(0);
+				db.readIncomingRelationshipsOfNode(other_node1_id, function(err, result){
+					onlyResult(err, result);
+					result.should.be.an.instanceOf(Array);
+					result.should.have.lengthOf(0);
 					done();
 				});
 			});
 		});
 
 		after(function(done){
-			db.deleteRelationship(relationship1_id, function(err, result){debug(err);debug(result);
-				db.deleteRelationship(relationship2_id, function(err, result){debug(err);debug(result);
-					db.deleteNode(other_node1_id, function(err, result){debug(err);debug(result);
-						db.deleteNode(other_node2_id, function(err, result){debug(err);debug(result);
-							db.deleteNode(root_node_id, function(err, result){debug(err);debug(result);
+			db.deleteRelationship(relationship1_id, function(err, result){
+				isTrue(err, result);
+				db.deleteRelationship(relationship2_id, function(err, result){
+					isTrue(err, result);
+					db.deleteNode(other_node1_id, function(err, result){
+						isTrue(err, result);
+						db.deleteNode(other_node2_id, function(err, result){
+							isTrue(err, result);
+							db.deleteNode(root_node_id, function(err, result){
+								isTrue(err, result);
 								done();
 							});
 						});
@@ -1946,52 +1958,50 @@ describe('Testing Node specific operations for Neo4j', function(){
 				});
 			});
 		});
-
-	});
+	}); /* END => Read incoming Relationships of a Node */
 
 	describe('\n=> Read all outgoing Relationships of a Node', function(){
+		var root_node_id, other_node1_id, other_node2_id, relationship1_id, relationship2_id;
+
+		before(function(done){
+			db.insertNode({name:'foobar'}, function(err, node1){
+				onlyResult(err, node1);
+				root_node_id = node1._id;
+				db.insertNode({name:'foobar2'}, function(err, node2){
+					onlyResult(err, node2);
+					other_node1_id = node2._id;
+					db.insertRelationship(root_node_id, other_node1_id, 'RELATED_TO', {}, function(err, relationship1){
+						onlyResult(err, relationship1);
+						relationship1_id = relationship1._id;
+						db.insertNode({name:'foobar3'}, function(err, node3){
+							onlyResult(err, node3);
+							other_node2_id = node3._id;
+							db.insertRelationship(root_node_id, other_node2_id, 'RELATED_TO', {}, function(err, relationship2){
+								onlyResult(err, relationship2);
+								relationship2_id = relationship2._id;
+								done();
+							});
+						});
+					});
+				});
+			});
+		});
 
 		describe('-> Read outgoing Relationships of an non-existing node', function(){
 			it('should return false', function(done){
-				db.readOutgoingRelationshipsOfNode(99999999, function(err, result){debug(err);debug(result);
-					should.not.exist(err);
-					result.should.equal(false);
+				db.readOutgoingRelationshipsOfNode(99999999, function(err, result){
+					isFalse(err, result);
 					done();
 				});
 			});
-		});
-
-		var root_node_id;
-		var other_node1_id;
-		var other_node2_id;
-		var relationship1_id;
-		var relationship2_id;
-
-		before(function(done){
-			db.insertNode({name:'foobar'}, function(err, node1){
-				root_node_id = node1._id;
-				db.insertNode({name:'foobar2'}, function(err, node2){
-					other_node1_id = node2._id;
-					db.insertRelationship(root_node_id, other_node1_id, 'RELATED_TO', {}, function(err, relationship1){
-						relationship1_id = relationship1._id;
-
-						db.insertNode({name:'foobar3'}, function(err, node3){
-							other_node2_id = node3._id;
-							db.insertRelationship(root_node_id, other_node2_id, 'RELATED_TO', {}, function(err, relationship2){
-								relationship2_id = relationship2._id;
-								done();
-							});
-						});
-					});
-				});
-			});
-		});
+		});	
 
 		describe('-> Read Relationships of root_node', function(){
 			it('should return 2 relationships', function(done){
-				db.readOutgoingRelationshipsOfNode(root_node_id, function(err, result){debug(err);debug(result);
-					should.not.exist(err);
-					result.length.should.equal(2);
+				db.readOutgoingRelationshipsOfNode(root_node_id, function(err, result){
+					onlyResult(err, result);
+					result.should.be.an.instanceOf(Array);
+					result.should.have.lengthOf(2);
 					done();
 				});
 			});
@@ -1999,20 +2009,26 @@ describe('Testing Node specific operations for Neo4j', function(){
 
 		describe('-> Read Relationships of other_node1', function(){
 			it('should return 0 relationships', function(done){
-				db.readOutgoingRelationshipsOfNode(other_node1_id, function(err, result){debug(err);debug(result);
-					should.not.exist(err);
-					result.length.should.equal(0);
+				db.readOutgoingRelationshipsOfNode(other_node1_id, function(err, result){
+					onlyResult(err, result);
+					result.should.be.an.instanceOf(Array);
+					result.should.have.lengthOf(0);
 					done();
 				});
 			});
 		});
 
 		after(function(done){
-			db.deleteRelationship(relationship1_id, function(err, result){debug(err);debug(result);
-				db.deleteRelationship(relationship2_id, function(err, result){debug(err);debug(result);
-					db.deleteNode(other_node1_id, function(err, result){debug(err);debug(result);
-						db.deleteNode(other_node2_id, function(err, result){debug(err);debug(result);
-							db.deleteNode(root_node_id, function(err, result){debug(err);debug(result);
+			db.deleteRelationship(relationship1_id, function(err, result){
+				isTrue(err, result);
+				db.deleteRelationship(relationship2_id, function(err, result){
+					isTrue(err, result);
+					db.deleteNode(other_node1_id, function(err, result){
+						isTrue(err, result);
+						db.deleteNode(other_node2_id, function(err, result){
+							isTrue(err, result);
+							db.deleteNode(root_node_id, function(err, result){
+								isTrue(err, result);
 								done();
 							});
 						});
@@ -2020,14 +2036,13 @@ describe('Testing Node specific operations for Neo4j', function(){
 				});
 			});
 		});
-
-	});
+	}); /* END => Read all outgoing Relationships of a Node */
 
 	describe('\n=> Test Cyper Query Functionality against non existing nodes', function(){
 
 		describe('-> Run a cypher query against a non existing node', function(){
 			it('should return an error since node does not exist', function(done){
-				db.cypherQuery("start x=node(100) return x", null, function(err, result){debug(err);debug(result);
+				db.cypherQuery("start x=node(12345) return x", null, function(err, result){
 					onlyError(err, result);
 					done();
 				});
@@ -2036,7 +2051,7 @@ describe('Testing Node specific operations for Neo4j', function(){
 
 		describe('-> Run the cypher query from issue 2 from @glefloch against non existing nodes', function(done){
 			it('should return a error since the nodes do not exist', function(done){
-				db.cypherQuery("START d=node(100), e=node(102) MATCH p=shortestPath(d -[*..15]-> e) RETURN p", null, function(err, result){debug(err);debug(result);
+				db.cypherQuery("START d=node(12345), e=node(54321) MATCH p=shortestPath(d -[*..15]-> e) RETURN p", null, function(err, result){
 					onlyError(err, result);
 					done();
 				});
@@ -2044,7 +2059,7 @@ describe('Testing Node specific operations for Neo4j', function(){
 		});
 
 		describe('-> Run the cypher query from issue 8 by @electrichead against non existing nodes', function(done){
-			it('should return null since no data matches the query', function(done){
+			it('should return empty data array since no data matches the query', function(done){
 				db.cypherQuery("start a=node(*) with a match a-[r1?:RELATED_TO]->o return a.name,o.name", null, function(err, result){debug(err);debug(result);
 					onlyResult(err, result);
 					result.should.have.keys('columns', 'data');
@@ -2061,22 +2076,23 @@ describe('Testing Node specific operations for Neo4j', function(){
 	});
 
 	describe('\n=> Test Cypher Query Functionality against existing nodes and relationships', function(){
-		var root_node_id;
-		var other_node1_id;
-		var other_node2_id;
-		var relationship1_id;
-		var relationship2_id;
+		var root_node_id, other_node1_id, other_node2_id, relationship1_id, relationship2_id;
 
 		before(function(done){
 			db.insertNode({name:'foobar'}, function(err, node1){
+				onlyResult(err, node1);
 				root_node_id = node1._id;
 				db.insertNode({name:'foobar2'}, function(err, node2){
+					onlyResult(err, node2);
 					other_node1_id = node2._id;
 					db.insertRelationship(root_node_id, other_node1_id, 'RELATED_TO', {}, function(err, relationship1){
+						onlyResult(err, relationship1);
 						relationship1_id = relationship1._id;
 						db.insertNode({name:'foobar3'}, function(err, node3){
+							onlyResult(err, node3);
 							other_node2_id = node3._id;
 							db.insertRelationship(root_node_id, other_node2_id, 'RELATED_TO', {}, function(err, relationship2){
+								onlyResult(err, relationship2);
 								relationship2_id = relationship2._id;
 								done();
 							});
@@ -2088,7 +2104,7 @@ describe('Testing Node specific operations for Neo4j', function(){
 		
 		describe('-> Run a cypher query against an existing root node', function(){
 			it('should return a dataset with a single node', function(done){
-				db.cypherQuery("START user = node({id}) RETURN user", { id: root_node_id }, function(err, result){debug(err);debug(result);
+				db.cypherQuery("START user = node({id}) RETURN user", { id: root_node_id }, function(err, result){
 					onlyResult(err, result);
 					result.should.have.keys('columns', 'data');
 					result.data.should.be.an.instanceOf(Array);
@@ -2125,7 +2141,7 @@ describe('Testing Node specific operations for Neo4j', function(){
 		describe('-> Run the cypher query from issue 2 from @glefloch', function(done){
 			it('should return a valid response', function(done){
 				db.cypherQuery("START d=node({dId}), e=node({eId}) MATCH p=shortestPath(d -[*..15]-> e) RETURN p", 
-					{ dId: root_node_id, eId: other_node1_id }, function(err, result){debug(err);debug(result);
+					{ dId: root_node_id, eId: other_node1_id }, function(err, result){//debug(err);debug(result);
 					onlyResult(err, result);
 					result.should.have.keys('columns', 'data');
 					result.data.should.be.an.instanceOf(Array);
@@ -2141,22 +2157,25 @@ describe('Testing Node specific operations for Neo4j', function(){
 				});
 			});
 		});
-
+		// null ? null?
 		describe('-> Run the cypher query from issue 8 by @electrichead against non existing nodes', function(done){
 			it('should return a valid response', function(done){
-				db.cypherQuery("START a=node(*) match a-[r1?:RELATED_TO]->o RETURN a.name,o.name", function(err, result){debug(err);debug(result);
+				db.cypherQuery("START a=node(*) match a-[r1?:RELATED_TO]->o RETURN a.name,o.name", function(err, result){//debug(err);debug(result);
 					onlyResult(err, result);
-					result.data.length.should.equal(8);
-					result.data[0].should.equal('foobar');
-					result.data[1].should.equal('foobar2');
-					result.data[2].should.equal('foobar');
-					result.data[3].should.equal('foobar3');
-					result.columns.length.should.equal(2);
-					result.columns[0].should.equal('a.name');
+					result.data.should.be.an.instanceOf(Array);
+					result.data.should.have.lengthOf(8);
+					result.columns.should.be.an.instanceOf(Array);
+					result.columns.should.have.lengthOf(2);
+					result.data.should.include('foobar');
+					result.data.should.include('foobar2');
+					result.data.should.include('foobar');
+					result.data.should.include('foobar3');				
+					result.columns.should.include('a.name');
 					done();
 				});
 			});
 		});
+
 		/* TODO: fix error
 		describe('-> Run the cypher query from issue 7 from @Zaxnyd', function(done){
 			it('should return a node and the relationships', function(done){
@@ -2170,11 +2189,45 @@ describe('Testing Node specific operations for Neo4j', function(){
 		});*/
 
 		after(function(done){
-			db.deleteRelationship(relationship1_id, function(err, result){debug(err);debug(result);
-				db.deleteRelationship(relationship2_id, function(err, result){debug(err);debug(result);
-					db.deleteNode(other_node1_id, function(err, result){debug(err);debug(result);
-						db.deleteNode(other_node2_id, function(err, result){debug(err);debug(result);
-							db.deleteNode(root_node_id, function(err, result){debug(err);debug(result);
+			db.deleteRelationship(relationship1_id, function(err, result){
+				isTrue(err, result);
+				db.deleteRelationship(relationship2_id, function(err, result){
+					isTrue(err, result);
+					db.deleteNode(other_node1_id, function(err, result){
+						isTrue(err, result);
+						db.deleteNode(other_node2_id, function(err, result){
+							isTrue(err, result);
+							db.deleteNode(root_node_id, function(err, result){
+								isTrue(err, result);
+								done();
+							});
+						});
+					});
+				});
+			});
+		});
+	});
+
+
+	describe('\n=> Test Batch Query Functionality', function(){
+		var root_node_id, other_node1_id, other_node2_id, relationship1_id, relationship2_id;
+
+		before(function(done){
+			db.insertNode({name:'foobar'}, function(err, node1){
+				onlyResult(err, node1);
+				root_node_id = node1._id;
+				db.insertNode({name:'foobar2'}, function(err, node2){
+					onlyResult(err, node2);
+					other_node1_id = node2._id;
+					db.insertRelationship(root_node_id, other_node1_id, 'RELATED_TO', {}, function(err, relationship1){
+						onlyResult(err, relationship1);
+						relationship1_id = relationship1._id;
+						db.insertNode({name:'foobar3'}, function(err, node3){
+							onlyResult(err, node3);
+							other_node2_id = node3._id;
+							db.insertRelationship(root_node_id, other_node2_id, 'RELATED_TO', {}, function(err, relationship2){
+								onlyResult(err, relationship2);
+								relationship2_id = relationship2._id;
 								done();
 							});
 						});
@@ -2183,10 +2236,6 @@ describe('Testing Node specific operations for Neo4j', function(){
 			});
 		});
 
-	});
-
-
-	describe('\n=> Test Batch Query Functionality', function(){
 		describe('-> Run a batch query against non existing nodes', function(done){
 			it('should return an error', function(done){
 				db.batchQuery([{
@@ -2197,41 +2246,15 @@ describe('Testing Node specific operations for Neo4j', function(){
 					method: "GET",
 					to: "/node/101",
 					id: 1
-				}], function(err, result){debug(err);debug(result);
+				}], function(err, result){
 					onlyError(err, result);
 					done();
 				});
 			});
-		});
-
-		var root_node_id;
-		var other_node1_id;
-		var other_node2_id;
-		var relationship1_id;
-		var relationship2_id;
-
-		before(function(done){
-			db.insertNode({name:'foobar'}, function(err, node1){
-				root_node_id = node1._id;
-				db.insertNode({name:'foobar2'}, function(err, node2){
-					other_node1_id = node2._id;
-					db.insertRelationship(root_node_id, other_node1_id, 'RELATED_TO', {}, function(err, relationship1){
-						relationship1_id = relationship1._id;
-
-						db.insertNode({name:'foobar3'}, function(err, node3){
-							other_node2_id = node3._id;
-							db.insertRelationship(root_node_id, other_node2_id, 'RELATED_TO', {}, function(err, relationship2){
-								relationship2_id = relationship2._id;
-								done();
-							});
-						});
-					});
-				});
-			});
-		});
+		});	
 
 		describe('-> Run a batch query against existing nodes and relationships', function(done){
-			it('should return an error', function(done){
+			it('should return a valid result', function(done){
 				db.batchQuery([{
 					method: "GET",
 					to: "/node/" + root_node_id,
@@ -2240,7 +2263,7 @@ describe('Testing Node specific operations for Neo4j', function(){
 					method: "GET",
 					to: "/node/" + other_node1_id,
 					id: 1
-				}], function(err, result){debug(err);debug(result);
+				}], function(err, result){//debug(err);debug(result);
 					onlyResult(err, result);
 					done();
 				});
@@ -2248,11 +2271,16 @@ describe('Testing Node specific operations for Neo4j', function(){
 		});
 
 		after(function(done){
-			db.deleteRelationship(relationship1_id, function(err, result){debug(err);debug(result);
-				db.deleteRelationship(relationship2_id, function(err, result){debug(err);debug(result);
-					db.deleteNode(other_node1_id, function(err, result){debug(err);debug(result);
-						db.deleteNode(other_node2_id, function(err, result){debug(err);debug(result);
-							db.deleteNode(root_node_id, function(err, result){debug(err);debug(result);
+			db.deleteRelationship(relationship1_id, function(err, result){
+				isTrue(err, result);
+				db.deleteRelationship(relationship2_id, function(err, result){
+					isTrue(err, result);
+					db.deleteNode(other_node1_id, function(err, result){
+						isTrue(err, result);
+						db.deleteNode(other_node2_id, function(err, result){
+							isTrue(err, result);
+							db.deleteNode(root_node_id, function(err, result){
+								isTrue(err, result);
 								done();
 							});
 						});
@@ -2262,14 +2290,12 @@ describe('Testing Node specific operations for Neo4j', function(){
 		});
 	});
 
-
 	/* HELPER FUNCTIONS ------------ */
 
 	describe('\n=> Testing replaceNullWithString', function(){
 		var test_obj = {
 			name: 'foobar',
-			age: null,
-
+			age: null
 		};
 
 		describe('-> Testing a small object', function(){
@@ -2320,8 +2346,9 @@ describe('Testing Node specific operations for Neo4j', function(){
 		describe('-> Extend the response', function(){
 			it('should return an extended array', function(done){
 				db.addRelationshipIdForArray(relationships, function(err, results){					
-					should.not.exist(err);
-					results.length.should.equal(2);
+					onlyResult(err, results);
+					results.should.be.an.instanceOf(Array);
+					results.should.have.lengthOf(2);
 					results[0]._id.should.equal(54);
 					results[1]._id.should.equal(55);
 					results[0]._start.should.equal(147);
