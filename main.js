@@ -6,6 +6,10 @@ var request = require('superagent'),
 
 module.exports = Neo4j;
 
+var NODE_LENGTH = 14;			// '/db/data/node/'
+var RELALATIONSHIP_LENGTH = 22;	// '/db/data/relationship/'
+var TRANSACTION_LENGTH = 21;	// '/db/data/transaction/'
+
 function Neo4j(url){
 	if(typeof url !== 'undefined' && url !== ''){
 		this.url = url;
@@ -14,35 +18,38 @@ function Neo4j(url){
 	}
 };
 
+
 function debug (obj) {
 	console.info(util.inspect(obj) + '\n\n');
 }
 
 /*	Insert a Node
+	Returns the node that is inserted and his node id (property: _id)
 	Examples:
 	Insert a Node with no label:
 		insertNode({ name: 'Kristof' }, callback);
 	Insert a Node with one label:	
 		insertNode({ name: 'Kristof' }, ['Student'], callback);
 		insertNode({ name: 'Kristof' }, 'Student', callback);
+		returns { _id: 14, name: 'Kristof' }
 	Insert a Node with three labels:
-		insertNode({ name: 'Kristof' }, ['User', 'Student' ,'Man'], callback);		*/
+		insertNode({ name:'Darth Vader', level: 99, hobbies: ['lightsaber fighting', 'cycling in space'], shipIds: [123, 321] }, ['User', 'Evil' ,'Man'], callback);
+		returns { _id: 17, name:'Darth Vader', level: 99, hobbies: ['lightsaber fighting', 'cycling in space'], shipIds: [123, 321] }	*/
 
 Neo4j.prototype.insertNode = function(node, labels, callback){
 	var that = this;
 	// Insert node without a label with post request
-	if(typeof labels === 'function') {
+	if(typeof callback === 'undefined') {
 		callback = labels;		
 		request
 			.post(this.url + '/db/data/node')
-			.send(node)			//  content-type:application/json;charset=utf-8						
+			.send(node)
 			.end(function(result){
-				if(result.body)
+				if(result.body && result.body.data)
 					that.addNodeId(result.body, callback);
 				else 
-					callback(new Error('Response is empty'), null);
+					callback(new Error('Response body is empty'), null);
 			});
-
 	} else {
 		var val = new Validator();
 
@@ -56,7 +63,7 @@ Neo4j.prototype.insertNode = function(node, labels, callback){
 		// Insert node and label(s) with cypher query
 		if(labels instanceof Array){ //cypher.params(node)
 			var query = 'CREATE (data'+  cypher.stringify(labels) + ' {params}) RETURN data';
-			this.cypherQuery(query, { params: node }, function(err, res) {
+			this.cypherQuery(query, { params: node }, function(err, res) {				
 				if(err) 
 					callback(err, null);
 				else
@@ -69,7 +76,8 @@ Neo4j.prototype.insertNode = function(node, labels, callback){
 
 /*	Get an array of labels of a Node
 	Example:
-	readLabels(77, callback); 
+	Get all labels of node 77:
+		readLabels(77, callback); 
 		returns ['User','Student','Man']
 */
 
@@ -91,7 +99,7 @@ Neo4j.prototype.readLabels = function(node_id, callback){
 Neo4j.prototype.deleteNode = function(node_id, callback){
 	request
 		.del(this.url + '/db/data/node/' + node_id)
-				.end(function(result){
+		.end(function(result){
 			switch(result.statusCode){
 				case 204:
 					callback(null, true); // Node was deleted.
@@ -103,7 +111,7 @@ Neo4j.prototype.deleteNode = function(node_id, callback){
 					callback(null, false); // Node has Relationships and cannot be deleted.
 					break;
 				default:
-					callback(new Error('Unknown Error while deleting Node'), null);
+					callback(new Error('HTTP Error ' + result.statusCode + ' occurred while deleting a node.'), null);
 			}
 		});
 };
@@ -114,17 +122,17 @@ Neo4j.prototype.readNode = function(node_id, callback){
 	var that = this;
 	request
 		.get(this.url + '/db/data/node/' + node_id)
-				.end(function(result){
-			if(result.body){
-				if(result.statusCode === 200){
-					that.addNodeId(result.body, callback);
-				} else if(result.statusCode === 404){
-					callback(null, null);
-				} else {
-					callback(new Error('HTTP Error ' + result.statusCode + ' occurred.'), null);
-				}
-			} else
-				callback(new Error('Response is empty'), null);			
+		.end(function(result){
+			switch(result.statusCode){
+				case 200:
+					that.addNodeId(result.body, callback); // Node found.
+					break;
+				case 404:
+					callback(null, false); // Node doesn't exist.
+					break;
+				default:
+					callback(new Error('HTTP Error ' + result.statusCode + ' occurred while reading a node.'), null);
+			}			
 		});
 };
 
@@ -160,7 +168,7 @@ Neo4j.prototype.insertRelationship = function(root_node_id, other_node_id, relat
 			type: relationship_type,
 			data: that.stringifyValueObjects(that.replaceNullWithString(relationship_data))
 		})
-				.end(function(result){
+		.end(function(result){
 			switch(result.statusCode){
 				case 201:
 					that.addRelationshipId(result.body, callback);
@@ -204,7 +212,7 @@ Neo4j.prototype.readRelationship = function(relationship_id, callback){
 
 	request
 		.get(that.url + '/db/data/relationship/' + relationship_id)
-				.end(function(result){
+		.end(function(result){
 			switch(result.statusCode){
 				case 200:
 					that.addRelationshipId(result.body, callback);
@@ -226,7 +234,7 @@ Neo4j.prototype.updateRelationship = function(relationship_id, relationship_data
 	request
 		.put(that.url + '/db/data/relationship/' + relationship_id + '/properties')
 		.send(that.stringifyValueObjects(that.replaceNullWithString(relationship_data)))
-				.end(function(result){
+		.end(function(result){
 			switch(result.statusCode){
 				case 204:
 					callback(null, true);
@@ -314,10 +322,8 @@ Neo4j.prototype.insertRelationshipIndex = function(index, callback){
 /* Delete an Index ---------- */
 
 Neo4j.prototype.deleteIndex = function(index, callback){
-	var that = this;
-	
 	request
-	.del(this.url + '/db/data/index/' + index.type + '/' + index.index)
+		.del(this.url + '/db/data/index/' + index.type + '/' + index.index)
 		.end(function(result){
 		switch(result.statusCode){
 			case 204:
@@ -416,10 +422,10 @@ Neo4j.prototype.addItemToIndex = function(arguments, callback){
 				.end(function(result){
 			switch(result.statusCode){
 				case 200:
-					callback(null, result.body);
+					that.addNodeId(result.body, callback);
 					break;
 				case 201:
-					callback(null, result.body);
+					that.addNodeId(result.body, callback);
 					break;
 				default:
 					callback(new Error('HTTP Error ' + result.statusCode + ' when adding an Item to an Index'), null);
@@ -919,7 +925,7 @@ Neo4j.prototype.dropUniquenessContstraint = function(label, property_key, callba
 				results: [],
 				transaction: { expires: 'Tue, 24 Sep 2013 19:43:31 +0000' },
 				errors: [],
-				transactionId: 10
+				_id: 10
 			}
 
 	beginTransaction({
@@ -938,7 +944,7 @@ Neo4j.prototype.dropUniquenessContstraint = function(label, property_key, callba
 			  	results: [ { columns: [ 'person' ], data: [ { row: [ { age: 22, name: 'Adam' } ] } ] } ],
 			  	transaction: { expires: 'Sun, 22 Sep 2013 19:31:17 +0000' },
 			  	errors: [],
-			  	transactionId: 18 
+			  	_id: 18 
 			}																								*/
 
 Neo4j.prototype.beginTransaction = function(statements, callback){
@@ -1404,34 +1410,47 @@ Neo4j.prototype.removeCredentials = function(path){
 	}
 };
 
+/* Extract the id from a url */
+
+Neo4j.prototype.getId = function(url, length){
+	var from = this.url.length + length;// Example: length of url and '/db/data/transaction/'
+	var to = url.indexOf('/', from);	// Next slash
+	if(to === -1)
+		to = url.length;
+	return parseInt(url.substring(from, to));
+};
 
 /* Extract node_id and add it as a property. */
 
-Neo4j.prototype.addNodeId = function(node, callback){
+Neo4j.prototype.addNodeId = function(node, callback){	
 	if (node && node.self) {
-		node.id = parseInt(node.self
+		node.data._id = parseInt(node.self
 					.replace(this.removeCredentials(this.url) + '/db/data/node/', '')
 					.replace(this.removeCredentials(this.url) + '/db/data/relationship/', ''));  
-	}
+		callback(null, node.data);
+	} else
+		callback(null, node);
+};
+
+/*	Extract the transaction id and adds it as an _id property. */
+
+Neo4j.prototype.addTransactionId = function(node,  callback){	
+	node._id = this.getId(node.commit, TRANSACTION_LENGTH);
+	delete node.commit;
 	callback(null, node);
 };
 
-/* Extract transactionId and add it as a property. */
-
-Neo4j.prototype.addTransactionId = function(node, callback){
-	var from = this.url.length + 21; // length of url and '/db/data/transaction/'
-	var to = node.commit.indexOf('/', from); // next slash	
-	node.transactionId = parseInt(node.commit.substring(from, to));	
-	callback(null, node);
-};
-
-/* Extract relationship_id and add it as a property. */
+/*	Extract start node id (_start), end node id (_end) and node id (_id) add it as a property. */
 
 Neo4j.prototype.addRelationshipId = function(relationship, callback){
-	relationship.start_node_id = relationship.start.replace(this.removeCredentials(this.url) + '/db/data/node/', '');
-	relationship.end_node_id = relationship.end.replace(this.removeCredentials(this.url) + '/db/data/node/', '');
-	relationship.id = relationship.self.replace(this.removeCredentials(this.url) + '/db/data/relationship/', '');
-	callback(null, relationship);
+	if(relationship.data) {
+		relationship.data._start = this.getId(relationship.start, NODE_LENGTH);
+		relationship.data._end = this.getId(relationship.end, NODE_LENGTH);
+		relationship.data._id = this.getId(relationship.self, RELALATIONSHIP_LENGTH);
+		relationship.data._type = relationship.type;
+		callback(null, relationship.data);
+	} else
+		callback(new Error("Relationships data property doesn't exist.", null));
 };
 
 
