@@ -136,7 +136,8 @@ Neo4j.prototype.readNode = function(node_id, callback){
 		});
 };
 
-/* Update a Node ---------- */
+/*	Update a Node properties
+	This will replace all existing properties on the node with the new set of attributes. */
 
 Neo4j.prototype.updateNode = function(node_id, node_data, callback){
 	var that = this;
@@ -619,54 +620,65 @@ Neo4j.prototype.readNodesWithLabel = function(label, callback){
 		});
 };
 
-/*	Get all nodes with a label an a property
-	Given a label (non-empty string) and one property in json
-	returns an array of nodes with that label and property
+/*	Get all nodes with labels and properties
+	Given one label (non-empty string) or multiple labels (array of strings) and one or more properties in json
+	returns an array of nodes with these labels and properties
 	Examples:
-	readNodesWithLabelAndProperty('User',{ firstname: 'Sam' }, callback);
-		returns an array with nodes with the label 'User' and property firstname='Sam'
-	readNodesWithLabelAndProperty('User', { 'name': 'DoesNotExist'}, callback); 
+	readNodesWithLabelsAndProperties('User',{ firstname: 'Sam', male: true }, callback);
+		returns an array with nodes with the label 'User' and properties firstname='Sam' and male=true
+	readNodesWithLabelsAndProperties(['User','Admin'], { 'name': 'DoesNotExist'}, callback); 
 		returns an empty array	 		*/
 
-Neo4j.prototype.readNodesWithLabelAndProperties = function(label, properties, callback){
+Neo4j.prototype.readNodesWithLabelsAndProperties = function(labels, properties, callback){
 	var that = this;
-	var val = new Validator();
-	val.label(label).properties(properties);
+	var val = new Validator();	
+	val.labels(labels).properties(properties);
 	
 	if(val.hasErrors)
-		return callback(val.error(), null);
+		return callback(val.error(), null);	
 	
-	var props = cypher.jsonToURL(properties);
-	
-	request
-		.get(this.url + '/db/data/label/' + label + '/nodes?' + props)
-				.end(function(result){
-			var body = result.body;				
-			switch(result.statusCode){
-			case 200:
-				if(body && body.length >= 1){
-					Step(
-						function addIds(){
-							var group = this.group();							
-							body.forEach(function(node){
-								that.addNodeId(node, group());
-							});							
-						},
-						function sumUp(err, nodes){
-							if(err) throw err;							
-							callback(null, nodes);							
-						});
-					} else 
-						callback(null, body); 
-					break;
-				case 404:
-					callback(null, false);
-					break;
-				default:
-					callback(new Error('HTTP Error ' + result.statusCode + ' when reading Nodes.'), null);
-			}
-		});
-};
+	// Only one label and one property provided
+	if(typeof labels === 'string' && Object.keys(properties).length === 1) {		
+		var props = cypher.jsonToURL(properties);		
+		request
+			.get(this.url + '/db/data/label/' + labels + '/nodes?' + props)
+			.end(function(result){
+				var body = result.body;
+				switch(result.statusCode){
+				case 200:
+					if(body && body.length >= 1){
+						Step(
+							function addIds(){
+								var group = this.group();
+								body.forEach(function(node){
+									that.addNodeId(node, group());
+								});
+							},
+							function sumUp(err, nodes){
+								if(err) throw err;
+								callback(null, nodes);
+							});
+						} else 
+							callback(null, body); 
+						break;
+					case 404:
+						callback(null, false);
+						break;
+					default:			
+						callback(new Error('HTTP Error ' + result.statusCode + ' when reading Nodes.'), null);
+				}
+			});
+		} else { // Multiple labels or properties provided
+			var query = 'MATCH data'+  cypher.stringify(labels) + ' WHERE ' + cypher.params('data', properties) + ' RETURN data';
+			this.cypherQuery(query, properties, function(err, res) {
+				if(err) 
+					callback(err, null);
+				else
+					callback(err, res.data);
+			});
+		}
+}
+
 /*	List all labels.
 	Example:
 	listAllLabels(callback);
@@ -1341,7 +1353,7 @@ Neo4j.prototype.cypherQuery = function(query, params, callback){
 		.post(that.url + '/db/data/cypher')
 		.set('Content-Type', 'application/json')
 		.send(body)
-		.end(function(result){			
+		.end(function(result){
 			switch(result.statusCode){
 				case 200:
 					if(result.body && result.body.data.length >= 1){
@@ -1368,7 +1380,7 @@ Neo4j.prototype.cypherQuery = function(query, params, callback){
 					callback(null, null);
 					break;
 				default:
-					callback(new Error('HTTP Error ' + result.statusCode + ' when running the cypher query against neo4j'), null);
+					callback(new Error('HTTP Error ' + result.statusCode + ' when running the cypher query against neo4j.\n' + result.body.message), null);
 			}
 		});
 };
