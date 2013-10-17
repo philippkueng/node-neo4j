@@ -30,44 +30,68 @@ Don't be shy to give remarks or report bugs. We would be glad to fix them.
 You can contact use on Twitter @Stofkn or @philippkueng or mail us (check package.json).
 
 
-### NEW Features
-**Checkout tests**
+## New features
+
+**Note** 
 
 Take a look at the test.main.js file in the test folder for many examples.
 
-**Labels and indexes**
+### Labels and indexes
 
-insertNode: Now supports labels.
-readLabels: Get the labels of a node given the node id. It returns an array of strings.
-insertLabelIndex: Create a label index on ONE property.
-deleteLabelIndex: Delete a label index for a property.
-listLabelIndexes: List indexes for a label.
-addLabelsToNode: Adding one or multiple labels to a node.
-replaceLabelsFromNode: Replacing all labels on a node by new labels.
-deleteLabelFromNode: Removing a label from a node.
-readNodesWithLabel: Get all nodes with a label.
-readNodesWithLabelsAndProperties: Get nodes by labels and properties.
-listAllLabels: List all labels.
+**insertNode** Now supports labels.
 
-**Constraints**
-createUniquenessContstraint: Create a uniqueness constraint on a property.
-readUniquenessConstraint: Get a specific uniqueness constraint for a label and a property.
-listAllUniquenessConstraintsForLabel: Get all uniqueness constraints for a label.
-listContraintsForLabel: Get all constraints for a label.
-listAllConstraints: List all constraints.
-dropUniquenessContstraint: Drop uniqueness constraint for a label and a property.
+**readLabels** Get the labels of a node given the node id. It returns an array of strings.
 
-**Transactions**
-beginTransaction: Begin a new transaction.
-addStatementsToTransaction: Execute statements in an open transaction.
-resetTimeoutTransaction: Reset transaction timeout of an open transaction.
-commitTransaction: Commit an open transaction.
-rollbackTransaction: Rollback an open transaction.
-beginAndCommitTransaction: Begin and commit a transaction in one request.
+**insertLabelIndex** Create a label index on ONE property.
 
-**Changes**
-Node id is now an integer not a string.
-cypherQuery: now supports parameters, Neo4j will cache query and reuse it with different parameters.
+**deleteLabelIndex** Delete a label index for a property.
+
+**listLabelIndexes** List indexes for a label.
+
+**addLabelsToNode** Adding one or multiple labels to a node.
+
+**replaceLabelsFromNode** Replacing all labels on a node by new labels.
+
+**deleteLabelFromNode** Removing a label from a node.
+
+**readNodesWithLabel** Get all nodes with a label.
+
+**readNodesWithLabelsAndProperties** Get nodes by labels and properties.
+
+**listAllLabels** List all labels.
+
+### Constraints
+
+**createUniquenessContstraint** Create a uniqueness constraint on a property.
+
+**readUniquenessConstraint** Get a specific uniqueness constraint for a label and a property.
+
+**listAllUniquenessConstraintsForLabel** Get all uniqueness constraints for a label.
+
+**listContraintsForLabel** Get all constraints for a label.
+
+**listAllConstraints** List all constraints.
+
+**dropUniquenessContstraint** Drop uniqueness constraint for a label and a property.
+
+### Transactions
+
+**beginTransaction** Begin a new transaction.
+
+**addStatementsToTransaction** Execute statements in an open transaction.
+
+**resetTimeoutTransaction** Reset transaction timeout of an open transaction.
+
+**commitTransaction** Commit an open transaction.
+
+**rollbackTransaction** Rollback an open transaction.
+
+**beginAndCommitTransaction** Begin and commit a transaction in one request.
+
+### Changes
+
+**Node id** is now an **integer** not a string.
+**cypherQuery** Now supports parameters, Neo4j will cache query and reuse it with different parameters.
 
 ### Node operations
         
