@@ -6,6 +6,10 @@
 
     npm install node-neo4j
 
+We're working on a 2.0.0 release to support the upcoming Neo4j 2.0 release. Certain features like indexes and better cypher query support is only available in the development release and only works with a 2.0.0 Neoj Beta release. We're trying our best to prevent breaking things, though until Neo4j is stable we can't guarantee it.
+
+    npm install node-neo4j@devel
+
 ## Usage
 
 In order to use the library you either have to create a [heroku](http://www.heroku.com/) app and add the [Neo4j Addon](https://addons.heroku.com/neo4j) there or install it locally.<br/>If you're using OS X i highly recommend installing Neo4j via [Homebrew](http://mxcl.github.com/homebrew/).
