@@ -6,10 +6,6 @@
 
     npm install node-neo4j
 
-We're working on a 2.0.0 release to support the upcoming Neo4j 2.0 release. Certain features like indexes and better cypher query support is only available in the development release and only works with a 2.0.0 Neoj Beta release. We're trying our best to prevent breaking things, though until Neo4j is stable we can't guarantee it.
-
-    npm install node-neo4j@devel
-
 ## Usage
 
 In order to use the library you either have to create a [heroku](http://www.heroku.com/) app and add the [Neo4j Addon](https://addons.heroku.com/neo4j) there or install it locally.<br/>If you're using OS X i highly recommend installing Neo4j via [Homebrew](http://mxcl.github.com/homebrew/).
@@ -22,55 +18,56 @@ In order to use the library you either have to create a [heroku](http://www.hero
     var neo4j = require('node-neo4j');
     db = new neo4j('http://username:password@domain:port');
 
+**NOTE**
+New features like labels, contraints and transactions are only supported by Neo4j 2.0.0.
+Navigate to the node module and run the tests:
+
+	$ npm test
+
+All tests should pass if you're running the latest version of Neo4j. (Neo4j 2.0.0-M06)
+We try to update the module as fast as possible if there's a new version of Neo4j.
+Don't be shy to give remarks or report bugs. We would be glad to fix them.
+You can contact use on Twitter @Stofkn or @philippkueng or mail us (check package.json).
+
+
 ### NEW Features
+**Checkout tests**
 
-1) √ ADDED: Node id is now an integer not a string (used: parseInt)
-
-2) √ ADDED: insertNode: now supports labels (used: cypher query, REST API doesn't support it directly)
-
-3) √ ADDED: cypherQuery: now supports parameters, Neo4j will cache query and reuse it with different parameters
+Take a look at the test.main.js file in the test folder for many examples.
 
 **Labels and indexes**
 
-4) √ NEW: readLabels: get the labels of a node given the node id. It returns an array of strings
-
-5) √ NEW: insertLabelIndex: Create a label index on ONE property 
-	(use array ['firstname'] or just string 'firstname', only one property currently supported by Neo4j)
-
-6) √ NEW: deleteLabelIndex: Delete a label index for a property
-
-7) √ NEW: listLabelIndexes: List indexes for a label	
-
-8) √ NEW: addLabelsToNode: Adding one or multiple labels to a node.
-
-9) √ NEW: replaceLabelsFromNode: Replacing labels on a node.
-
-10) √ NEW: deleteLabelFromNode: Removing a label from a node.
-
-11) √ NEW: readNodesWithLabel: Get all nodes with a label.
-
-12) √ NEW: readNodesWithLabelAndProperties: Get nodes by label and property 
-	(property: JSON with one property, only one property currently supported by Neo4j)
-
-13) √ NEW: listAllLabels: List all labels.
+insertNode: Now supports labels.
+readLabels: Get the labels of a node given the node id. It returns an array of strings.
+insertLabelIndex: Create a label index on ONE property.
+deleteLabelIndex: Delete a label index for a property.
+listLabelIndexes: List indexes for a label.
+addLabelsToNode: Adding one or multiple labels to a node.
+replaceLabelsFromNode: Replacing all labels on a node by new labels.
+deleteLabelFromNode: Removing a label from a node.
+readNodesWithLabel: Get all nodes with a label.
+readNodesWithLabelsAndProperties: Get nodes by labels and properties.
+listAllLabels: List all labels.
 
 **Constraints**
-	See: http://docs.neo4j.org/chunked/milestone/rest-api-schema-constraints.html#rest-api-get-a-specific-uniqueness-constraint
-14) √ NEW: createUniquenessContstraint: Create a uniqueness constraint on a property.
+createUniquenessContstraint: Create a uniqueness constraint on a property.
+readUniquenessConstraint: Get a specific uniqueness constraint for a label and a property.
+listAllUniquenessConstraintsForLabel: Get all uniqueness constraints for a label.
+listContraintsForLabel: Get all constraints for a label.
+listAllConstraints: List all constraints.
+dropUniquenessContstraint: Drop uniqueness constraint for a label and a property.
 
-15) √ NEW: readUniquenessConstraint: Get a specific uniqueness constraint for a label and a property.
+**Transactions**
+beginTransaction: Begin a new transaction.
+addStatementsToTransaction: Execute statements in an open transaction.
+resetTimeoutTransaction: Reset transaction timeout of an open transaction.
+commitTransaction: Commit an open transaction.
+rollbackTransaction: Rollback an open transaction.
+beginAndCommitTransaction: Begin and commit a transaction in one request.
 
-16) √ NEW: listAllUniquenessConstraintsForLabel: Get all uniqueness constraints for a label
-
-17) √ NEW: listContraintsForLabel: Get all constraints for a label 
-
-18) √ NEW: listAllConstraints: List all constraints.
-
-19) √ NEW: dropUniquenessContstraint: Drop uniqueness constraint for a label and a property.
-
-**TODO**
-
-Streaming & transactions ! =D
+**Changes**
+Node id is now an integer not a string.
+cypherQuery: now supports parameters, Neo4j will cache query and reuse it with different parameters.
 
 ### Node operations
         
