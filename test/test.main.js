@@ -282,9 +282,9 @@ describe('Testing Node specific operations for Neo4j', function(){
 			});
 		});
 
-		describe('-> Replace an existing Node with a simple object', function(){
+		describe('-> Replace an existing Node with a simple object, check if alias works', function(){
 			it('should return true', function(done){
-				db.replaceNodeById(node_id, {name:'foobar2'}, function(err, result){
+				db.updateNode(node_id, {name:'foobar2'}, function(err, result){
 					isTrue(err, result);
 					done();
 				});

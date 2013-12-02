@@ -138,7 +138,7 @@ Neo4j.prototype.readNode = function(node_id, callback){
 /*	Replace a Node's properties
     This will replace all existing properties on the node with the new set of attributes. */
 
-Neo4j.prototype.replaceNodeById = function (node_id, node_data, callback){
+function replaceNodeById(node_id, node_data, callback){
   var that = this;
   request
     .put(this.url + '/db/data/node/' + node_id + '/properties')
@@ -156,6 +156,9 @@ Neo4j.prototype.replaceNodeById = function (node_id, node_data, callback){
       }
     });
 };
+Neo4j.prototype.replaceNodeById = replaceNodeById;
+// Create an alias
+Neo4j.prototype.updateNode = replaceNodeById;
 
 /*  Update a Node properties
     This will update all existing properties on the node with the new set of attributes. */
