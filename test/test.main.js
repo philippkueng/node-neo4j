@@ -261,7 +261,7 @@ describe('Testing Node specific operations for Neo4j', function(){
 		});
 	}); /* END \n=> Read a Node */
 
-	describe('\n=> Update a Node', function(){
+	describe('\n=> Replace a Node\'s properties by node id', function(){
 		var node_id;
 
 		//Insert a Node.
@@ -273,16 +273,16 @@ describe('Testing Node specific operations for Neo4j', function(){
 			});
 		});
 
-		describe('-> Update a non-existing Node with a simple object', function(){
+		describe('-> Replace a non-existing Node with a simple object', function(){
 			it('should return false because Node does not exist', function(done){
-				db.updateNode(123456789, {name:'foobar2'}, function(err, result){
+				db.replaceNodeById(123456789, {name:'foobar2'}, function(err, result){
 					isFalse(err, result);
 					done();
 				});
 			});
 		});
 
-		describe('-> Update an existing Node with a simple object', function(){
+		describe('-> Replace an existing Node with a simple object, check if alias works', function(){
 			it('should return true', function(done){
 				db.updateNode(node_id, {name:'foobar2'}, function(err, result){
 					isTrue(err, result);
@@ -291,16 +291,16 @@ describe('Testing Node specific operations for Neo4j', function(){
 			});
 		});
 
-		describe('-> Update an existing Node with an object with null values', function(){
+		describe('-> Replace an existing Node with an object with null values', function(){
 			it('should return true', function(done){
-				db.updateNode(node_id,{name:'foobar3',age:null}, function(err, result){
+				db.replaceNodeById(node_id,{name:'foobar3',age:null}, function(err, result){
 					isTrue(err, result);
 					done();
 				});
 			});
 		});
 
-		describe('-> Update an existing Node with an object with an object as value', function(){
+		describe('-> Replace an existing Node with an object with an object as value', function(){
 			var test_obj = {
 				name: 'foobar',
 				family: {
@@ -310,7 +310,7 @@ describe('Testing Node specific operations for Neo4j', function(){
 			};
 
 			it('should return true', function(done){
-				db.updateNode(node_id, test_obj, function(err, result){
+				db.replaceNodeById(node_id, test_obj, function(err, result){
 					isTrue(err, result);
 					done();
 				});
@@ -324,7 +324,54 @@ describe('Testing Node specific operations for Neo4j', function(){
 				done();
 			});
 		});
-	}); /* END \n=> Update a Node */
+	}); /* END \n=> Replace a Node */
+
+  describe('\n=> Update a Node by node id', function(){
+    var node_id;
+
+    //Insert a Node.
+    before(function(done){
+      db.insertNode({name:'foobar'}, function(err, result){
+        onlyResult(err, result);
+        node_id = result._id;
+        done();
+      });
+    });
+
+    describe('-> Update a non-existing Node with a simple object', function(){
+      it('should return false because Node does not exist', function(done){
+        db.updateNodeById(123456789, {name:'foobar2'}, function(err, result){
+          onlyError(err, result);
+          done();
+        });
+      });
+    });
+
+    describe('-> UpdateTwo an existing Node with a simple object', function(){
+      it('should return node because Node', function(done){
+        db.updateNodeById(node_id, {name:'updatedFoobar', price: 1.25, colors: ['blue', 'green']}, function(err, result){
+          onlyResult(err, result);
+          result.should.have.keys('_id', 'name', 'price', 'colors');
+          result._id.should.equal(node_id);
+          result.name.should.equal('updatedFoobar');
+          result.price.should.equal(1.25);
+          result.colors.should.be.an.instanceOf(Array);
+          result.colors.should.have.lengthOf(2);
+          result.colors.should.include('blue'); 
+          result.colors.should.include('green');
+          done();
+        });
+      });
+    });   
+
+    // Remove Node afterwards.
+    after(function(done){
+      db.deleteNode(node_id, function(err, result){
+        isTrue(err, result);
+        done();
+      });
+    });
+  }); /* END \n=> UpdateTwo a Node */
 
 	describe('\n=> Insert a Relationship', function(){
 		var root_node_id, other_node_id, relationship_id;
@@ -361,7 +408,6 @@ describe('Testing Node specific operations for Neo4j', function(){
 					done();
 				});
 			});
-
 		});
 
 		describe('-> Insert a Relationship with root_node not existing', function(){
@@ -628,10 +674,10 @@ describe('Testing Node specific operations for Neo4j', function(){
 				db.insertLabelIndex(test_index3_label, test_index3_property, function(err, result){
 					onlyResult(err, result);
 					result.should.have.property('label','Person');
-					result.should.have.property('property-keys');					
-					result['property-keys'].should.be.an.instanceOf(Array);					
+					result.should.have.property('property-keys');
+					result['property-keys'].should.be.an.instanceOf(Array);
 					result['property-keys'].should.have.lengthOf(1);
-					result['property-keys'].should.include('firstname');		
+					result['property-keys'].should.include('firstname');
 					done();
 				});
 			});

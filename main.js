@@ -18,7 +18,6 @@ function Neo4j(url){
 	}
 };
 
-
 function debug (obj) {
 	console.info(util.inspect(obj) + '\n\n');
 }
@@ -61,14 +60,14 @@ Neo4j.prototype.insertNode = function(node, labels, callback){
 			labels = [labels];
 
 		// Insert node and label(s) with cypher query
-		if(labels instanceof Array){ //cypher.params(node)
+		if(labels instanceof Array){
 			var query = 'CREATE (data'+  cypher.stringify(labels) + ' {params}) RETURN data';
 			this.cypherQuery(query, { params: node }, function(err, res) {				
 				if(err) 
 					callback(err, null);
 				else
 					callback(err, res.data[0]);
-			});		
+			});
 		} else
 			callback(new Error('The second parameter "labels" should be an array with strings OR "labels" should be a callback function.'), null);
 	}
@@ -116,7 +115,7 @@ Neo4j.prototype.deleteNode = function(node_id, callback){
 		});
 };
 
-/* Read a Node ---------- */
+/*  Read a Node ---------- */
 
 Neo4j.prototype.readNode = function(node_id, callback){
 	var that = this;
@@ -136,26 +135,41 @@ Neo4j.prototype.readNode = function(node_id, callback){
 		});
 };
 
-/*	Update a Node properties
-	This will replace all existing properties on the node with the new set of attributes. */
+/*	Replace a Node's properties
+    This will replace all existing properties on the node with the new set of attributes. */
 
-Neo4j.prototype.updateNode = function(node_id, node_data, callback){
-	var that = this;
-	request
-		.put(this.url + '/db/data/node/' + node_id + '/properties')
-		.send(that.stringifyValueObjects(that.replaceNullWithString(node_data)))
-				.end(function(result){
-			switch(result.statusCode){
-				case 204:
-					callback(null, true);
-					break;
-				case 404:
-					callback(null, false);
-					break;
-				default:
-					callback(new Error('HTTP Error ' + result.statusCode + ' when updating a Node.'), null);
-			}
-		});
+function replaceNodeById(node_id, node_data, callback){
+  var that = this;
+  request
+    .put(this.url + '/db/data/node/' + node_id + '/properties')
+    .send(that.stringifyValueObjects(that.replaceNullWithString(node_data)))
+        .end(function(result){
+      switch(result.statusCode){
+        case 204:
+          callback(null, true);
+          break;
+        case 404:
+          callback(null, false);
+          break;
+        default:
+          callback(new Error('HTTP Error ' + result.statusCode + ' when updating a Node.'), null);
+      }
+    });
+};
+Neo4j.prototype.replaceNodeById = replaceNodeById;
+// Create an alias
+Neo4j.prototype.updateNode = replaceNodeById;
+
+/*  Update a Node properties
+    This will update all existing properties on the node with the new set of attributes. */
+
+Neo4j.prototype.updateNodeById = function(node_id, node_data, callback){
+  var that = this;
+  var query = 'START data=node({_id}) SET ' + cypher.set('data', node_data) + ' RETURN data';
+  node_data._id = node_id;
+  this.cypherQuery(query , node_data, function(err, res) {        
+    err? callback(err): callback(err, res.data[0]);
+  });   
 };
 
 /* Insert a Relationship ------ */
@@ -669,7 +683,7 @@ Neo4j.prototype.readNodesWithLabelsAndProperties = function(labels, properties, 
 				}
 			});
 		} else { // Multiple labels or properties provided
-			var query = 'MATCH (data'+  cypher.stringify(labels) + ') WHERE ' + cypher.params('data', properties) + ' RETURN data';
+			var query = 'MATCH (data'+  cypher.stringify(labels) + ') WHERE ' + cypher.where('data', properties) + ' RETURN data';
 			this.cypherQuery(query, properties, function(err, res) {
 				if(err) 
 					callback(err, null);
@@ -1377,7 +1391,7 @@ Neo4j.prototype.cypherQuery = function(query, params, callback){
 					callback(null, null);
 					break;
 				default:
-					callback(new Error('HTTP Error ' + result.statusCode + ' when running the cypher query against neo4j.\n' + result.body.message), null);
+					callback(new Error('HTTP Error ' + result.statusCode + ' when running the cypher query against neo4j.\n' + result.body.exception + ': ' + result.body.message), null);
 			}
 		});
 };
