@@ -1,6 +1,6 @@
 # Neo4j REST API wrapper for Node.js
 
-[![Build Status](https://travis-ci.org/philippkueng/node-neo4j.png?branch=master)](https://travis-ci.org/philippkueng/node-neo4j)
+[![Build Status](https://travis-ci.org/philippkueng/node-neo4j.png?branch=develop)](https://travis-ci.org/philippkueng/node-neo4j)
 
 ---
 
