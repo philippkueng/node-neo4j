@@ -663,7 +663,7 @@ describe('Testing Node specific operations for Neo4j', function(){
 				insertLabelIndex('Person', 'firstname', callback);
 				returns {
 						  "label" : "Person",
-						  "property-keys" : [ "firstname" ]
+						  "property_keys" : [ "firstname" ]
 						}
 			Note:
 			Compound indexes are not yet supported, only one property per index is allowed.
@@ -674,10 +674,10 @@ describe('Testing Node specific operations for Neo4j', function(){
 				db.insertLabelIndex(test_index3_label, test_index3_property, function(err, result){
 					onlyResult(err, result);
 					result.should.have.property('label','Person');
-					result.should.have.property('property-keys');
-					result['property-keys'].should.be.an.instanceOf(Array);
-					result['property-keys'].should.have.lengthOf(1);
-					result['property-keys'].should.include('firstname');
+					result.should.have.property('property_keys');
+					result['property_keys'].should.be.an.instanceOf(Array);
+					result['property_keys'].should.have.lengthOf(1);
+					result['property_keys'].should.include('firstname');
 					done();
 				});
 			});
@@ -1316,7 +1316,7 @@ describe('Testing Node specific operations for Neo4j', function(){
 			returns 	{
 						  "label" : "User",
 						  "type" : "UNIQUENESS",
-						  "property-keys" : [ "email" ]
+						  "property_keys" : [ "email" ]
 						}									*/
 
 	describe('\n=> createUniquenessContstraint: Create a uniqueness constraint on a property', function(){
@@ -1341,10 +1341,10 @@ describe('Testing Node specific operations for Neo4j', function(){
 					onlyResult(err, result);
 					result.should.have.property('label','User');
 					result.should.have.property('type','UNIQUENESS');
-					result.should.have.property('property-keys');
-					result['property-keys'].should.be.an.instanceOf(Array);
-					result['property-keys'].should.have.lengthOf(1);
-					result['property-keys'].should.include('email');
+					result.should.have.property('property_keys');
+					result['property_keys'].should.be.an.instanceOf(Array);
+					result['property_keys'].should.have.lengthOf(1);
+					result['property_keys'].should.include('email');
 					done();
 				});
 			});
@@ -1379,7 +1379,7 @@ describe('Testing Node specific operations for Neo4j', function(){
 		readUniquenessConstraint('User','email', callback);
 		returns [ {
 				  "label" : "User",
-				  "property-keys" : [ "email" ],
+				  "property_keys" : [ "email" ],
 				  "type" : "UNIQUENESS"
 				} ]						 		*/
 
@@ -1402,10 +1402,10 @@ describe('Testing Node specific operations for Neo4j', function(){
 					result.should.be.an.instanceOf(Array);
 					result.should.have.lengthOf(1);
 					result[0].should.have.property('label','User');
-					result[0].should.have.property('property-keys');
+					result[0].should.have.property('property_keys');
 					result[0].should.have.property('type','UNIQUENESS');
-					result[0]['property-keys'].should.have.lengthOf(1);
-					result[0]['property-keys'].should.include('email');
+					result[0]['property_keys'].should.have.lengthOf(1);
+					result[0]['property_keys'].should.include('email');
 					done();
 				});
 			});
@@ -1451,11 +1451,11 @@ describe('Testing Node specific operations for Neo4j', function(){
 			listAllUniquenessConstraintsForLabel('User', callback);
 			returns [ {
 					  "label" : "User",
-					  "property-keys" : [ "uid" ],
+					  "property_keys" : [ "uid" ],
 					  "type" : "UNIQUENESS"
 					}, {
 					  "label" : "User",
-					  "property-keys" : [ "email" ],
+					  "property_keys" : [ "email" ],
 					  "type" : "UNIQUENESS"
 					} ]								*/
 
@@ -1478,13 +1478,13 @@ describe('Testing Node specific operations for Neo4j', function(){
 					result.should.be.an.instanceOf(Array);
 					result.should.have.lengthOf(2);
 					result[0].should.have.property('label');
-					result[0].should.have.property('property-keys');
+					result[0].should.have.property('property_keys');
 					result[0].should.have.property('type','UNIQUENESS');
-					result[0]['property-keys'].should.have.lengthOf(1);
+					result[0]['property_keys'].should.have.lengthOf(1);
 					result[1].should.have.property('label');
-					result[1].should.have.property('property-keys');
+					result[1].should.have.property('property_keys');
 					result[1].should.have.property('type','UNIQUENESS');
-					result[1]['property-keys'].should.have.lengthOf(1);
+					result[1]['property_keys'].should.have.lengthOf(1);
 					done();
 				});
 			});
@@ -1512,11 +1512,11 @@ describe('Testing Node specific operations for Neo4j', function(){
 			listAllConstraintsForLabel('User', callback);
 			returns [ {
 					  "label" : "User",
-					  "property-keys" : [ "uid" ],
+					  "property_keys" : [ "uid" ],
 					  "type" : "UNIQUENESS"
 					}, {
 					  "label" : "User",
-					  "property-keys" : [ "email" ],
+					  "property_keys" : [ "email" ],
 					  "type" : "UNIQUENESS"
 					} ]								*/
 
@@ -1539,13 +1539,13 @@ describe('Testing Node specific operations for Neo4j', function(){
 					result.should.be.an.instanceOf(Array);
 					result.should.have.lengthOf(2);
 					result[0].should.have.property('label');
-					result[0].should.have.property('property-keys');
+					result[0].should.have.property('property_keys');
 					result[0].should.have.property('type','UNIQUENESS');
-					result[0]['property-keys'].should.have.lengthOf(1);
+					result[0]['property_keys'].should.have.lengthOf(1);
 					result[1].should.have.property('label');
-					result[1].should.have.property('property-keys');
+					result[1].should.have.property('property_keys');
 					result[1].should.have.property('type','UNIQUENESS');
-					result[1]['property-keys'].should.have.lengthOf(1);
+					result[1]['property_keys'].should.have.lengthOf(1);
 					done();
 				});
 			});
@@ -1573,11 +1573,11 @@ describe('Testing Node specific operations for Neo4j', function(){
 			listAllConstraints(callback);
 			returns [ {
 					  "label" : "Product",
-					  "property-keys" : [ "pid" ],
+					  "property_keys" : [ "pid" ],
 					  "type" : "UNIQUENESS"
 					}, {
 					  "label" : "User",
-					  "property-keys" : [ "email" ],
+					  "property_keys" : [ "email" ],
 					  "type" : "UNIQUENESS"
 					} ]								*/
 
@@ -1600,13 +1600,13 @@ describe('Testing Node specific operations for Neo4j', function(){
 					result.should.be.an.instanceOf(Array);
 					result.should.have.lengthOf(2);
 					result[0].should.have.property('label');
-					result[0].should.have.property('property-keys');
+					result[0].should.have.property('property_keys');
 					result[0].should.have.property('type','UNIQUENESS');
-					result[0]['property-keys'].should.have.lengthOf(1);
+					result[0]['property_keys'].should.have.lengthOf(1);
 					result[1].should.have.property('label');
-					result[1].should.have.property('property-keys');
+					result[1].should.have.property('property_keys');
 					result[1].should.have.property('type','UNIQUENESS');
-					result[1]['property-keys'].should.have.lengthOf(1);
+					result[1]['property_keys'].should.have.lengthOf(1);
 					done();
 				});
 			});
