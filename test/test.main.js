@@ -38,7 +38,7 @@ function debug (obj) {
 
 console.log('* -------------------------------------------');
 console.log('* RUN TESTS WITH AGAINST EMPTY NEO4J INSTANCE. NODE 0 WILL BE REMOVED.');
-console.log('* SOME TESTS MAY FAIL BECAUSE SOME NEW FEATURES (INDEXES ON LABELS, LABELS, CONTRAINTS, STREAMING, ...) ARE SPECIFIC FOR VERSION NEO4J 2.0');
+console.log('* SOME TESTS MAY FAIL BECAUSE SOME NEW FEATURES (INDEXES ON LABELS, LABELS, CONTRAINTS, STREAMING, ...) ARE SPECIFIC FOR VERSION NEO4J 2.0.0-M06');
 console.log('* -------------------------------------------');
 
 describe('Testing Node specific operations for Neo4j', function(){
@@ -52,7 +52,7 @@ describe('Testing Node specific operations for Neo4j', function(){
 
 		describe('-> A first simple valid node insertion with no labels', function(){
 			it('should return the JSON for this node', function(done){
-				db.insertNode({name:'Crazy Taco', age: 7, favoriteColors: ['red', 'orange']}, function(err, result){
+				db.insertNode({name:'Crazy Taco', age: 7, favoriteColors: ['red', 'orange']}, function(err, result){					
 					onlyResult(err, result);					
 					result.should.have.keys('_id', 'name', 'age', 'favoriteColors');
 					result.name.should.equal('Crazy Taco');
@@ -61,7 +61,7 @@ describe('Testing Node specific operations for Neo4j', function(){
 					result.favoriteColors.should.have.lengthOf(2);
 					result.favoriteColors.should.include('red');
 					result.favoriteColors.should.include('orange');
-					result._id.should.be.a('number');
+					result._id.should.be.an.Number;
 					firstNodeId = result._id;
 					done();
 				});
@@ -83,7 +83,7 @@ describe('Testing Node specific operations for Neo4j', function(){
 					result.shipIds.should.have.lengthOf(2);
 					result.shipIds.should.include(123);
 					result.shipIds.should.include(321);
-					result._id.should.be.a('number');
+					result._id.should.be.an.Number;
 					secondNodeId = result._id;
 					done();
 				});
@@ -95,9 +95,9 @@ describe('Testing Node specific operations for Neo4j', function(){
 				db.insertNode({ name:'Philipp', level: 7 },['User'], function(err, result){					
 					onlyResult(err, result);
 					result.name.should.equal('Philipp');
-					result.level.should.be.a('number');
+					result.level.should.be.an.Number;
 					result.level.should.equal(7);
-					result._id.should.be.a('number');
+					result._id.should.be.an.Number;
 					thirdNodeId = result._id;
 					done();
 				});
@@ -109,7 +109,7 @@ describe('Testing Node specific operations for Neo4j', function(){
 				db.insertNode({ name:'Kristof' },['User','Student','Man'], function(err, result){					
 					onlyResult(err, result);
 					result.name.should.equal('Kristof');
-					result._id.should.be.a('number');
+					result._id.should.be.an.Number;
 					fourthNodeId = result._id;
 					done();
 				});
@@ -157,7 +157,7 @@ describe('Testing Node specific operations for Neo4j', function(){
 					onlyResult(err, result);
 					should.exist(result.name);
 					result.name.should.equal('√ fööbar √');
-					result._id.should.be.a('number');
+					result._id.should.be.an.Number;
 					fifthNodeId = result._id;
 					done();
 				});
@@ -174,7 +174,7 @@ describe('Testing Node specific operations for Neo4j', function(){
 					db.deleteNode(fourthNodeId, this.parallel());
 					db.deleteNode(fifthNodeId, this.parallel());
 				},
-				function afterDelete(err, result) {
+				function afterDelete(err, result) {					
 					onlyResult(err, result);
 					done();
 				}
@@ -261,7 +261,7 @@ describe('Testing Node specific operations for Neo4j', function(){
 		});
 	}); /* END \n=> Read a Node */
 
-	describe('\n=> Update a Node', function(){
+	describe('\n=> Replace a Node\'s properties by node id', function(){
 		var node_id;
 
 		//Insert a Node.
@@ -273,16 +273,16 @@ describe('Testing Node specific operations for Neo4j', function(){
 			});
 		});
 
-		describe('-> Update a non-existing Node with a simple object', function(){
+		describe('-> Replace a non-existing Node with a simple object', function(){
 			it('should return false because Node does not exist', function(done){
-				db.updateNode(123456789, {name:'foobar2'}, function(err, result){
+				db.replaceNodeById(123456789, {name:'foobar2'}, function(err, result){
 					isFalse(err, result);
 					done();
 				});
 			});
 		});
 
-		describe('-> Update an existing Node with a simple object', function(){
+		describe('-> Replace an existing Node with a simple object, check if alias works', function(){
 			it('should return true', function(done){
 				db.updateNode(node_id, {name:'foobar2'}, function(err, result){
 					isTrue(err, result);
@@ -291,16 +291,16 @@ describe('Testing Node specific operations for Neo4j', function(){
 			});
 		});
 
-		describe('-> Update an existing Node with an object with null values', function(){
+		describe('-> Replace an existing Node with an object with null values', function(){
 			it('should return true', function(done){
-				db.updateNode(node_id,{name:'foobar3',age:null}, function(err, result){
+				db.replaceNodeById(node_id,{name:'foobar3',age:null}, function(err, result){
 					isTrue(err, result);
 					done();
 				});
 			});
 		});
 
-		describe('-> Update an existing Node with an object with an object as value', function(){
+		describe('-> Replace an existing Node with an object with an object as value', function(){
 			var test_obj = {
 				name: 'foobar',
 				family: {
@@ -310,7 +310,7 @@ describe('Testing Node specific operations for Neo4j', function(){
 			};
 
 			it('should return true', function(done){
-				db.updateNode(node_id, test_obj, function(err, result){
+				db.replaceNodeById(node_id, test_obj, function(err, result){
 					isTrue(err, result);
 					done();
 				});
@@ -324,7 +324,54 @@ describe('Testing Node specific operations for Neo4j', function(){
 				done();
 			});
 		});
-	}); /* END \n=> Update a Node */
+	}); /* END \n=> Replace a Node */
+
+  describe('\n=> Update a Node by node id', function(){
+    var node_id;
+
+    //Insert a Node.
+    before(function(done){
+      db.insertNode({name:'foobar'}, function(err, result){
+        onlyResult(err, result);
+        node_id = result._id;
+        done();
+      });
+    });
+
+    describe('-> Update a non-existing Node with a simple object', function(){
+      it('should return false because Node does not exist', function(done){
+        db.updateNodeById(123456789, {name:'foobar2'}, function(err, result){
+          onlyError(err, result);
+          done();
+        });
+      });
+    });
+
+    describe('-> UpdateTwo an existing Node with a simple object', function(){
+      it('should return node because Node', function(done){
+        db.updateNodeById(node_id, {name:'updatedFoobar', price: 1.25, colors: ['blue', 'green']}, function(err, result){
+          onlyResult(err, result);
+          result.should.have.keys('_id', 'name', 'price', 'colors');
+          result._id.should.equal(node_id);
+          result.name.should.equal('updatedFoobar');
+          result.price.should.equal(1.25);
+          result.colors.should.be.an.instanceOf(Array);
+          result.colors.should.have.lengthOf(2);
+          result.colors.should.include('blue'); 
+          result.colors.should.include('green');
+          done();
+        });
+      });
+    });   
+
+    // Remove Node afterwards.
+    after(function(done){
+      db.deleteNode(node_id, function(err, result){
+        isTrue(err, result);
+        done();
+      });
+    });
+  }); /* END \n=> UpdateTwo a Node */
 
 	describe('\n=> Insert a Relationship', function(){
 		var root_node_id, other_node_id, relationship_id;
@@ -361,7 +408,6 @@ describe('Testing Node specific operations for Neo4j', function(){
 					done();
 				});
 			});
-
 		});
 
 		describe('-> Insert a Relationship with root_node not existing', function(){
@@ -617,7 +663,7 @@ describe('Testing Node specific operations for Neo4j', function(){
 				insertLabelIndex('Person', 'firstname', callback);
 				returns {
 						  "label" : "Person",
-						  "property-keys" : [ "firstname" ]
+						  "property_keys" : [ "firstname" ]
 						}
 			Note:
 			Compound indexes are not yet supported, only one property per index is allowed.
@@ -628,10 +674,10 @@ describe('Testing Node specific operations for Neo4j', function(){
 				db.insertLabelIndex(test_index3_label, test_index3_property, function(err, result){
 					onlyResult(err, result);
 					result.should.have.property('label','Person');
-					result.should.have.property('property-keys');					
-					result['property-keys'].should.be.an.instanceOf(Array);					
-					result['property-keys'].should.have.lengthOf(1);
-					result['property-keys'].should.include('firstname');		
+					result.should.have.property('property_keys');
+					result['property_keys'].should.be.an.instanceOf(Array);
+					result['property_keys'].should.have.lengthOf(1);
+					result['property_keys'].should.include('firstname');
 					done();
 				});
 			});
@@ -778,7 +824,7 @@ describe('Testing Node specific operations for Neo4j', function(){
 					onlyResult(err, result);
 					result.should.have.keys('_id', 'name');
 					result.name.should.equal('foobar');
-					result._id.should.be.a('number');
+					result._id.should.be.an.Number;
 					done();
 				});
 			});
@@ -790,7 +836,7 @@ describe('Testing Node specific operations for Neo4j', function(){
 					onlyResult(err, result);
 					result.should.have.keys('_id', 'name');
 					result.name.should.equal('foobar');
-					result._id.should.be.a('number');
+					result._id.should.be.an.Number;
 					done();
 				});
 			});
@@ -917,7 +963,6 @@ describe('Testing Node specific operations for Neo4j', function(){
 					db.readLabels(nodeId, function (err, result) {
 						onlyResult(err, result);
 						result.should.be.an.instanceOf(Array);
-						result.should.have.lengthOf(3);
 						result.should.include('Dutch');
 						result.should.include('French');
 						result.should.include('German');
@@ -1270,7 +1315,7 @@ describe('Testing Node specific operations for Neo4j', function(){
 			returns 	{
 						  "label" : "User",
 						  "type" : "UNIQUENESS",
-						  "property-keys" : [ "email" ]
+						  "property_keys" : [ "email" ]
 						}									*/
 
 	describe('\n=> createUniquenessContstraint: Create a uniqueness constraint on a property', function(){
@@ -1295,10 +1340,10 @@ describe('Testing Node specific operations for Neo4j', function(){
 					onlyResult(err, result);
 					result.should.have.property('label','User');
 					result.should.have.property('type','UNIQUENESS');
-					result.should.have.property('property-keys');
-					result['property-keys'].should.be.an.instanceOf(Array);
-					result['property-keys'].should.have.lengthOf(1);
-					result['property-keys'].should.include('email');
+					result.should.have.property('property_keys');
+					result['property_keys'].should.be.an.instanceOf(Array);
+					result['property_keys'].should.have.lengthOf(1);
+					result['property_keys'].should.include('email');
 					done();
 				});
 			});
@@ -1333,7 +1378,7 @@ describe('Testing Node specific operations for Neo4j', function(){
 		readUniquenessConstraint('User','email', callback);
 		returns [ {
 				  "label" : "User",
-				  "property-keys" : [ "email" ],
+				  "property_keys" : [ "email" ],
 				  "type" : "UNIQUENESS"
 				} ]						 		*/
 
@@ -1356,10 +1401,10 @@ describe('Testing Node specific operations for Neo4j', function(){
 					result.should.be.an.instanceOf(Array);
 					result.should.have.lengthOf(1);
 					result[0].should.have.property('label','User');
-					result[0].should.have.property('property-keys');
+					result[0].should.have.property('property_keys');
 					result[0].should.have.property('type','UNIQUENESS');
-					result[0]['property-keys'].should.have.lengthOf(1);
-					result[0]['property-keys'].should.include('email');
+					result[0]['property_keys'].should.have.lengthOf(1);
+					result[0]['property_keys'].should.include('email');
 					done();
 				});
 			});
@@ -1384,35 +1429,32 @@ describe('Testing Node specific operations for Neo4j', function(){
 		});
 
 		after(function(done){
-			Step(
-				function deleteNodes() {
-					db.dropUniquenessContstraint('User', 'uid', this.parallel())
-					db.dropUniquenessContstraint('User', 'email', this.parallel())
-				},
-				function afterDelete(err, result) {
-					onlyResult(err, result);
+			db.dropUniquenessContstraint('User', 'uid', function (err, result) {
+				isTrue(err, result);
+				db.dropUniquenessContstraint('User', 'email', function (err, result) {
+					isTrue(err, result);
 					db.listAllConstraints(function(err, result){
 						onlyResult(err, result);
 						result.should.be.an.instanceOf(Array);
-						result.should.have.lengthOf(0);					
+						result.should.have.lengthOf(0);
 						done();
 					});
-				}
-			);
+				});
+			});
 		});
 	}); /* END \n=> readUniquenessConstraint: Get a specific uniqueness constraint for a label and a property */
 	
 	/*	Get all uniqueness constraints for a label.
 		returns an array of all uniqueness constraints.
 		Example:
-			listAllUniquenessConstraintsForLabel(callback);
+			listAllUniquenessConstraintsForLabel('User', callback);
 			returns [ {
 					  "label" : "User",
-					  "property-keys" : [ "uid" ],
+					  "property_keys" : [ "uid" ],
 					  "type" : "UNIQUENESS"
 					}, {
 					  "label" : "User",
-					  "property-keys" : [ "email" ],
+					  "property_keys" : [ "email" ],
 					  "type" : "UNIQUENESS"
 					} ]								*/
 
@@ -1435,36 +1477,94 @@ describe('Testing Node specific operations for Neo4j', function(){
 					result.should.be.an.instanceOf(Array);
 					result.should.have.lengthOf(2);
 					result[0].should.have.property('label');
-					result[0].should.have.property('property-keys');
+					result[0].should.have.property('property_keys');
 					result[0].should.have.property('type','UNIQUENESS');
-					result[0]['property-keys'].should.have.lengthOf(1);
+					result[0]['property_keys'].should.have.lengthOf(1);
 					result[1].should.have.property('label');
-					result[1].should.have.property('property-keys');
+					result[1].should.have.property('property_keys');
 					result[1].should.have.property('type','UNIQUENESS');
-					result[1]['property-keys'].should.have.lengthOf(1);
+					result[1]['property_keys'].should.have.lengthOf(1);
 					done();
 				});
 			});
 		});
 
 		after(function(done){
-			Step(
-				function deleteNodes() {
-					db.dropUniquenessContstraint('User', 'uid', this.parallel());
-					db.dropUniquenessContstraint('User', 'email', this.parallel());
-				},
-				function afterDelete(err, result) {
-					onlyResult(err, result);
+			db.dropUniquenessContstraint('User', 'uid', function (err, result) {
+				isTrue(err, result);
+				db.dropUniquenessContstraint('User', 'email', function (err, result) {
+					isTrue(err, result);
 					db.listAllConstraints(function(err, result){
 						onlyResult(err, result);
 						result.should.be.an.instanceOf(Array);
-						result.should.have.lengthOf(0);					
+						result.should.have.lengthOf(0);
 						done();
 					});
-				}
-			);
+				});
+			});
 		});
 	}); /* END \n=> listAllUniquenessConstraintsForLabel: Get all uniqueness constraints for a label */
+
+		/*	Get all constraints for a label.
+		returns an array of all uniqueness constraints.
+		Example:
+			listAllConstraintsForLabel('User', callback);
+			returns [ {
+					  "label" : "User",
+					  "property_keys" : [ "uid" ],
+					  "type" : "UNIQUENESS"
+					}, {
+					  "label" : "User",
+					  "property_keys" : [ "email" ],
+					  "type" : "UNIQUENESS"
+					} ]								*/
+
+	describe('\n=> listAllConstraintsForLabel: Get all constraints for a label', function(){
+		// Create a constraint on user id and email
+		before(function(done){
+			db.createUniquenessContstraint('User', 'uid', function(err, result){
+				onlyResult(err, result);
+				db.createUniquenessContstraint('User', 'email', function(err, result){
+					onlyResult(err, result);
+					done();
+				});
+			});
+		});
+
+		describe('-> Get all constraints for a User', function(){
+			it('should return an array with two constraints', function(done){
+				db.listAllUniquenessConstraintsForLabel('User', function(err, result){
+					onlyResult(err, result);
+					result.should.be.an.instanceOf(Array);
+					result.should.have.lengthOf(2);
+					result[0].should.have.property('label');
+					result[0].should.have.property('property_keys');
+					result[0].should.have.property('type','UNIQUENESS');
+					result[0]['property_keys'].should.have.lengthOf(1);
+					result[1].should.have.property('label');
+					result[1].should.have.property('property_keys');
+					result[1].should.have.property('type','UNIQUENESS');
+					result[1]['property_keys'].should.have.lengthOf(1);
+					done();
+				});
+			});
+		});
+
+		after(function(done){
+			db.dropUniquenessContstraint('User', 'uid', function (err, result) {
+				isTrue(err, result);
+				db.dropUniquenessContstraint('User', 'email', function (err, result) {
+					isTrue(err, result);
+					db.listAllConstraints(function(err, result){
+						onlyResult(err, result);
+						result.should.be.an.instanceOf(Array);
+						result.should.have.lengthOf(0);
+						done();
+					});
+				});
+			});
+		});
+	}); /* END \n=> listAllConstraintsForLabel: Get all constraints for a label */
 
 	/*	Get all constraints.
 		returns an array of all constraints.
@@ -1472,11 +1572,11 @@ describe('Testing Node specific operations for Neo4j', function(){
 			listAllConstraints(callback);
 			returns [ {
 					  "label" : "Product",
-					  "property-keys" : [ "pid" ],
+					  "property_keys" : [ "pid" ],
 					  "type" : "UNIQUENESS"
 					}, {
 					  "label" : "User",
-					  "property-keys" : [ "email" ],
+					  "property_keys" : [ "email" ],
 					  "type" : "UNIQUENESS"
 					} ]								*/
 
@@ -1499,34 +1599,31 @@ describe('Testing Node specific operations for Neo4j', function(){
 					result.should.be.an.instanceOf(Array);
 					result.should.have.lengthOf(2);
 					result[0].should.have.property('label');
-					result[0].should.have.property('property-keys');
+					result[0].should.have.property('property_keys');
 					result[0].should.have.property('type','UNIQUENESS');
-					result[0]['property-keys'].should.have.lengthOf(1);
+					result[0]['property_keys'].should.have.lengthOf(1);
 					result[1].should.have.property('label');
-					result[1].should.have.property('property-keys');
+					result[1].should.have.property('property_keys');
 					result[1].should.have.property('type','UNIQUENESS');
-					result[1]['property-keys'].should.have.lengthOf(1);
+					result[1]['property_keys'].should.have.lengthOf(1);
 					done();
 				});
 			});
 		});
 
 		after(function(done){
-			Step(
-				function deleteNodes() {
-					db.dropUniquenessContstraint('Product', 'pid', this.parallel());
-					db.dropUniquenessContstraint('User', 'email', this.parallel());
-				},
-				function afterDelete(err, result) {
-					onlyResult(err, result);
+			db.dropUniquenessContstraint('Product', 'pid', function (err, result) {
+				isTrue(err, result);
+				db.dropUniquenessContstraint('User', 'email', function (err, result) {
+					isTrue(err, result);
 					db.listAllConstraints(function(err, result){
 						onlyResult(err, result);
 						result.should.be.an.instanceOf(Array);
 						result.should.have.lengthOf(0);
 						done();
 					});
-				}
-			);
+				});
+			});
 		});
 
 	
@@ -1535,11 +1632,7 @@ describe('Testing Node specific operations for Neo4j', function(){
 	/*	Drop uniqueness constraint for a label and a property.
 		Example:
 			createUniquenessContstraint('User','email', callback);
-			returns 	{
-						  "label" : "User",
-						  "type" : "UNIQUENESS",
-						  "property-keys" : [ "email" ]
-						}									*/
+			returns true */
 
 	describe('\n=> dropUniquenessContstraint: Drop uniqueness constraint for a label and a property', function(){
 		// Create a constraint
@@ -1568,7 +1661,6 @@ describe('Testing Node specific operations for Neo4j', function(){
 			});
 		});
 	}); /* END \n=> dropUniquenessContstraint: Drop uniqueness constraint for a label and a property */
-
 
 	describe('\n=> Transactions', function(){
 		var transactionIdOne, transactionIdTwo, transactionIdThree;
@@ -1626,7 +1718,7 @@ describe('Testing Node specific operations for Neo4j', function(){
 				db.beginTransaction(statementsOne, function(err, result){
 					onlyResult(err, result);
 					should.exist(result._id);
-					result._id.should.be.a('number');
+					result._id.should.be.an.Number;
 					transactionIdOne = result._id;
 					done();
 				});
@@ -1637,7 +1729,7 @@ describe('Testing Node specific operations for Neo4j', function(){
 			it('should return the json of that transaction', function(done){
 				db.addStatementsToTransaction(transactionIdOne, statementsTwo, function(err, result){
 					should.exist(result._id);
-					result._id.should.be.a('number');
+					result._id.should.be.an.Number;
 					result._id.should.equal(transactionIdOne);
 					done();
 				});
@@ -1690,7 +1782,7 @@ describe('Testing Node specific operations for Neo4j', function(){
 				db.beginTransaction(function(err, result){
 					onlyResult(err, result);
 					should.exist(result._id);
-					result._id.should.be.a('number');
+					result._id.should.be.an.Number;
 					transactionIdTwo = result._id;
 					done();
 				});
@@ -1726,7 +1818,7 @@ describe('Testing Node specific operations for Neo4j', function(){
 				db.beginTransaction(statementsOne, function(err, result){
 					onlyResult(err, result);
 					should.exist(result._id);
-					result._id.should.be.a('number');
+					result._id.should.be.an.Number;
 					transactionIdThree = result._id;
 					done();
 				});
@@ -2067,9 +2159,10 @@ describe('Testing Node specific operations for Neo4j', function(){
 			});
 		});
 
+		// issue got updated according to recent changes in 2.0.0-RC1 http://blog.neo4j.org/2013/11/neo4j-200-rc1-final-preparations.html
 		describe('-> Run the cypher query from issue 8 by @electrichead against non existing nodes', function(done){
 			it('should return empty data array since no data matches the query', function(done){
-				db.cypherQuery("start a=node(*) with a match a-[r1?:RELATED_TO]->o return a.name,o.name", null, function(err, result){debug(err);debug(result);
+				db.cypherQuery("start a=node(*) with a optional match a-[r1:RELATED_TO]->o return a.name,o.name", null, function(err, result){
 					onlyResult(err, result);
 					result.should.have.keys('columns', 'data');
 					result.data.should.be.an.instanceOf(Array);
@@ -2130,7 +2223,7 @@ describe('Testing Node specific operations for Neo4j', function(){
 
 		describe('-> Run a cypher query against root_node retrieving all nodes related to it with a RELATED_TO type relationship', function(done){
 			it('should return a dataset with 2 nodes', function(done){
-				db.cypherQuery("START user = node({id}) MATCH user-[:RELATED_TO]->friends RETURN friends", { id: root_node_id }, function(err, result){debug(err);debug(result);
+				db.cypherQuery("START user = node({id}) MATCH user-[:RELATED_TO]->friends RETURN friends", { id: root_node_id }, function(err, result){
 					onlyResult(err, result);
 					result.should.have.keys('columns', 'data');
 					result.data.should.be.an.instanceOf(Array);
@@ -2166,10 +2259,11 @@ describe('Testing Node specific operations for Neo4j', function(){
 				});
 			});
 		});
-		// null ? null?
+		
+		// issue got updated according to recent changes in 2.0.0-RC1 http://blog.neo4j.org/2013/11/neo4j-200-rc1-final-preparations.html
 		describe('-> Run the cypher query from issue 8 by @electrichead against non existing nodes', function(done){
 			it('should return a valid response', function(done){
-				db.cypherQuery("START a=node(*) match a-[r1?:RELATED_TO]->o RETURN a.name,o.name", function(err, result){//debug(err);debug(result);
+				db.cypherQuery("START a=node(*) optional match a-[r1:RELATED_TO]->o RETURN a.name,o.name", function(err, result){
 					onlyResult(err, result);
 					result.data.should.be.an.instanceOf(Array);
 					result.data.should.have.lengthOf(8);
