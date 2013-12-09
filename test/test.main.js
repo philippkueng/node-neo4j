@@ -963,7 +963,6 @@ describe('Testing Node specific operations for Neo4j', function(){
 					db.readLabels(nodeId, function (err, result) {
 						onlyResult(err, result);
 						result.should.be.an.instanceOf(Array);
-						result.should.have.lengthOf(4); // TODO: Dutch is two times included in the array. Neo4j API say's all labels are replaced. - Why?
 						result.should.include('Dutch');
 						result.should.include('French');
 						result.should.include('German');
