@@ -1,6 +1,6 @@
 # Neo4j REST API wrapper for Node.js
 
-[![Build Status](https://travis-ci.org/philippkueng/node-neo4j.png?branch=develop)](https://travis-ci.org/philippkueng/node-neo4j)
+master branch: [![Build Status](https://travis-ci.org/philippkueng/node-neo4j.png?branch=master)](https://travis-ci.org/philippkueng/node-neo4j) | develop branch: [![Build Status](https://travis-ci.org/philippkueng/node-neo4j.png?branch=develop)](https://travis-ci.org/philippkueng/node-neo4j)  
 
 ---
 
@@ -26,10 +26,10 @@ Navigate to the node module and run the tests:
 
 	$ npm test
 
-All tests should pass if you're running the latest version of Neo4j. (Neo4j 2.0.0-M06)
+All tests should pass if you're running the latest version of Neo4j. (Neo4j 2.0.0-RC1)
 We try to update the module as fast as possible if there's a new version of Neo4j.
 Don't be shy to give remarks or report bugs. We would be glad to fix them.
-You can contact use on Twitter @Stofkn or @philippkueng or mail us (check package.json).
+You can contact use on Twitter [https://twitter.com/Stofkn](@Stofkn) or [https://twitter.com/philippkueng](@philippkueng) or mail us (check package.json).
 
 
 ## New features
