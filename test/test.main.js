@@ -2159,9 +2159,10 @@ describe('Testing Node specific operations for Neo4j', function(){
 			});
 		});
 
+		// issue got updated according to recent changes in 2.0.0-RC1 http://blog.neo4j.org/2013/11/neo4j-200-rc1-final-preparations.html
 		describe('-> Run the cypher query from issue 8 by @electrichead against non existing nodes', function(done){
 			it('should return empty data array since no data matches the query', function(done){
-				db.cypherQuery("start a=node(*) with a match a-[r1?:RELATED_TO]->o return a.name,o.name", null, function(err, result){
+				db.cypherQuery("start a=node(*) with a optional match a-[r1:RELATED_TO]->o return a.name,o.name", null, function(err, result){
 					onlyResult(err, result);
 					result.should.have.keys('columns', 'data');
 					result.data.should.be.an.instanceOf(Array);
@@ -2258,10 +2259,11 @@ describe('Testing Node specific operations for Neo4j', function(){
 				});
 			});
 		});
-		// null ? null?
+		
+		// issue got updated according to recent changes in 2.0.0-RC1 http://blog.neo4j.org/2013/11/neo4j-200-rc1-final-preparations.html
 		describe('-> Run the cypher query from issue 8 by @electrichead against non existing nodes', function(done){
 			it('should return a valid response', function(done){
-				db.cypherQuery("START a=node(*) match a-[r1?:RELATED_TO]->o RETURN a.name,o.name", function(err, result){//debug(err);debug(result);
+				db.cypherQuery("START a=node(*) optional match a-[r1:RELATED_TO]->o RETURN a.name,o.name", function(err, result){
 					onlyResult(err, result);
 					result.data.should.be.an.instanceOf(Array);
 					result.data.should.have.lengthOf(8);
