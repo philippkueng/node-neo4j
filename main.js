@@ -1447,9 +1447,7 @@ Neo4j.prototype.getId = function(url, length){
 
 Neo4j.prototype.addNodeId = function(node, callback){	
 	if (node && node.self) {
-		node.data._id = parseInt(node.self
-					.replace(this.removeCredentials(this.url) + '/db/data/node/', '')
-					.replace(this.removeCredentials(this.url) + '/db/data/relationship/', ''));  
+		node.data._id = parseInt(node.self.match(/\/([0-9]+)$/)[1]);
 		callback(null, node.data);
 	} else
 		callback(null, node);
