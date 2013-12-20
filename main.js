@@ -1454,8 +1454,8 @@ Neo4j.prototype.addNodeId = function(node, callback){
 
 /*	Extract the transaction id and adds it as an _id property. */
 
-Neo4j.prototype.addTransactionId = function(node,  callback){	
-	node._id = this.getId(node.commit, TRANSACTION_LENGTH);
+Neo4j.prototype.addTransactionId = function(node,  callback){
+	node._id = parseInt(node.commit.match(/\/transaction\/([0-9]+)\/commit$/)[1])
 	delete node.commit;
 	callback(null, node);
 };
