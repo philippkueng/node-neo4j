@@ -7,7 +7,6 @@ var request = require('superagent'),
 module.exports = Neo4j;
 
 var NODE_LENGTH = 14;			// '/db/data/node/'
-var RELALATIONSHIP_LENGTH = 22;	// '/db/data/relationship/'
 var TRANSACTION_LENGTH = 21;	// '/db/data/transaction/'
 
 function Neo4j(url){
@@ -1467,7 +1466,7 @@ Neo4j.prototype.addRelationshipId = function(relationship, callback){
 	if(relationship.data) {
 		relationship.data._start = this.getId(relationship.start, NODE_LENGTH);
 		relationship.data._end = this.getId(relationship.end, NODE_LENGTH);
-		relationship.data._id = this.getId(relationship.self, RELALATIONSHIP_LENGTH);
+		relationship.data._id = parseInt(relationship.self.match(/\/relationship\/([0-9]+)$/)[1])
 		relationship.data._type = relationship.type;
 		callback(null, relationship.data);
 	} else
