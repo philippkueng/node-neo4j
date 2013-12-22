@@ -35,18 +35,15 @@ function debug (obj) {
  * MAKE SURE NODE 0 IS REMOVED
  * --------------------------- 
  */
+before(function(done){
+	db.deleteNode(0, function(err, node){ done(); });
+});
 
 console.log('* -------------------------------------------');
 console.log('* RUN TESTS WITH AGAINST EMPTY NEO4J INSTANCE. NODE 0 WILL BE REMOVED.');
-console.log('* SOME TESTS MAY FAIL BECAUSE SOME NEW FEATURES (INDEXES ON LABELS, LABELS, CONTRAINTS, STREAMING, ...) ARE SPECIFIC FOR VERSION NEO4J 2.0.0-M06');
 console.log('* -------------------------------------------');
 
 describe('Testing Node specific operations for Neo4j', function(){
-	// Remove node 0
-	before(function(done){
-		db.deleteNode(0, function(err, node){ done(); });
-	});
-
 	describe('\n=> Create a Node', function(){
 		var firstNodeId, secondNodeId, thirdNodeId, fourthNodeId, fifthNodeId;	
 
