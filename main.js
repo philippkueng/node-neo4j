@@ -528,7 +528,7 @@ Neo4j.prototype.removeCredentials = function(path){
 
 Neo4j.prototype.addNodeId = function(node, callback){
     if (node && node.self) {
-    		node.id = node.self.match(/\/(relationship|node)\/([0-9]+)$/)[2];
+    		node.id = this.getId(node.self);
     }
     callback(null, node);
 };
@@ -537,9 +537,9 @@ Neo4j.prototype.addNodeId = function(node, callback){
 /* Extract relationship_id and add it as a property. */
 
 Neo4j.prototype.addRelationshipId = function(relationship, callback){
-    relationship.start_node_id = relationship.start.replace(this.removeCredentials(this.url) + '/db/data/node/', '');
-    relationship.end_node_id = relationship.end.replace(this.removeCredentials(this.url) + '/db/data/node/', '');
-    relationship.id = relationship.self.replace(this.removeCredentials(this.url) + '/db/data/relationship/', '');
+		relationship.start_node_id = this.getId(relationship.start);
+		relationship.end_node_id = this.getId(relationship.end);
+		relationship.id = this.getId(relationship.self);
     callback(null, relationship);
 };
 
@@ -592,4 +592,9 @@ Neo4j.prototype.stringifyValueObjects = function(node_data, callback){
     return node_data;
 };
 
+/* Extract the Id from a given URL */
+
+Neo4j.prototype.getId = function(url) {
+		return url.match(/\/(relationship|node)\/([0-9]+)$/)[2];
+};
 
