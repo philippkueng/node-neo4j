@@ -528,9 +528,7 @@ Neo4j.prototype.removeCredentials = function(path){
 
 Neo4j.prototype.addNodeId = function(node, callback){
     if (node && node.self) {
-        node.id = node.self
-                    .replace(this.removeCredentials(this.url) + '/db/data/node/', '')
-                    .replace(this.removeCredentials(this.url) + '/db/data/relationship/', '');  
+    		node.id = node.self.match(/\/(relationship|node)\/([0-9]+)$/)[2];
     }
     callback(null, node);
 };
