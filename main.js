@@ -2,11 +2,11 @@ var request = require('superagent'),
 	Step = require('step'),
 	util = require('util'),
 	cypher = require('./lib/utils/cypher'),
-	Validator = require('./lib/utils/validator');
+	Validator = require('./lib/utils/validator'),
+	parser = require('./lib/utils/parser');
 
 module.exports = Neo4j;
 
-var NODE_LENGTH = 14;			// '/db/data/node/'
 var TRANSACTION_LENGTH = 21;	// '/db/data/transaction/'
 
 function Neo4j(url){
@@ -1464,9 +1464,9 @@ Neo4j.prototype.addTransactionId = function(node,  callback){
 
 Neo4j.prototype.addRelationshipId = function(relationship, callback){
 	if(relationship.data) {
-		relationship.data._start = this.getId(relationship.start, NODE_LENGTH);
-		relationship.data._end = this.getId(relationship.end, NODE_LENGTH);
-		relationship.data._id = parseInt(relationship.self.match(/\/relationship\/([0-9]+)$/)[1])
+		relationship.data._start = parser.getNodeId(relationship.start);
+		relationship.data._end = parser.getNodeId(relationship.end);
+		relationship.data._id = parser.getRelationshipId(relationship.self);
 		relationship.data._type = relationship.type;
 		callback(null, relationship.data);
 	} else
