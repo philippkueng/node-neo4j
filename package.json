@@ -9,7 +9,7 @@
   },
   "main": "main.js",
   "scripts": {
-    "test": "mocha -R spec"
+    "test": "mocha -R spec -t 10000"
   },
   "engines": {
     "node": "~ 0.10.15"
