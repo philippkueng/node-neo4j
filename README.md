@@ -7,7 +7,7 @@ master branch: [![Build Status](https://travis-ci.org/philippkueng/node-neo4j.pn
 ## Installation
 
     npm install node-neo4j
-    npm install node-neo4j@2.0.0-RC1 (to get all the Neo4j 2.0.0-RC1 features)
+    npm install node-neo4j@2.0.0-RC2 (to get all the Neo4j 2.0.0 features)
 
 ## Usage
 

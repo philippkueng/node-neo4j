@@ -2,12 +2,11 @@ var request = require('superagent'),
 	Step = require('step'),
 	util = require('util'),
 	cypher = require('./lib/utils/cypher'),
-	Validator = require('./lib/utils/validator');
+	Validator = require('./lib/utils/validator'),
+	parser = require('./lib/utils/parser');
 
 module.exports = Neo4j;
 
-var NODE_LENGTH = 14;			// '/db/data/node/'
-var RELALATIONSHIP_LENGTH = 22;	// '/db/data/relationship/'
 var TRANSACTION_LENGTH = 21;	// '/db/data/transaction/'
 
 function Neo4j(url){
@@ -1368,22 +1367,42 @@ Neo4j.prototype.cypherQuery = function(query, params, callback){
 			switch(result.statusCode){
 				case 200:
 					if(result.body && result.body.data.length >= 1){
-					   Step(
-							function addIds(){
-								var group = this.group();
-								result.body.data.forEach(function(resultset){
-									resultset.forEach(function(node){
-									   that.addNodeId(node, group());
+						
+						var addIdsToColumnData = function(columnData, callback){
+							Step(
+								function addId(){
+									var group = this.group();
+									columnData.forEach(function(node){
+										that.addNodeId(node, group());
 									});
+								},
+								function sumUp(err, nodes){
+									if (err) throw err;
+									else {
+										callback(null, nodes);
+									}
+								});
+						};
+
+						Step(
+							function eachColumn(){
+								var group = this.group();
+								result.body.data.forEach(function(columnResult){
+									addIdsToColumnData(columnResult, group());
 								});
 							},
-							function sumUp(err, nodes){
+							function sumUp(err, columns){
 								if(err) throw err;
 								else {
-									result.body.data = nodes;
+									// flatten the array if only one variable is getting returned to make it more convenient.
+									if (result.body.columns.length >= 2) {
+										result.body.data = columns;
+									} else {
+										result.body.data = [].concat.apply([], columns);
+									}
 									callback(null, result.body);
 								}
-						});
+							});
 					} else 
 						callback(null, result.body); 
 					break;
@@ -1447,9 +1466,7 @@ Neo4j.prototype.getId = function(url, length){
 
 Neo4j.prototype.addNodeId = function(node, callback){	
 	if (node && node.self) {
-		node.data._id = parseInt(node.self
-					.replace(this.removeCredentials(this.url) + '/db/data/node/', '')
-					.replace(this.removeCredentials(this.url) + '/db/data/relationship/', ''));  
+		node.data._id = parseInt(node.self.match(/\/([0-9]+)$/)[1]);
 		callback(null, node.data);
 	} else
 		callback(null, node);
@@ -1457,8 +1474,8 @@ Neo4j.prototype.addNodeId = function(node, callback){
 
 /*	Extract the transaction id and adds it as an _id property. */
 
-Neo4j.prototype.addTransactionId = function(node,  callback){	
-	node._id = this.getId(node.commit, TRANSACTION_LENGTH);
+Neo4j.prototype.addTransactionId = function(node,  callback){
+	node._id = parseInt(node.commit.match(/\/transaction\/([0-9]+)\/commit$/)[1])
 	delete node.commit;
 	callback(null, node);
 };
@@ -1467,9 +1484,9 @@ Neo4j.prototype.addTransactionId = function(node,  callback){
 
 Neo4j.prototype.addRelationshipId = function(relationship, callback){
 	if(relationship.data) {
-		relationship.data._start = this.getId(relationship.start, NODE_LENGTH);
-		relationship.data._end = this.getId(relationship.end, NODE_LENGTH);
-		relationship.data._id = this.getId(relationship.self, RELALATIONSHIP_LENGTH);
+		relationship.data._start = parser.getNodeId(relationship.start);
+		relationship.data._end = parser.getNodeId(relationship.end);
+		relationship.data._id = parser.getRelationshipId(relationship.self);
 		relationship.data._type = relationship.type;
 		callback(null, relationship.data);
 	} else

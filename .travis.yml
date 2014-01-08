@@ -13,4 +13,4 @@ before_install:
   - curl http://localhost:$NEO4J_PORT/db/data/
   - curl -X DELETE 'http://localhost:7474/cleandb/supersecretdebugkey!'
 env:
-  - NEO4J_VERSION="2.0.0-RC1"
+  - NEO4J_VERSION="2.0.0"
