@@ -7,7 +7,7 @@ master branch: [![Build Status](https://travis-ci.org/philippkueng/node-neo4j.pn
 ## Installation
 
     npm install node-neo4j
-    npm install node-neo4j@2.0.0-RC2 (to get all the Neo4j 2.0.0 features)
+    npm install node-neo4j@2.0.0-RC3 (to get all the Neo4j 2.0.0 features)
 
 ## Usage
 
@@ -27,7 +27,7 @@ Navigate to the node module and run the tests:
 
 	$ npm test
 
-All tests should pass if you're running the latest version of Neo4j. (Neo4j 2.0.0-RC1)
+All tests should pass if you're running the latest version of Neo4j. (Neo4j 2.0.0-RC3)
 We try to update the module as fast as possible if there's a new version of Neo4j.
 Don't be shy to give remarks or report bugs. We would be glad to fix them.
 You can contact use on Twitter [https://twitter.com/Stofkn](@Stofkn) or [https://twitter.com/philippkueng](@philippkueng) or mail us (check package.json).
