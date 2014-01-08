@@ -2159,7 +2159,7 @@ describe('Testing Node specific operations for Neo4j', function(){
 		// issue got updated according to recent changes in 2.0.0-RC1 http://blog.neo4j.org/2013/11/neo4j-200-rc1-final-preparations.html
 		describe('-> Run the cypher query from issue 8 by @electrichead against non existing nodes', function(done){
 			it('should return empty data array since no data matches the query', function(done){
-				db.cypherQuery("start a=node(*) with a optional match a-[r1:RELATED_TO]->o return a.name,o.name", null, function(err, result){
+				db.cypherQuery("start a=node(*) with a OPTIONAL MATCH a-[r1:RELATED_TO]->o return a.name,o.name", null, function(err, result){
 					onlyResult(err, result);
 					result.should.have.keys('columns', 'data');
 					result.data.should.be.an.instanceOf(Array);
@@ -2168,6 +2168,19 @@ describe('Testing Node specific operations for Neo4j', function(){
 					result.columns.should.have.lengthOf(2);
 					result.columns.should.include('a.name');
 					result.columns.should.include('o.name');
+					done();
+				});
+			});
+		});
+
+		describe('-> Run the cypher query from issue 30 by @adambaker against non existing nodes', function(done){
+			it('should return an empty data array', function(done){
+				db.cypherQuery("MATCH (n:ex) RETURN n.p1, n.p2", null, function(err, result){
+					onlyResult(err, result);
+					result.should.have.keys('columns', 'data');
+					result.columns.should.include('n.p1');
+					result.columns.should.include('n.p2');
+					result.data.should.have.lengthOf(0);
 					done();
 				});
 			});
@@ -2260,16 +2273,20 @@ describe('Testing Node specific operations for Neo4j', function(){
 		// issue got updated according to recent changes in 2.0.0-RC1 http://blog.neo4j.org/2013/11/neo4j-200-rc1-final-preparations.html
 		describe('-> Run the cypher query from issue 8 by @electrichead against non existing nodes', function(done){
 			it('should return a valid response', function(done){
-				db.cypherQuery("START a=node(*) optional match a-[r1:RELATED_TO]->o RETURN a.name,o.name", function(err, result){
+				db.cypherQuery("START a=node(*) OPTIONAL MATCH a-[r1:RELATED_TO]->o RETURN a.name,o.name", function(err, result){
 					onlyResult(err, result);
 					result.data.should.be.an.instanceOf(Array);
-					result.data.should.have.lengthOf(8);
+					result.data.should.have.lengthOf(4);
+					result.data[0].should.have.lengthOf(2);
+					result.data[1].should.have.lengthOf(2);
+					result.data[2].should.have.lengthOf(2);
+					result.data[3].should.have.lengthOf(2);
 					result.columns.should.be.an.instanceOf(Array);
 					result.columns.should.have.lengthOf(2);
-					result.data.should.include('foobar');
-					result.data.should.include('foobar2');
-					result.data.should.include('foobar');
-					result.data.should.include('foobar3');				
+					result.data[0].should.include('foobar');
+					result.data[0].should.include('foobar2');
+					result.data[1].should.include('foobar');
+					result.data[1].should.include('foobar3');				
 					result.columns.should.include('a.name');
 					done();
 				});
@@ -2308,6 +2325,35 @@ describe('Testing Node specific operations for Neo4j', function(){
 		});
 	}); /* END => Test Cypher Query Functionality against existing nodes and relationships */
 
+	describe('\n=> Tests for github issues related to cypher queries', function(){
+		before(function(done){
+			db.cypherQuery("CREATE (:ex {p1: 1, p2: 2}), (:ex {p1: 3, p2: 4})", null, function(err, result){
+				done();
+			});
+		});
+
+		describe('-> Run the cypher query from issue 30 by @adambaker against existing nodes', function(done){
+			it('should return a nested array', function(done){
+				db.cypherQuery("MATCH (n:ex) RETURN n.p1, n.p2", null, function(err, result){
+					onlyResult(err, result);
+					result.should.have.keys('columns', 'data');
+					result.columns.should.include('n.p1');
+					result.columns.should.include('n.p2');
+					result.data.should.have.lengthOf(2);
+					result.data[0].should.have.lengthOf(2);
+					result.data[1].should.have.lengthOf(2);
+					done();
+				});
+			});
+		});
+
+		after(function(done){
+			db.cypherQuery("MATCH (n:ex) DELETE n", null, function(err, result){
+				console.log(result);
+				done();
+			});
+		});
+	}); /* END => Tests for github issues related to cypher queries */
 
 	describe('\n=> Test Batch Query Functionality', function(){
 		var root_node_id, other_node1_id, other_node2_id, relationship1_id, relationship2_id;

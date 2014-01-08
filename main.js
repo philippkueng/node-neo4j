@@ -1367,22 +1367,42 @@ Neo4j.prototype.cypherQuery = function(query, params, callback){
 			switch(result.statusCode){
 				case 200:
 					if(result.body && result.body.data.length >= 1){
-					   Step(
-							function addIds(){
-								var group = this.group();
-								result.body.data.forEach(function(resultset){
-									resultset.forEach(function(node){
-									   that.addNodeId(node, group());
+						
+						var addIdsToColumnData = function(columnData, callback){
+							Step(
+								function addId(){
+									var group = this.group();
+									columnData.forEach(function(node){
+										that.addNodeId(node, group());
 									});
+								},
+								function sumUp(err, nodes){
+									if (err) throw err;
+									else {
+										callback(null, nodes);
+									}
+								});
+						};
+
+						Step(
+							function eachColumn(){
+								var group = this.group();
+								result.body.data.forEach(function(columnResult){
+									addIdsToColumnData(columnResult, group());
 								});
 							},
-							function sumUp(err, nodes){
+							function sumUp(err, columns){
 								if(err) throw err;
 								else {
-									result.body.data = nodes;
+									// flatten the array if only one variable is getting returned to make it more convenient.
+									if (result.body.columns.length >= 2) {
+										result.body.data = columns;
+									} else {
+										result.body.data = [].concat.apply([], columns);
+									}
 									callback(null, result.body);
 								}
-						});
+							});
 					} else 
 						callback(null, result.body); 
 					break;
