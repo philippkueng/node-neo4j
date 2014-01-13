@@ -1349,7 +1349,7 @@ Neo4j.prototype.readOutgoingRelationshipsOfNode = function(node_id, callback){
 
 /* Run Cypher Query -------- */
 
-Neo4j.prototype.cypherQuery = function(query, params, callback){
+Neo4j.prototype.cypherQuery = function(query, params, callback, include_stats){
 	var that = this;
 	var body = { query: query };
 	if(params) {
@@ -1360,7 +1360,7 @@ Neo4j.prototype.cypherQuery = function(query, params, callback){
 	} 
 
 	request
-		.post(that.url + '/db/data/cypher')
+		.post(that.url + '/db/data/cypher' + (include_stats ? '?includeStats=true' : ''))
 		.set('Content-Type', 'application/json')
 		.send(body)
 		.end(function(result){
