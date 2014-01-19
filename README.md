@@ -110,7 +110,7 @@ Take a look at the test.main.js file in the test folder for many examples.
         console.log(node.data);
         
         // Output node id.
-        console.log(node.id);
+        console.log(node.id); /* for 2.0.0-RC3, use: console.log(node._id) */
     });
 
 **Read a Node**
@@ -122,7 +122,7 @@ Take a look at the test.main.js file in the test folder for many examples.
         console.log(node.data);
        
         // Output node id.
-        console.log(node.id);
+        console.log(node.id); /* for 2.0.0-RC3, use: console.log(node._id) */
     });
 
 **Update a Node**
