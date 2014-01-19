@@ -2,7 +2,7 @@
   "author": "Philipp Küng <git@philippkueng.ch> (http://philippkueng.ch)",
   "name": "node-neo4j",
   "description": "Neo4j REST API wrapper for Node.js",
-  "version": "2.0.0-RC3",
+  "version": "2.0.0-RC4",
   "repository": {
     "type": "git",
     "url": "https://github.com/philippkueng/node-neo4j.git"
@@ -34,6 +34,7 @@
     { "name": "Dan Williams", "email": "me@deedubs.com" },
     { "name": "Zaxnyd" },
     { "name": "Kristof Van Miegem", "email": "kristofvanmiegem@msn.com" },
-    { "name": "Oskar Hane"}
+    { "name": "Oskar Hane"},
+    { "name": "lazaruslarue"}
   ]
 }
