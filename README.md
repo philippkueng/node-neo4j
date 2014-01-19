@@ -168,13 +168,13 @@ Will remove any assigned properties and replace them with the ones given below.
             console.log(relationship.data);
 
             // Output relationship id.
-            console.log(relationship.id);
+            console.log(relationship.id); /* for 2.0.0-RC3, use: console.log(relationship._id) */
 
             // Output relationship start_node_id.
-            console.log(relationship.start_node_id);
+            console.log(relationship.start_node_id); /* for 2.0.0-RC3, use: console.log(relationship._start) */
 
             // Output relationship end_node_id.
-            console.log(relationship.end_node_id);
+            console.log(relationship.end_node_id); /* for 2.0.0-RC3, use: console.log(relationship._end) */
     });
 
 **Read a Relationship**
