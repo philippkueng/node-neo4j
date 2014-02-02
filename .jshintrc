@@ -1,0 +1,111 @@
+// JSHint options docs: http://www.jshint.com/docs/options/
+
+{
+  
+  // Enforcing options:
+  // When set to true, these options will make JSHint produce more warnings about your code.
+  
+  // 'false': no ^ (XOR), | (OR)
+  "bitwise": false,
+  // 'true': variable names camelCase or UPPER_CASE with underscores
+  "camelcase": true,
+  // 'true': always put curly braces around blocks in loops and conditionals
+  "curly": true, 
+  // 'false': only === allowed, prohibits the use of == and != in favor of === and !==
+  "eqeqeq": false,
+  // 'false': code doesn't adhere to ECMAScript 3. Code should adhere to ECMAScript 5. It's a default.
+  // Useful when developing for super old browsers such as Internet Explorer 6.
+  "es3": false, 
+  // 'true': unfiltered for/in loops
+  // 'forin' requires all for in loops to filter object's items
+  "forin": true,
+  // 'true': prohibits overwriting prototypes of native objects such as Array, Date, etc.
+  "freeze": true,
+  // 'true': require immediate invocations to be wrapped in parens e.g. `(function () { } ());`
+  "immed": true,
+  // '2': 2 spaces, enforces specific tab width for your code
+  "indent": 2,
+
+  // Explaination about JavaScript's scope and hoisting:
+  // http://www.adequatelygood.com/JavaScript-Scoping-and-Hoisting.html
+  // "nofunc": function declarations will be ignored
+  // prohibits the use of a variable before it was defined
+  // JavaScript has function scope only and, in addition to that,
+  // all variables are always moved—or hoisted— to the top of the function.  
+  "latedef": "nofunc",
+  // 'false': constructors (and only constructors) should be capitalized
+  "newcap": false,
+  // 'true': prohibits the use of arguments.caller and arguments.callee
+  "noarg": true,
+  // 'true': warns when you have an empty block in your code
+  "noempty": true,
+  // 'true': prohibits the use of constructor functions for side-effects
+  // e.g. new MyConstructor(); without assigning to a variable
+  "nonew": true,
+  // 'true': ++ and -- are allowed
+  "plusplus": true,
+  // 'single': consistently use single quotes
+  // enforces the consistency of quotation marks. 3 values: true, "single" or "double"
+  // true if you don't want to enforce one particular style but want some consistency
+  "quotmark": "single",
+  // 'true': using explicitly undeclared variables is prohibited
+  // If your variable is defined in another file,
+  // you can use /*global ... */ directive to tell JSHint about it.
+  "undef": true,
+  // 'true': warns when you define and never use your variables
+  "unused": true,
+  /**
+   * Requires all functions to run in ECMAScript 5's strict mode.
+   * It liminates some JavaScript pitfalls that didn't cause errors by changing them to produce errors. 
+   * It also fixes mistakes that made it difficult for the JavaScript engines to perform certain optimizations.
+   * Note: This option enables strict mode for function scope only. 
+   * It prohibits the global scoped strict mode because it might break third-party widgets on your page. 
+   * If you really want to use global strict mode, see the globalstrict option.
+   */
+  "strict": true,
+  // 'true': warns if there is trailing whitespace in your code
+  // Trailing whitespaces can be source of nasty bugs with multi-line strings in JavaScript
+  "trailing": true,
+  // '150': maximum length of a line is 150 characters
+  "maxlen": 150,
+
+  /**
+   * Relaxing options:
+   * When set to true, these options will make JSHint produce less warnings about your code.
+   */
+
+  // 'false': warns if you use eval. Eval is Evil!
+  // This option suppresses warnings about the use of eval.
+  "evil": false,
+
+  /**
+   * Environments:
+   * These options let JSHint know about some pre-defined global variables.
+   */
+
+  /** 
+   * 'true': let JSHint know about some pre-defined global variables in the browser.
+   * This option defines globals exposed by modern browsers: all the way from good old document and navigator
+   * to the HTML5 FileReader and other new developments in the browser world.
+   * Note: This option doesn't expose variables like alert or console. See option devel for more information.
+   */
+  "browser": true,
+  /**
+   * 'true': defines globals that are usually used for logging poor-man's debugging: console, alert, etc.
+   * It is usually a good idea to not ship them in production because, for example,
+   * console.log breaks in legacy versions of Internet Explorer.
+   */
+  "devel": true,
+  /**
+   * 'true': defines globals available when using Node.js T
+   * This option also skips some warnings that make sense in the browser environments.
+   * It allows file-level use strict pragmas and console.log statements.
+   */
+  "node": true,
+  // 'true': defines globals available when using PhantomJS
+  "phantom": true,
+  // additional predefined global variables
+  "globals": [
+    "_"
+  ]
+}
