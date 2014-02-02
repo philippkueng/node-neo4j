@@ -368,7 +368,112 @@ describe('Testing Node specific operations for Neo4j', function(){
         done();
       });
     });
-  }); /* END \n=> UpdateTwo a Node */
+  }); /* END \n=> Update a Node by node id */
+
+describe('\n=> Update Node(s) with label(s) and properties', function(){
+    var nodeIdOne,
+      nodeIdTwo;
+
+    //Insert a Node.
+    before(function(done){
+      db.insertNode({ userid: '123', name:'foobar', age: 22 }, ['User'], function(err, result){
+        onlyResult(err, result);
+        nodeIdOne = result._id;
+        db.insertNode({ userid: '654', name:'foobar' }, ['User', 'Student'], function(err, result){
+          onlyResult(err, result);
+          nodeIdTwo = result._id;
+          done();
+        });        
+      });
+    });
+
+    describe('-> Update non-existing Nodes with new properties', function(){
+      it('should return empty array because no Nodes where updated', function(done){
+        db.updateNodesWithLabelsAndProperties(['User'], { name:'notfound' }, { name: 'bar' }, function(err, result){
+          onlyResult(err, result);
+          done();
+        });
+      });
+    });
+
+    describe('-> Update existing Nodes, change properties', function(){
+      it('should return updated Nodes', function(done){
+        db.updateNodesWithLabelsAndProperties(['User'], { userid:'123' }, { name:'new_foobar', age: 25 }, function(err, result){
+          onlyResult(err, result);
+          result.should.be.an.instanceOf(Array);
+          result.should.have.lengthOf(1);
+          result[0].should.have.keys('_id', 'userid', 'name', 'age');
+          result[0]._id.should.equal(nodeIdOne);
+          result[0].name.should.equal('new_foobar');
+          result[0].age.should.equal(25);
+          done();
+        });
+      });
+    });
+
+    describe('-> Update existing Nodes, same property in oldProperties as in newProperties', function(){
+      it('should return updated Nodes', function(done){
+        db.updateNodesWithLabelsAndProperties(['User', 'Student'], { name:'foobar' }, { name:'new_foobar' }, function(err, result){
+          onlyResult(err, result);
+          result.should.be.an.instanceOf(Array);
+          result.should.have.lengthOf(1);
+          result[0].should.have.keys('_id', 'userid', 'name');
+          result[0]._id.should.equal(nodeIdTwo);
+          result[0].name.should.equal('new_foobar');
+          done();
+        });
+      });
+    });
+
+    describe('-> Update existing Nodes, no labels and add new property', function(){
+      it('should return updated Nodes', function(done){
+        db.updateNodesWithLabelsAndProperties([], { userid:'123' }, { name:'new_foo', extra: 'add-new-property' }, function(err, result){
+          onlyResult(err, result);
+          result.should.be.an.instanceOf(Array);
+          result.should.have.lengthOf(1);
+          result[0].should.have.keys('_id', 'userid', 'name', 'age', 'extra');
+          result[0]._id.should.equal(nodeIdOne);
+          result[0].name.should.equal('new_foo');
+          result[0].age.should.be.a.Number;
+          result[0].extra.should.equal('add-new-property');
+          done();
+        });
+      });
+    });
+
+    describe('-> Update existing Nodes, don\'t return updated nodes', function(){
+      it('should return updated Nodes', function(done){
+        db.updateNodesWithLabelsAndProperties(['User'], {}, { name:'all-users-the-same-name' }, false, function(err, result){
+          onlyResult(err, result);
+          result.should.be.an.instanceOf(Array);
+          result.should.have.lengthOf(0);
+          done();
+        });
+      });
+    });
+
+    describe('-> Update multiple Nodes with only labels', function(){
+      it('should return updated Nodes', function(done){
+        db.updateNodesWithLabelsAndProperties(['User'], {}, { name:'new_foo' }, function(err, result){
+          onlyResult(err, result);
+          result.should.be.an.instanceOf(Array);
+          result.should.have.lengthOf(2);
+          done();
+        });
+      });
+    });
+
+    // Remove Node afterwards.
+    after(function(done){
+      db.deleteNode(nodeIdOne, function(err, result){
+        isTrue(err, result);
+        db.deleteNode(nodeIdTwo, function(err, result){
+          isTrue(err, result);
+          done();
+        });
+      });
+    });
+  }); /* END \n=> Update Node(s) with label(s) and properties */
 
 	describe('\n=> Insert a Relationship', function(){
 		var root_node_id, other_node_id, relationship_id;

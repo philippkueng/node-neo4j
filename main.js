@@ -60,8 +60,8 @@ Neo4j.prototype.insertNode = function(node, labels, callback){
 
 		// Insert node and label(s) with cypher query
 		if(labels instanceof Array){
-			var query = 'CREATE (data'+  cypher.stringify(labels) + ' {params}) RETURN data';
-			this.cypherQuery(query, { params: node }, function(err, res) {				
+			var query = 'CREATE (data'+  cypher.labels(labels) + ' {params}) RETURN data';
+			this.cypherQuery(query, { params: node }, function(err, res) {
 				if(err) 
 					callback(err, null);
 				else
@@ -163,12 +163,41 @@ Neo4j.prototype.updateNode = replaceNodeById;
     This will update all existing properties on the node with the new set of attributes. */
 
 Neo4j.prototype.updateNodeById = function(node_id, node_data, callback){
-  var that = this;
   var query = 'START data=node({_id}) SET ' + cypher.set('data', node_data) + ' RETURN data';
   node_data._id = node_id;
   this.cypherQuery(query , node_data, function(err, res) {        
     err? callback(err): callback(err, res.data[0]);
   });   
+};
+
+// Update all nodes with `labels` and `oldProperties`, set the `newProperties`
+// `labels`          String|Array[String]    e.g.: '', [], 'User', ['User', 'Student']
+// 'oldProperties'   Object                  e.g.: { userid: '124' }
+// `newProperties`   Object                  e.g.: { email: 'fred@example.com' }
+ 
+Neo4j.prototype.updateNodesWithLabelsAndProperties = function(labels, oldProperties, newProperties, returnUpdatedNodes, callback){
+  var whereSetProperties = cypher.whereSetProperties('data', oldProperties, newProperties),
+    where = whereSetProperties.where,
+    query = 'MATCH (data'+  cypher.labels(labels) + ')';
+
+  if (typeof returnUpdatedNodes === 'function') {    
+    callback = returnUpdatedNodes;
+    returnUpdatedNodes = true;; 
+  }
+
+  if (where !== '') {
+    query += ' WHERE ' + where;
+  }
+  
+  query += ' SET ' + whereSetProperties.set;
+
+  if (returnUpdatedNodes) {
+    query += ' RETURN data';
+  }
+
+  this.cypherQuery(query , whereSetProperties.properties, function(err, res) {
+    err? callback(err): callback(err, res.data);
+  });
 };
 
 /* Insert a Relationship ------ */
@@ -682,7 +711,7 @@ Neo4j.prototype.readNodesWithLabelsAndProperties = function(labels, properties, 
 				}
 			});
 		} else { // Multiple labels or properties provided
-			var query = 'MATCH (data'+  cypher.stringify(labels) + ') WHERE ' + cypher.where('data', properties) + ' RETURN data';
+			var query = 'MATCH (data'+  cypher.labels(labels) + ') WHERE ' + cypher.where('data', properties) + ' RETURN data';
 			this.cypherQuery(query, properties, function(err, res) {
 				if(err) 
 					callback(err, null);
