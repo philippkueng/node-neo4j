@@ -1979,6 +1979,75 @@ describe('Testing Node specific operations for Neo4j', function(){
 		});
 	}); /* END => Read all Relationships of a Node */
 
+	describe('\n=> Read typed Relationships of a Node', function(){
+		var root_node_id, other_node1_id, other_node2_id;
+		var relationship1_id, relationship2_id;
+      var types = ['RELATED_TO', 'SOMETHING_ELSE'];
+
+		describe('-> Read typed Relationships of an non-existing node', function(){
+			it('should return false', function(done){
+				db.readTypedRelationshipsOfNode(99999999, types, function(err, result){
+					isFalse(err, result);
+					done();
+				});
+			});
+		});
+
+		before(function(done){
+			db.insertNode({name:'foobar'}, function(err, node1){
+				onlyResult(err, node1);
+				root_node_id = node1._id;
+				db.insertNode({name:'foobar2'}, function(err, node2){
+					onlyResult(err, node2);
+					other_node1_id = node2._id;
+					db.insertRelationship(root_node_id, other_node1_id, 'RELATED_TO', {}, function(err, relationship1){
+						onlyResult(err, relationship1);
+						relationship1_id = relationship1._id;
+						db.insertNode({name:'foobar3'}, function(err, node3){
+							onlyResult(err, node3);
+							other_node2_id = node3._id;
+							db.insertRelationship(root_node_id, other_node2_id, 'SOMETHING_ELSE', {}, function(err, relationship2){
+								onlyResult(err, relationship2);
+								relationship2_id = relationship2._id;
+								done();
+							});
+						});
+					});
+				});
+			});
+		});
+
+		describe('-> Read typed Relationships of root_node', function(){
+			it('should return 2 relationships', function(done){
+				db.readTypedRelationshipsOfNode(root_node_id, types, function(err, result){
+					onlyResult(err, result);
+					result.should.be.an.instanceOf(Array);
+					result.should.have.lengthOf(2);
+					done();
+				});
+			});
+		});
+
+		after(function(done){
+			db.deleteRelationship(relationship1_id, function(err, result){
+				isTrue(err, result);
+				db.deleteRelationship(relationship2_id, function(err, result){
+					isTrue(err, result);
+					db.deleteNode(other_node1_id, function(err, result){
+						isTrue(err, result);
+						db.deleteNode(other_node2_id, function(err, result){
+							isTrue(err, result);
+							db.deleteNode(root_node_id, function(err, result){
+								isTrue(err, result);
+								done();
+							});
+						});
+					});
+				});
+			});
+		});
+	}); /* END => Read typed Relationships of a Node */
+
 	describe('\n=> Read incoming Relationships of a Node', function(){
 		var root_node_id, other_node1_id, other_node2_id;
 		var relationship1_id, relationship2_id;
