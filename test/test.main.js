@@ -2523,7 +2523,6 @@ describe('\n=> Update Node(s) with label(s) and properties', function(){
 
 		after(function(done){
 			db.cypherQuery("MATCH (n:ex) DELETE n", null, function(err, result){
-				console.log(result);
 				done();
 			});
 		});
