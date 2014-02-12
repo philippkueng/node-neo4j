@@ -149,8 +149,8 @@ function replaceNodeById(node_id, node_data, callback){
       }
     });
 };
-Neo4j.prototype.replaceNodeById = replaceNodeById;
 // Create an alias
+Neo4j.prototype.replaceNodeById = replaceNodeById;
 Neo4j.prototype.updateNode = replaceNodeById;
 
 /*  Update a Node properties
@@ -1292,9 +1292,11 @@ Neo4j.prototype.beginAndCommitTransaction = function(statements, callback){
 
 /* Get all Relationship Types -------- */
 
-Neo4j.prototype.readRelationshipTypes = function(callback){	
+Neo4j.prototype.readRelationshipTypes = function(callback){
+	var that = this;
+
 	request
-		.get(this.url + '/db/data/relationship/types')
+		.get(that.url + '/db/data/relationship/types')
 		.end(function(result){
 			switch(result.statusCode){
 				case 200:
