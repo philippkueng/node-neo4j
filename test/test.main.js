@@ -2512,7 +2512,7 @@ describe('\n=> Update Node(s) with label(s) and properties', function(){
 		});
 		
 		// issue got updated according to recent changes in 2.0.0-RC1 http://blog.neo4j.org/2013/11/neo4j-200-rc1-final-preparations.html
-		describe('-> Run the cypher query from issue 8 by @electrichead against non existing nodes', function(done){
+		describe('-> Run the cypher query from issue 8 by @electrichead against existing nodes', function(done){
 			it('should return a valid response', function(done){
 				db.cypherQuery("START a=node(*) OPTIONAL MATCH a-[r1:RELATED_TO]->o RETURN a.name,o.name", function(err, result){
 					onlyResult(err, result);
