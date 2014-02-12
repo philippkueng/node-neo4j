@@ -7,8 +7,6 @@ var request = require('superagent'),
 
 module.exports = Neo4j;
 
-var TRANSACTION_LENGTH = 21;	// '/db/data/transaction/'
-
 function Neo4j(url){
 	if(typeof url !== 'undefined' && url !== ''){
 		this.url = url;
@@ -16,10 +14,6 @@ function Neo4j(url){
 		this.url = 'http://localhost:7474';
 	}
 };
-
-function debug (obj) {
-	console.info(util.inspect(obj) + '\n\n');
-}
 
 /*	Insert a Node
 	Returns the node that is inserted and his node id (property: _id)
@@ -60,8 +54,8 @@ Neo4j.prototype.insertNode = function(node, labels, callback){
 
 		// Insert node and label(s) with cypher query
 		if(labels instanceof Array){
-			var query = 'CREATE (data'+  cypher.stringify(labels) + ' {params}) RETURN data';
-			this.cypherQuery(query, { params: node }, function(err, res) {				
+			var query = 'CREATE (data'+  cypher.labels(labels) + ' {params}) RETURN data';
+			this.cypherQuery(query, { params: node }, function(err, res) {
 				if(err) 
 					callback(err, null);
 				else
@@ -155,20 +149,49 @@ function replaceNodeById(node_id, node_data, callback){
       }
     });
 };
-Neo4j.prototype.replaceNodeById = replaceNodeById;
 // Create an alias
+Neo4j.prototype.replaceNodeById = replaceNodeById;
 Neo4j.prototype.updateNode = replaceNodeById;
 
 /*  Update a Node properties
     This will update all existing properties on the node with the new set of attributes. */
 
 Neo4j.prototype.updateNodeById = function(node_id, node_data, callback){
-  var that = this;
   var query = 'START data=node({_id}) SET ' + cypher.set('data', node_data) + ' RETURN data';
   node_data._id = node_id;
   this.cypherQuery(query , node_data, function(err, res) {        
     err? callback(err): callback(err, res.data[0]);
   });   
+};
+
+// Update all nodes with `labels` and `oldProperties`, set the `newProperties`
+// `labels`          String|Array[String]    e.g.: '', [], 'User', ['User', 'Student']
+// 'oldProperties'   Object                  e.g.: { userid: '124' }
+// `newProperties`   Object                  e.g.: { email: 'fred@example.com' }
+ 
+Neo4j.prototype.updateNodesWithLabelsAndProperties = function(labels, oldProperties, newProperties, returnUpdatedNodes, callback){
+  var whereSetProperties = cypher.whereSetProperties('data', oldProperties, newProperties),
+    where = whereSetProperties.where,
+    query = 'MATCH (data'+  cypher.labels(labels) + ')';
+
+  if (typeof returnUpdatedNodes === 'function') {    
+    callback = returnUpdatedNodes;
+    returnUpdatedNodes = true;; 
+  }
+
+  if (where !== '') {
+    query += ' WHERE ' + where;
+  }
+  
+  query += ' SET ' + whereSetProperties.set;
+
+  if (returnUpdatedNodes) {
+    query += ' RETURN data';
+  }
+
+  this.cypherQuery(query , whereSetProperties.properties, function(err, res) {
+    err? callback(err): callback(err, res.data);
+  });
 };
 
 /* Insert a Relationship ------ */
@@ -682,7 +705,7 @@ Neo4j.prototype.readNodesWithLabelsAndProperties = function(labels, properties, 
 				}
 			});
 		} else { // Multiple labels or properties provided
-			var query = 'MATCH (data'+  cypher.stringify(labels) + ') WHERE ' + cypher.where('data', properties) + ' RETURN data';
+			var query = 'MATCH (data'+  cypher.labels(labels) + ') WHERE ' + cypher.where('data', properties) + ' RETURN data';
 			this.cypherQuery(query, properties, function(err, res) {
 				if(err) 
 					callback(err, null);
@@ -1269,9 +1292,11 @@ Neo4j.prototype.beginAndCommitTransaction = function(statements, callback){
 
 /* Get all Relationship Types -------- */
 
-Neo4j.prototype.readRelationshipTypes = function(callback){	
+Neo4j.prototype.readRelationshipTypes = function(callback){
+	var that = this;
+
 	request
-		.get(this.url + '/db/data/relationship/types')
+		.get(that.url + '/db/data/relationship/types')
 		.end(function(result){
 			switch(result.statusCode){
 				case 200:
@@ -1283,14 +1308,32 @@ Neo4j.prototype.readRelationshipTypes = function(callback){
 		});
 };
 
-/* Get all Relationships of a Node --------- */
+/* Get Relationships of a Node --------- */
 
-Neo4j.prototype.readAllRelationshipsOfNode = function(node_id, callback){
+function readRelationshipsOfNode(node_id, options, callback){
 	var that = this;
 
+	if (typeof options === 'function') {
+		callback = options;
+	}
+
+	var url = that.url + '/db/data/node/' + node_id + '/relationships/';
+
+	// Set direction of relationships to retrieve.
+	if (options.direction && (options.direction === 'in' || options.direction === 'out')) {
+		url += options.direction;
+	} else {
+		url += 'all';
+	}
+
+	// Set types of relationships to retrieve.
+	if (options.types && options.types.length >= 1) {
+		url += '/' + encodeURIComponent(options.types.join('&'));
+	}
+
 	request
-		.get(that.url + '/db/data/node/' + node_id + '/relationships/all')
-				.end(function(result){
+		.get(url)
+		.end(function(result){
 			switch(result.statusCode){
 				case 200:
 					that.addRelationshipIdForArray(result.body, callback);
@@ -1299,73 +1342,22 @@ Neo4j.prototype.readAllRelationshipsOfNode = function(node_id, callback){
 					callback(null, false);
 					break;
 				default:
-					callback(new Error('HTTP Error ' + result.statusCode + ' when retrieving all relationships for node ' + node_id), null);
+					callback(new Error('HTTP Error ' + result.statusCode + ' when retrieving relationships for node ' + node_id), null);
 			}
 		});
 };
-
-/* Get typed Relationships of a Node --------- */
-
-Neo4j.prototype.readTypedRelationshipsOfNode = function(node_id, types, callback){
-	var that = this;
-
-	request
-		.get(that.url + '/db/data/node/' + node_id + '/relationships/all/'+encodeURIComponent(types.join('&')))
-				.end(function(result){
-			switch(result.statusCode){
-				case 200:
-					that.addRelationshipIdForArray(result.body, callback);
-					break;
-				case 404:
-					callback(null, false);
-					break;
-				default:
-					callback(new Error('HTTP Error ' + result.statusCode + ' when retrieving typed '+ types +' relationships for node ' + node_id), null);
-			}
-		});
-};
-
-/* Get all the incoming Relationships of a Node --------- */
-
-Neo4j.prototype.readIncomingRelationshipsOfNode = function(node_id, callback){
-	var that = this;
-
-	request
-		.get(that.url + '/db/data/node/' + node_id + '/relationships/in')
-				.end(function(result){
-			switch(result.statusCode){
-				case 200:
-					that.addRelationshipIdForArray(result.body, callback);
-					break;
-				case 404:
-					callback(null, false);
-					break;
-				default:
-					callback(new Error('HTTP Error ' + result.statusCode + ' when retrieving incoming relationships for node ' + node_id), null);
-			}
-		});
-};
-
-/* Get all the outgoing Relationships of a Node -------- */
-
-Neo4j.prototype.readOutgoingRelationshipsOfNode = function(node_id, callback){
-	var that = this;
-
-	request
-		.get(that.url + '/db/data/node/' + node_id + '/relationships/out')
-				.end(function(result){
-			switch(result.statusCode){
-				case 200:
-					that.addRelationshipIdForArray(result.body, callback);
-					break;
-				case 404:
-					callback(null, false);
-					break;
-				default:
-					callback(new Error('HTTP Error ' + result.statusCode + ' when retrieving outgoing relationships for node ' + node_id), null);
-			}
-		});
-};
+// Create aliases
+Neo4j.prototype.readRelationshipsOfNode = readRelationshipsOfNode;
+Neo4j.prototype.readAllRelationshipsOfNode = readRelationshipsOfNode
+Neo4j.prototype.readTypedRelationshipsOfNode = function(node_id, types, callback) {
+	this.readRelationshipsOfNode(node_id, {types: types}, callback);
+}
+Neo4j.prototype.readIncomingRelationshipsOfNode = function(node_id, callback) {
+	this.readRelationshipsOfNode(node_id, {direction: 'in'}, callback);
+}
+Neo4j.prototype.readOutgoingRelationshipsOfNode = function(node_id, callback) {
+	this.readRelationshipsOfNode(node_id, {direction: 'out'}, callback);
+}
 
 
 /* Run Cypher Query -------- */
@@ -1468,26 +1460,6 @@ Neo4j.prototype.batchQuery = function(query, callback){
 
 
 /* HELPER METHODS --------- */
-
-/* Strips username and password from URL so that the node_id can be extracted. */
-
-Neo4j.prototype.removeCredentials = function(path){
-	if(typeof path !== 'undefined' && path !== ''){
-		return path.replace(/[a-z0-9]+\:[a-z0-9]+\@/, '');
-	} else {
-		return '';
-	}
-};
-
-/* Extract the id from a url */
-
-Neo4j.prototype.getId = function(url, length){
-	var from = this.url.length + length;// Example: length of url and '/db/data/transaction/'
-	var to = url.indexOf('/', from);	// Next slash
-	if(to === -1)
-		to = url.length;
-	return parseInt(url.substring(from, to));
-};
 
 /* Extract node_id and add it as a property. */
 

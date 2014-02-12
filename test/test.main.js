@@ -122,6 +122,15 @@ describe('Testing Node specific operations for Neo4j', function(){
 			});
 		});
 
+    describe('-> A node with an empty array as pointed out by @sovos in issue 12', function() {
+      it('should succeed', function(done) {
+        db.insertNode({name: 'sovos', cars: []}, function(err, result) {
+          onlyError(err, result);
+          done();
+        });
+      });
+    });
+
 		describe('-> Get labels of the second node', function(){
 			it('should return an array with one label', function(done){
 				db.readLabels(secondNodeId, function(err, result){
@@ -288,6 +297,24 @@ describe('Testing Node specific operations for Neo4j', function(){
 			});
 		});
 
+    describe('-> Replace an existing Node with a simple object and an array as mentioned by @sovos in issue 12', function() {
+      it('should return true', function(done) {
+        db.updateNode(node_id, {name: 'foobar2', cars: ['Volvo', 'Mercedes']}, function(err, result) {
+          isTrue(err, result);
+          done();
+        });
+      });
+    });
+
+    describe('-> Replace an existing Node with a simple object and an empty array as mentioned by @sovos in issue 12', function() {
+      it('should return true', function(done) {
+        db.updateNode(node_id, {name: 'foobar2', cars: []}, function(err, result) {
+          isTrue(err, result);
+          done();
+        });
+      });
+    });
+
 		describe('-> Replace an existing Node with an object with null values', function(){
 			it('should return true', function(done){
 				db.replaceNodeById(node_id,{name:'foobar3',age:null}, function(err, result){
@@ -368,7 +395,112 @@ describe('Testing Node specific operations for Neo4j', function(){
         done();
       });
     });
-  }); /* END \n=> UpdateTwo a Node */
+  }); /* END \n=> Update a Node by node id */
+
+describe('\n=> Update Node(s) with label(s) and properties', function(){
+    var nodeIdOne,
+      nodeIdTwo;
+
+    //Insert a Node.
+    before(function(done){
+      db.insertNode({ userid: '123', name:'foobar', age: 22 }, ['User'], function(err, result){
+        onlyResult(err, result);
+        nodeIdOne = result._id;
+        db.insertNode({ userid: '654', name:'foobar' }, ['User', 'Student'], function(err, result){
+          onlyResult(err, result);
+          nodeIdTwo = result._id;
+          done();
+        });        
+      });
+    });
+
+    describe('-> Update non-existing Nodes with new properties', function(){
+      it('should return empty array because no Nodes where updated', function(done){
+        db.updateNodesWithLabelsAndProperties(['User'], { name:'notfound' }, { name: 'bar' }, function(err, result){
+          onlyResult(err, result);
+          done();
+        });
+      });
+    });
+
+    describe('-> Update existing Nodes, change properties', function(){
+      it('should return updated Nodes', function(done){
+        db.updateNodesWithLabelsAndProperties(['User'], { userid:'123' }, { name:'new_foobar', age: 25 }, function(err, result){
+          onlyResult(err, result);
+          result.should.be.an.instanceOf(Array);
+          result.should.have.lengthOf(1);
+          result[0].should.have.keys('_id', 'userid', 'name', 'age');
+          result[0]._id.should.equal(nodeIdOne);
+          result[0].name.should.equal('new_foobar');
+          result[0].age.should.equal(25);
+          done();
+        });
+      });
+    });
+
+    describe('-> Update existing Nodes, same property in oldProperties as in newProperties', function(){
+      it('should return updated Nodes', function(done){
+        db.updateNodesWithLabelsAndProperties(['User', 'Student'], { name:'foobar' }, { name:'new_foobar' }, function(err, result){
+          onlyResult(err, result);
+          result.should.be.an.instanceOf(Array);
+          result.should.have.lengthOf(1);
+          result[0].should.have.keys('_id', 'userid', 'name');
+          result[0]._id.should.equal(nodeIdTwo);
+          result[0].name.should.equal('new_foobar');
+          done();
+        });
+      });
+    });
+
+    describe('-> Update existing Nodes, no labels and add new property', function(){
+      it('should return updated Nodes', function(done){
+        db.updateNodesWithLabelsAndProperties([], { userid:'123' }, { name:'new_foo', extra: 'add-new-property' }, function(err, result){
+          onlyResult(err, result);
+          result.should.be.an.instanceOf(Array);
+          result.should.have.lengthOf(1);
+          result[0].should.have.keys('_id', 'userid', 'name', 'age', 'extra');
+          result[0]._id.should.equal(nodeIdOne);
+          result[0].name.should.equal('new_foo');
+          result[0].age.should.be.a.Number;
+          result[0].extra.should.equal('add-new-property');
+          done();
+        });
+      });
+    });
+
+    describe('-> Update existing Nodes, don\'t return updated nodes', function(){
+      it('should return updated Nodes', function(done){
+        db.updateNodesWithLabelsAndProperties(['User'], {}, { name:'all-users-the-same-name' }, false, function(err, result){
+          onlyResult(err, result);
+          result.should.be.an.instanceOf(Array);
+          result.should.have.lengthOf(0);
+          done();
+        });
+      });
+    });
+
+    describe('-> Update multiple Nodes with only labels', function(){
+      it('should return updated Nodes', function(done){
+        db.updateNodesWithLabelsAndProperties(['User'], {}, { name:'new_foo' }, function(err, result){
+          onlyResult(err, result);
+          result.should.be.an.instanceOf(Array);
+          result.should.have.lengthOf(2);
+          done();
+        });
+      });
+    });
+
+    // Remove Node afterwards.
+    after(function(done){
+      db.deleteNode(nodeIdOne, function(err, result){
+        isTrue(err, result);
+        db.deleteNode(nodeIdTwo, function(err, result){
+          isTrue(err, result);
+          done();
+        });
+      });
+    });
+  }); /* END \n=> Update Node(s) with label(s) and properties */
 
 	describe('\n=> Insert a Relationship', function(){
 		var root_node_id, other_node_id, relationship_id;
@@ -1982,7 +2114,7 @@ describe('Testing Node specific operations for Neo4j', function(){
 	describe('\n=> Read typed Relationships of a Node', function(){
 		var root_node_id, other_node1_id, other_node2_id;
 		var relationship1_id, relationship2_id;
-      var types = ['RELATED_TO', 'SOMETHING_ELSE'];
+    var types = ['RELATED_TO', 'SOMETHING_ELSE'];
 
 		describe('-> Read typed Relationships of an non-existing node', function(){
 			it('should return false', function(done){
@@ -2205,6 +2337,73 @@ describe('Testing Node specific operations for Neo4j', function(){
 		});
 	}); /* END => Read all outgoing Relationships of a Node */
 
+  describe('\n=> Read all outgoing typed Relationships of a Node', function(){
+    var root_node_id, other_node1_id, other_node2_id;
+    var relationship1_id, relationship2_id;
+    var types = ['RELATED_TO', 'SOMETHING_ELSE'];
+
+    describe('-> Read typed Relationships of an non-existing node', function(){
+      it('should return false', function(done){
+        db.readTypedRelationshipsOfNode(99999999, types, function(err, result){
+          isFalse(err, result);
+          done();
+        });
+      });
+    });
+
+    before(function(done){
+      db.cypherQuery(
+        'CREATE (root {name: "foobar"}),\
+        (n1 {name: "foobar2"}),\
+        (n2 {name: "foobar3"}),\
+        (root)-[r1:RELATED_TO]->(n1),\
+        (root)-[r2:SOMETHING_ELSE]->(n2)\
+        RETURN id(root), id(n1), id(n2), id(r1), id(r2)', function(err, result) {
+          onlyResult(err, result);
+          root_node_id = result.data[0][0];
+          other_node1_id = result.data[0][1];
+          other_node2_id = result.data[0][2];
+          relationship1_id = result.data[0][3];
+          relationship2_id = result.data[0][4];
+          done();
+        })
+    });
+
+    describe('-> Read typed outgoing Relationships of root_node', function(){
+      it('should return 2 relationships', function(done){
+        db.readRelationshipsOfNode(root_node_id, {
+          direction: 'out',
+          types: types
+        }, function(err, result){
+          onlyResult(err, result);
+          result.should.be.an.instanceOf(Array);
+          result.should.have.lengthOf(2);
+          done();
+        });
+      });
+    });
+
+    describe('-> Read all Relationships of root_node', function(){
+      it('should return 2 relationships', function(done){
+        db.readRelationshipsOfNode(root_node_id, {}, function(err, result){
+          onlyResult(err, result);
+          result.should.be.an.instanceOf(Array);
+          result.should.have.lengthOf(2);
+          done();
+        });
+      });
+    });
+
+    after(function(done){
+      db.cypherQuery('MATCH (root)-[r]->(m) DELETE (root), r, m', function(err, result) {
+        onlyResult(err, result);
+        result.columns.should.have.lengthOf(0);
+        result.data.should.have.lengthOf(0);
+        done();
+      })
+    });
+  }); /* END => Read all outgoing typed Relationships of a Node */
+
 	describe('\n=> Test Cyper Query Functionality against non existing nodes', function(){
 
 		describe('-> Run a cypher query against a non existing node', function(){
@@ -2340,7 +2539,7 @@ describe('Testing Node specific operations for Neo4j', function(){
 		});
 		
 		// issue got updated according to recent changes in 2.0.0-RC1 http://blog.neo4j.org/2013/11/neo4j-200-rc1-final-preparations.html
-		describe('-> Run the cypher query from issue 8 by @electrichead against non existing nodes', function(done){
+		describe('-> Run the cypher query from issue 8 by @electrichead against existing nodes', function(done){
 			it('should return a valid response', function(done){
 				db.cypherQuery("START a=node(*) OPTIONAL MATCH a-[r1:RELATED_TO]->o RETURN a.name,o.name", function(err, result){
 					onlyResult(err, result);
@@ -2361,6 +2560,22 @@ describe('Testing Node specific operations for Neo4j', function(){
 				});
 			});
 		});
+
+    describe('-> Run a cypher query with params from issue 9 by @withjam against existing nodes', function(done) {
+      it('should return a valid response', function(done) {
+        db.cypherQuery('MATCH (x {name: {root_node}})-[r]->(friends) RETURN friends', {
+          root_node: 'foobar'
+        }, function(err, result) {
+          onlyResult(err, result);
+          result.columns.should.include('friends');
+          result.data.should.be.an.instanceOf(Array);
+          result.data.should.have.lengthOf(2);
+          result.data[0].should.have.property('name', 'foobar2');
+          result.data[1].should.have.property('name', 'foobar3');
+          done();
+        });
+      });
+    });
 
 		/* TODO: fix error
 		describe('-> Run the cypher query from issue 7 from @Zaxnyd', function(done){
@@ -2418,7 +2633,6 @@ describe('Testing Node specific operations for Neo4j', function(){
 
 		after(function(done){
 			db.cypherQuery("MATCH (n:ex) DELETE n", null, function(err, result){
-				console.log(result);
 				done();
 			});
 		});

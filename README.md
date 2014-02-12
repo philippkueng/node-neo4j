@@ -7,7 +7,7 @@ master branch: [![Build Status](https://travis-ci.org/philippkueng/node-neo4j.pn
 ## Installation
 
     npm install node-neo4j
-    npm install node-neo4j@2.0.0-RC4 (to get all the Neo4j 2.0.0 features)
+    npm install node-neo4j@2.0.0-RC5 (to get all the Neo4j 2.0.0 features)
 
 ## Usage
 
@@ -27,7 +27,7 @@ Navigate to the node module and run the tests:
 
 	$ npm test
 
-All tests should pass if you're running the latest version of Neo4j. (Neo4j 2.0.0-RC4)
+All tests should pass if you're running the latest version of Neo4j. (Neo4j 2.0.0-RC5)
 We try to update the module as fast as possible if there's a new version of Neo4j.
 Don't be shy to give remarks or report bugs. We would be glad to fix them.
 You can contact use on Twitter [https://twitter.com/Stofkn](@Stofkn) or [https://twitter.com/philippkueng](@philippkueng) or mail us (check package.json).
@@ -110,7 +110,7 @@ Take a look at the test.main.js file in the test folder for many examples.
         console.log(node.data);
         
         // Output node id.
-        console.log(node.id); /* for 2.0.0-RC4, use: console.log(node._id) */
+        console.log(node.id); /* for 2.0.0-RC5, use: console.log(node._id) */
     });
 
 **Read a Node**
@@ -122,7 +122,7 @@ Take a look at the test.main.js file in the test folder for many examples.
         console.log(node.data);
        
         // Output node id.
-        console.log(node.id); /* for 2.0.0-RC4, use: console.log(node._id) */
+        console.log(node.id); /* for 2.0.0-RC5, use: console.log(node._id) */
     });
 
 **Update a Node**
@@ -168,13 +168,13 @@ Will remove any assigned properties and replace them with the ones given below.
             console.log(relationship.data);
 
             // Output relationship id.
-            console.log(relationship.id); /* for 2.0.0-RC4, use: console.log(relationship._id) */
+            console.log(relationship.id); /* for 2.0.0-RC5, use: console.log(relationship._id) */
 
             // Output relationship start_node_id.
-            console.log(relationship.start_node_id); /* for 2.0.0-RC4, use: console.log(relationship._start) */
+            console.log(relationship.start_node_id); /* for 2.0.0-RC5, use: console.log(relationship._start) */
 
             // Output relationship end_node_id.
-            console.log(relationship.end_node_id); /* for 2.0.0-RC4, use: console.log(relationship._end) */
+            console.log(relationship.end_node_id); /* for 2.0.0-RC5, use: console.log(relationship._end) */
     });
 
 **Read a Relationship**
@@ -275,30 +275,17 @@ Will also return types of those relationships that have been deleted.
         console.log(result); // eg. ['RELATED_TO', 'LOVES', 'KNOWNS']
     });
 
-**Get all relationships of a node**
+**Get relationships of a node**
 
-Will return incoming aswell as outgoing nodes.
+Get all (incoming and outgoing) relationships of a node, or use the options object to filter for specifc types and directions.
 
-    db.readAllRelationshipsOfNode(node_id, function(err, relationships){
-        if(err) throw err;
+    db.readRelationshipsOfNode(node_id, {
+        types: ['RELATED_TO', ...] // optional
+        direction: 'in' // optional, alternative 'out', defaults to 'all'
+        }, function(err, relationships) {
+            if (err) throw err;
 
-        console.log(relationships); // delivers an array of relationship objects.
-    });
-
-**Get all incoming relationships of a node**
-
-    db.readIncomingRelationshipsOfNode(node_id, function(err, relationships){
-        if(err) throw err;
-
-        console.log(relationships); // delivers an array of relationships objects.
-    });
-
-**Get all outgoing relationships of a node**
-
-    db.readOutgoingRelationshipsOfNode(node_id, function(err, relationships){
-        if(err) throw err;
-
-        console.log(relationships); // delivers an array of relationships objects.
+            console.log(relationships); // delivers an array of relationship objects.
     });
 
 **Run a cyper query against Neo4j**
