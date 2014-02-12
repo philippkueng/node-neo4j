@@ -2534,6 +2534,22 @@ describe('\n=> Update Node(s) with label(s) and properties', function(){
 			});
 		});
 
+    describe('-> Run a cypher query with params from issue 9 by @withjam against existing nodes', function(done) {
+      it('should return a valid response', function(done) {
+        db.cypherQuery('MATCH (x {name: {root_node}})-[r]->(friends) RETURN friends', {
+          root_node: 'foobar'
+        }, function(err, result) {
+          onlyResult(err, result);
+          result.columns.should.include('friends');
+          result.data.should.be.an.instanceOf(Array);
+          result.data.should.have.lengthOf(2);
+          result.data[0].should.have.property('name', 'foobar2');
+          result.data[1].should.have.property('name', 'foobar3');
+          done();
+        });
+      });
+    });
+
 		/* TODO: fix error
 		describe('-> Run the cypher query from issue 7 from @Zaxnyd', function(done){
 			it('should return a node and the relationships', function(done){
