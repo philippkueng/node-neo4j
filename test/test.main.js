@@ -306,6 +306,15 @@ describe('Testing Node specific operations for Neo4j', function(){
       });
     });
 
+    describe('-> Replace an existing Node with a simple object and an empty array as mentioned by @sovos in issue 12', function() {
+      it('should return true', function(done) {
+        db.updateNode(node_id, {name: 'foobar2', cars: []}, function(err, result) {
+          isTrue(err, result);
+          done();
+        });
+      });
+    });
+
 		describe('-> Replace an existing Node with an object with null values', function(){
 			it('should return true', function(done){
 				db.replaceNodeById(node_id,{name:'foobar3',age:null}, function(err, result){
