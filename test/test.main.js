@@ -300,8 +300,6 @@ describe('Testing Node specific operations for Neo4j', function(){
     describe('-> Replace an existing Node with a simple object and an array as mentioned by @sovos in issue 12', function() {
       it('should return true', function(done) {
         db.updateNode(node_id, {name: 'foobar2', cars: ['Volvo', 'Mercedes']}, function(err, result) {
-          console.log(err);
-          console.log(result);
           isTrue(err, result);
           done();
         });
