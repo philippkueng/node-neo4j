@@ -1498,26 +1498,6 @@ Neo4j.prototype.batchQuery = function(query, callback){
 
 /* HELPER METHODS --------- */
 
-/* Strips username and password from URL so that the node_id can be extracted. */
-
-Neo4j.prototype.removeCredentials = function(path){
-	if(typeof path !== 'undefined' && path !== ''){
-		return path.replace(/[a-z0-9]+\:[a-z0-9]+\@/, '');
-	} else {
-		return '';
-	}
-};
-
-/* Extract the id from a url */
-
-Neo4j.prototype.getId = function(url, length){
-	var from = this.url.length + length;// Example: length of url and '/db/data/transaction/'
-	var to = url.indexOf('/', from);	// Next slash
-	if(to === -1)
-		to = url.length;
-	return parseInt(url.substring(from, to));
-};
-
 /* Extract node_id and add it as a property. */
 
 Neo4j.prototype.addNodeId = function(node, callback){	
