@@ -7,8 +7,6 @@ var request = require('superagent'),
 
 module.exports = Neo4j;
 
-var TRANSACTION_LENGTH = 21;	// '/db/data/transaction/'
-
 function Neo4j(url){
 	if(typeof url !== 'undefined' && url !== ''){
 		this.url = url;
@@ -16,10 +14,6 @@ function Neo4j(url){
 		this.url = 'http://localhost:7474';
 	}
 };
-
-function debug (obj) {
-	console.info(util.inspect(obj) + '\n\n');
-}
 
 /*	Insert a Node
 	Returns the node that is inserted and his node id (property: _id)
