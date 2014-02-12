@@ -2087,7 +2087,7 @@ describe('\n=> Update Node(s) with label(s) and properties', function(){
 	describe('\n=> Read typed Relationships of a Node', function(){
 		var root_node_id, other_node1_id, other_node2_id;
 		var relationship1_id, relationship2_id;
-      var types = ['RELATED_TO', 'SOMETHING_ELSE'];
+    var types = ['RELATED_TO', 'SOMETHING_ELSE'];
 
 		describe('-> Read typed Relationships of an non-existing node', function(){
 			it('should return false', function(done){
@@ -2309,6 +2309,73 @@ describe('\n=> Update Node(s) with label(s) and properties', function(){
 			});
 		});
 	}); /* END => Read all outgoing Relationships of a Node */
+
+  describe('\n=> Read all outgoing typed Relationships of a Node', function(){
+    var root_node_id, other_node1_id, other_node2_id;
+    var relationship1_id, relationship2_id;
+    var types = ['RELATED_TO', 'SOMETHING_ELSE'];
+
+    describe('-> Read typed Relationships of an non-existing node', function(){
+      it('should return false', function(done){
+        db.readTypedRelationshipsOfNode(99999999, types, function(err, result){
+          isFalse(err, result);
+          done();
+        });
+      });
+    });
+
+    before(function(done){
+      db.cypherQuery(
+        'CREATE (root {name: "foobar"}),\
+        (n1 {name: "foobar2"}),\
+        (n2 {name: "foobar3"}),\
+        (root)-[r1:RELATED_TO]->(n1),\
+        (root)-[r2:SOMETHING_ELSE]->(n2)\
+        RETURN id(root), id(n1), id(n2), id(r1), id(r2)', function(err, result) {
+          onlyResult(err, result);
+          root_node_id = result.data[0][0];
+          other_node1_id = result.data[0][1];
+          other_node2_id = result.data[0][2];
+          relationship1_id = result.data[0][3];
+          relationship2_id = result.data[0][4];
+          done();
+        })
+    });
+
+    describe('-> Read typed outgoing Relationships of root_node', function(){
+      it('should return 2 relationships', function(done){
+        db.readRelationshipsOfNode(root_node_id, {
+          direction: 'out',
+          types: types
+        }, function(err, result){
+          onlyResult(err, result);
+          result.should.be.an.instanceOf(Array);
+          result.should.have.lengthOf(2);
+          done();
+        });
+      });
+    });
+
+    describe('-> Read all Relationships of root_node', function(){
+      it('should return 2 relationships', function(done){
+        db.readRelationshipsOfNode(root_node_id, {}, function(err, result){
+          onlyResult(err, result);
+          result.should.be.an.instanceOf(Array);
+          result.should.have.lengthOf(2);
+          done();
+        });
+      });
+    });
+
+    after(function(done){
+      db.cypherQuery('MATCH (root)-[r]->(m) DELETE (root), r, m', function(err, result) {
+        onlyResult(err, result);
+        result.columns.should.have.lengthOf(0);
+        result.data.should.have.lengthOf(0);
+        done();
+      })
+    });
+  }); /* END => Read all outgoing typed Relationships of a Node */
 
 	describe('\n=> Test Cyper Query Functionality against non existing nodes', function(){
 

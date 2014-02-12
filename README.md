@@ -275,30 +275,17 @@ Will also return types of those relationships that have been deleted.
         console.log(result); // eg. ['RELATED_TO', 'LOVES', 'KNOWNS']
     });
 
-**Get all relationships of a node**
+**Get relationships of a node**
 
-Will return incoming aswell as outgoing nodes.
+Get all (incoming and outgoing) relationships of a node, or use the options object to filter for specifc types and directions.
 
-    db.readAllRelationshipsOfNode(node_id, function(err, relationships){
-        if(err) throw err;
+    db.readRelationshipsOfNode(node_id, {
+        types: ['RELATED_TO', ...] // optional
+        direction: 'in' // optional, alternative 'out', defaults to 'all'
+        }, function(err, relationships) {
+            if (err) throw err;
 
-        console.log(relationships); // delivers an array of relationship objects.
-    });
-
-**Get all incoming relationships of a node**
-
-    db.readIncomingRelationshipsOfNode(node_id, function(err, relationships){
-        if(err) throw err;
-
-        console.log(relationships); // delivers an array of relationships objects.
-    });
-
-**Get all outgoing relationships of a node**
-
-    db.readOutgoingRelationshipsOfNode(node_id, function(err, relationships){
-        if(err) throw err;
-
-        console.log(relationships); // delivers an array of relationships objects.
+            console.log(relationships); // delivers an array of relationship objects.
     });
 
 **Run a cyper query against Neo4j**

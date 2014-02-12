@@ -1308,14 +1308,32 @@ Neo4j.prototype.readRelationshipTypes = function(callback){
 		});
 };
 
-/* Get all Relationships of a Node --------- */
+/* Get Relationships of a Node --------- */
 
-Neo4j.prototype.readAllRelationshipsOfNode = function(node_id, callback){
+function readRelationshipsOfNode(node_id, options, callback){
 	var that = this;
 
+	if (typeof options === 'function') {
+		callback = options;
+	}
+
+	var url = that.url + '/db/data/node/' + node_id + '/relationships/';
+
+	// Set direction of relationships to retrieve.
+	if (options.direction && (options.direction === 'in' || options.direction === 'out')) {
+		url += options.direction;
+	} else {
+		url += 'all';
+	}
+
+	// Set types of relationships to retrieve.
+	if (options.types && options.types.length >= 1) {
+		url += '/' + encodeURIComponent(options.types.join('&'));
+	}
+
 	request
-		.get(that.url + '/db/data/node/' + node_id + '/relationships/all')
-				.end(function(result){
+		.get(url)
+		.end(function(result){
 			switch(result.statusCode){
 				case 200:
 					that.addRelationshipIdForArray(result.body, callback);
@@ -1324,73 +1342,22 @@ Neo4j.prototype.readAllRelationshipsOfNode = function(node_id, callback){
 					callback(null, false);
 					break;
 				default:
-					callback(new Error('HTTP Error ' + result.statusCode + ' when retrieving all relationships for node ' + node_id), null);
+					callback(new Error('HTTP Error ' + result.statusCode + ' when retrieving relationships for node ' + node_id), null);
 			}
 		});
 };
-
-/* Get typed Relationships of a Node --------- */
-
-Neo4j.prototype.readTypedRelationshipsOfNode = function(node_id, types, callback){
-	var that = this;
-
-	request
-		.get(that.url + '/db/data/node/' + node_id + '/relationships/all/'+encodeURIComponent(types.join('&')))
-				.end(function(result){
-			switch(result.statusCode){
-				case 200:
-					that.addRelationshipIdForArray(result.body, callback);
-					break;
-				case 404:
-					callback(null, false);
-					break;
-				default:
-					callback(new Error('HTTP Error ' + result.statusCode + ' when retrieving typed '+ types +' relationships for node ' + node_id), null);
-			}
-		});
-};
-
-/* Get all the incoming Relationships of a Node --------- */
-
-Neo4j.prototype.readIncomingRelationshipsOfNode = function(node_id, callback){
-	var that = this;
-
-	request
-		.get(that.url + '/db/data/node/' + node_id + '/relationships/in')
-				.end(function(result){
-			switch(result.statusCode){
-				case 200:
-					that.addRelationshipIdForArray(result.body, callback);
-					break;
-				case 404:
-					callback(null, false);
-					break;
-				default:
-					callback(new Error('HTTP Error ' + result.statusCode + ' when retrieving incoming relationships for node ' + node_id), null);
-			}
-		});
-};
-
-/* Get all the outgoing Relationships of a Node -------- */
-
-Neo4j.prototype.readOutgoingRelationshipsOfNode = function(node_id, callback){
-	var that = this;
-
-	request
-		.get(that.url + '/db/data/node/' + node_id + '/relationships/out')
-				.end(function(result){
-			switch(result.statusCode){
-				case 200:
-					that.addRelationshipIdForArray(result.body, callback);
-					break;
-				case 404:
-					callback(null, false);
-					break;
-				default:
-					callback(new Error('HTTP Error ' + result.statusCode + ' when retrieving outgoing relationships for node ' + node_id), null);
-			}
-		});
-};
+// Create aliases
+Neo4j.prototype.readRelationshipsOfNode = readRelationshipsOfNode;
+Neo4j.prototype.readAllRelationshipsOfNode = readRelationshipsOfNode
+Neo4j.prototype.readTypedRelationshipsOfNode = function(node_id, types, callback) {
+	this.readRelationshipsOfNode(node_id, {types: types}, callback);
+}
+Neo4j.prototype.readIncomingRelationshipsOfNode = function(node_id, callback) {
+	this.readRelationshipsOfNode(node_id, {direction: 'in'}, callback);
+}
+Neo4j.prototype.readOutgoingRelationshipsOfNode = function(node_id, callback) {
+	this.readRelationshipsOfNode(node_id, {direction: 'out'}, callback);
+}
 
 
 /* Run Cypher Query -------- */
