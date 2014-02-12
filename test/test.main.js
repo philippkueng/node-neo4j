@@ -122,6 +122,15 @@ describe('Testing Node specific operations for Neo4j', function(){
 			});
 		});
 
+    describe('-> A node with an empty array as pointed out by @sovos in issue 12', function() {
+      it('should succeed', function(done) {
+        db.insertNode({name: 'sovos', cars: []}, function(err, result) {
+          onlyError(err, result);
+          done();
+        });
+      });
+    });
+
 		describe('-> Get labels of the second node', function(){
 			it('should return an array with one label', function(done){
 				db.readLabels(secondNodeId, function(err, result){
@@ -287,6 +296,17 @@ describe('Testing Node specific operations for Neo4j', function(){
 				});
 			});
 		});
+
+    describe('-> Replace an existing Node with a simple object and an array as mentioned by @sovos in issue 12', function() {
+      it('should return true', function(done) {
+        db.updateNode(node_id, {name: 'foobar2', cars: ['Volvo', 'Mercedes']}, function(err, result) {
+          console.log(err);
+          console.log(result);
+          isTrue(err, result);
+          done();
+        });
+      });
+    });
 
 		describe('-> Replace an existing Node with an object with null values', function(){
 			it('should return true', function(done){
