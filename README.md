@@ -63,6 +63,10 @@ Take a look at the test.main.js file in the test folder for many examples.
 
 **listAllLabels** List all labels.
 
+**updateNodesWithLabelsAndProperties** Update all nodes with labels and properties and update/remove properties.
+
+**deleteNodesWithLabelsAndProperties** Delete all nodes with labels and properties.
+
 ### Constraints
 
 **createUniquenessContstraint** Create a uniqueness constraint on a property.
@@ -138,6 +142,27 @@ Will remove any assigned properties and replace them with the ones given below.
             // node not found, hence not updated
         }
     });
+
+**Update all nodes with `labels` and `oldProperties`, set the `newProperties` and remove `removeProperties`**
+Return nothing if `returnUpdatedNodes` is `false`. Default will return all updated nodes.
+
+* `labels`              String|Array[String]    e.g.: '' or [] or 'User' or ['User', 'Student']
+* 'oldProperties'       Object                  e.g.: { userid: '124' }
+* `newProperties`       Object                  e.g.: { email: 'fred@example.com' }
+* `removeProperties`    Object                  e.g.: ['old_email', 'old_address'] (Optional)
+* `returnUpdatedNodes`  Boolean                 e.g.: `false` (Optional, default: `true`)
+ 
+Will change only the name and remove the old_address of user with userid '123'. The node will be returned in an array because `returnUpdatedNodes` is `true`. You can drop `returnUpdatedNodes` because it's optional and the default is `true`.
+
+    db.updateNodesWithLabelsAndProperties(['User'], { userid: '123' }, { name:'new_name' }, ['old_address'], true, function (err, updatedNodes){
+        if(err) throw err;
+
+        if(updatedNodes.length === 1){
+            // one node updated
+        } else {
+            // zero or multiple nodes were updated
+        }
+    });
         
 **Delete a Node**
 
@@ -150,6 +175,14 @@ Will remove any assigned properties and replace them with the ones given below.
             // node not deleted because not found or because of existing relationships
         }
     });
+
+**Delete all nodes with `labels` and `properties`.**
+* `labels`          String|Array[String]    e.g.: '', [], 'User', ['User', 'Student']
+* 'properties'      Object                  e.g.: { userid: '124' }
+Returns the number of deleted nodes e.g.: 1.
+
+  db.deleteNodesWithLabelsAndProperties('User',{ firstname: 'Sam', male: true }, function(err, deletedNodesCount){});
+  db.deleteNodesWithLabelsAndProperties(['User','Admin'], { 'name': 'Sam'}, function(err, deletedNodesCount){}); 
 
 
 ### Relationship operations

@@ -15,7 +15,7 @@
     "node": "~ 0.10.15"
   },
   "dependencies": {
-      "superagent": "0.15.5",
+      "superagent": "0.16.0",
       "step": "0.0.5"     
   },
   "devDependencies": {

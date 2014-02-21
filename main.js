@@ -109,8 +109,10 @@ Neo4j.prototype.deleteNode = function(node_id, callback){
 };
 
 // Delete all nodes with `labels` and `properties`.
-// `labels`          String|Array[String]    e.g.: '', [], 'User', ['User', 'Student']
-// 'properties'      Object                  e.g.: { userid: '124' }
+// * `labels`          String|Array[String]    e.g.: '', [], 'User', ['User', 'Student']
+// * 'properties'      Object                  e.g.: { userid: '124' }
+// Returns the number of deleted nodes.
+
 // Examples:
 //   deleteNodesWithLabelsAndProperties('User',{ firstname: 'Sam', male: true }, callback);
 //   deleteNodesWithLabelsAndProperties(['User','Admin'], { 'name': 'Sam'}, callback); 
@@ -126,7 +128,7 @@ Neo4j.prototype.deleteNodesWithLabelsAndProperties = function (labels, propertie
   query += ' DELETE data RETURN count(data)';
 
   this.cypherQuery(query , properties, function (err, res) {
-    err? callback(err): callback(err, res.data[0]);
+    err? callback(err): callback(null, res.data[0]);
   });
 };
 
@@ -187,11 +189,15 @@ Neo4j.prototype.updateNodeById = function(node_id, node_data, callback){
   });   
 };
 
-// Update all nodes with `labels` and `oldProperties`, set the `newProperties`
-// `labels`          String|Array[String]    e.g.: '', [], 'User', ['User', 'Student']
-// 'oldProperties'   Object                  e.g.: { userid: '124' }
-// `newProperties`   Object                  e.g.: { email: 'fred@example.com' }
- 
+// Update all nodes with `labels` and `oldProperties`, set the `newProperties` and remove `removeProperties`.
+// Return nothing if `returnUpdatedNodes` is `false`. Default will return all updated nodes.
+
+// * `labels`              String|Array[String]    e.g.: '' or [] or 'User' or ['User', 'Student']
+// * 'oldProperties'       Object                  e.g.: { userid: '124' }
+// * `newProperties`       Object                  e.g.: { email: 'fred@example.com' }
+// * `removeProperties`    Object                  e.g.: ['old_email', 'old_address'] (Optional)
+// * `returnUpdatedNodes`  Boolean                 e.g.: `false` (Optional, default: `true`)
+
 Neo4j.prototype.updateNodesWithLabelsAndProperties = function (labels, oldProperties, newProperties, removeProperties, returnUpdatedNodes, callback){
   var whereSetProperties = cypher.whereSetProperties('data', oldProperties, newProperties),
     where = whereSetProperties.where,
