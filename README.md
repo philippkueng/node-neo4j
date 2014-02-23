@@ -7,7 +7,7 @@ master branch: [![Build Status](https://travis-ci.org/philippkueng/node-neo4j.pn
 ## Installation
 
     npm install node-neo4j
-    npm install node-neo4j@2.0.0-RC5 (to get all the Neo4j 2.0.0 features)
+    npm install node-neo4j@2.0.0-RC6 (to get all the Neo4j 2.0.0 features)
 
 ## Usage
 
@@ -27,7 +27,7 @@ Navigate to the node module and run the tests:
 
 	$ npm test
 
-All tests should pass if you're running the latest version of Neo4j. (Neo4j 2.0.0-RC5)
+All tests should pass if you're running the latest version of Neo4j. (Neo4j 2.0.0-RC6)
 We try to update the module as fast as possible if there's a new version of Neo4j.
 Don't be shy to give remarks or report bugs. We would be glad to fix them.
 You can contact use on Twitter [https://twitter.com/Stofkn](@Stofkn) or [https://twitter.com/philippkueng](@philippkueng) or mail us (check package.json).
@@ -62,6 +62,10 @@ Take a look at the test.main.js file in the test folder for many examples.
 **readNodesWithLabelsAndProperties** Get nodes by labels and properties.
 
 **listAllLabels** List all labels.
+
+**updateNodesWithLabelsAndProperties** Update all nodes with labels and properties and update/remove properties.
+
+**deleteNodesWithLabelsAndProperties** Delete all nodes with labels and properties.
 
 ### Constraints
 
@@ -110,7 +114,7 @@ Take a look at the test.main.js file in the test folder for many examples.
         console.log(node.data);
         
         // Output node id.
-        console.log(node.id); /* for 2.0.0-RC5, use: console.log(node._id) */
+        console.log(node.id); /* for 2.0.0-RC6, use: console.log(node._id) */
     });
 
 **Read a Node**
@@ -122,7 +126,7 @@ Take a look at the test.main.js file in the test folder for many examples.
         console.log(node.data);
        
         // Output node id.
-        console.log(node.id); /* for 2.0.0-RC5, use: console.log(node._id) */
+        console.log(node.id); /* for 2.0.0-RC6, use: console.log(node._id) */
     });
 
 **Update a Node**
@@ -138,6 +142,27 @@ Will remove any assigned properties and replace them with the ones given below.
             // node not found, hence not updated
         }
     });
+
+**Update all nodes with `labels` and `oldProperties`, set the `newProperties` and remove `removeProperties`**
+Return nothing if `returnUpdatedNodes` is `false`. Default will return all updated nodes.
+
+* `labels`              String|Array[String]    e.g.: '' or [] or 'User' or ['User', 'Student']
+* 'oldProperties'       Object                  e.g.: { userid: '124' }
+* `newProperties`       Object                  e.g.: { email: 'fred@example.com' }
+* `removeProperties`    Object                  e.g.: ['old_email', 'old_address'] (Optional)
+* `returnUpdatedNodes`  Boolean                 e.g.: `false` (Optional, default: `true`)
+ 
+Will change only the name and remove the old_address of user with userid '123'. The node will be returned in an array because `returnUpdatedNodes` is `true`. You can drop `returnUpdatedNodes` because it's optional and the default is `true`.
+
+    db.updateNodesWithLabelsAndProperties(['User'], { userid: '123' }, { name:'new_name' }, ['old_address'], true, function (err, updatedNodes){
+        if(err) throw err;
+
+        if(updatedNodes.length === 1){
+            // one node updated
+        } else {
+            // zero or multiple nodes were updated
+        }
+    });
         
 **Delete a Node**
 
@@ -150,6 +175,14 @@ Will remove any assigned properties and replace them with the ones given below.
             // node not deleted because not found or because of existing relationships
         }
     });
+
+**Delete all nodes with `labels` and `properties`.**
+* `labels`          String|Array[String]    e.g.: '', [], 'User', ['User', 'Student']
+* 'properties'      Object                  e.g.: { userid: '124' }
+Returns the number of deleted nodes e.g.: 1.
+
+  db.deleteNodesWithLabelsAndProperties('User',{ firstname: 'Sam', male: true }, function(err, deletedNodesCount){});
+  db.deleteNodesWithLabelsAndProperties(['User','Admin'], { 'name': 'Sam'}, function(err, deletedNodesCount){}); 
 
 
 ### Relationship operations
@@ -168,13 +201,13 @@ Will remove any assigned properties and replace them with the ones given below.
             console.log(relationship.data);
 
             // Output relationship id.
-            console.log(relationship.id); /* for 2.0.0-RC5, use: console.log(relationship._id) */
+            console.log(relationship.id); /* for 2.0.0-RC6, use: console.log(relationship._id) */
 
             // Output relationship start_node_id.
-            console.log(relationship.start_node_id); /* for 2.0.0-RC5, use: console.log(relationship._start) */
+            console.log(relationship.start_node_id); /* for 2.0.0-RC6, use: console.log(relationship._start) */
 
             // Output relationship end_node_id.
-            console.log(relationship.end_node_id); /* for 2.0.0-RC5, use: console.log(relationship._end) */
+            console.log(relationship.end_node_id); /* for 2.0.0-RC6, use: console.log(relationship._end) */
     });
 
 **Read a Relationship**

@@ -108,6 +108,31 @@ Neo4j.prototype.deleteNode = function(node_id, callback){
 		});
 };
 
+// Delete all nodes with `labels` and `properties`.
+// * `labels`          String|Array[String]    e.g.: '', [], 'User', ['User', 'Student']
+// * 'properties'      Object                  e.g.: { userid: '124' }
+// Returns the number of deleted nodes.
+
+// Examples:
+//   deleteNodesWithLabelsAndProperties('User',{ firstname: 'Sam', male: true }, callback);
+//   deleteNodesWithLabelsAndProperties(['User','Admin'], { 'name': 'Sam'}, callback); 
+ 
+Neo4j.prototype.deleteNodesWithLabelsAndProperties = function (labels, properties, callback){
+  var where = cypher.where('data', properties)
+    query = 'MATCH (data'+  cypher.labels(labels) + ')';
+
+  if (where !== '') {
+    query += ' WHERE ' + where;
+  }
+
+  query += ' DELETE data RETURN count(data)';
+
+  this.cypherQuery(query , properties, function (err, res) {
+    err? callback(err): callback(null, res.data[0]);
+  });
+};
+
+
 /*  Read a Node ---------- */
 
 Neo4j.prototype.readNode = function(node_id, callback){
@@ -164,19 +189,30 @@ Neo4j.prototype.updateNodeById = function(node_id, node_data, callback){
   });   
 };
 
-// Update all nodes with `labels` and `oldProperties`, set the `newProperties`
-// `labels`          String|Array[String]    e.g.: '', [], 'User', ['User', 'Student']
-// 'oldProperties'   Object                  e.g.: { userid: '124' }
-// `newProperties`   Object                  e.g.: { email: 'fred@example.com' }
- 
-Neo4j.prototype.updateNodesWithLabelsAndProperties = function(labels, oldProperties, newProperties, returnUpdatedNodes, callback){
+// Update all nodes with `labels` and `oldProperties`, set the `newProperties` and remove `removeProperties`.
+// Return nothing if `returnUpdatedNodes` is `false`. Default will return all updated nodes.
+
+// * `labels`              String|Array[String]    e.g.: '' or [] or 'User' or ['User', 'Student']
+// * 'oldProperties'       Object                  e.g.: { userid: '124' }
+// * `newProperties`       Object                  e.g.: { email: 'fred@example.com' }
+// * `removeProperties`    Object                  e.g.: ['old_email', 'old_address'] (Optional)
+// * `returnUpdatedNodes`  Boolean                 e.g.: `false` (Optional, default: `true`)
+
+Neo4j.prototype.updateNodesWithLabelsAndProperties = function (labels, oldProperties, newProperties, removeProperties, returnUpdatedNodes, callback){
   var whereSetProperties = cypher.whereSetProperties('data', oldProperties, newProperties),
     where = whereSetProperties.where,
-    query = 'MATCH (data'+  cypher.labels(labels) + ')';
+    query = 'MATCH (data'+  cypher.labels(labels) + ')',
+    remove;
 
-  if (typeof returnUpdatedNodes === 'function') {    
-    callback = returnUpdatedNodes;
-    returnUpdatedNodes = true;; 
+  if (typeof removeProperties === 'function') {
+    callback = removeProperties;
+    returnUpdatedNodes = true;
+  } else {
+    remove = cypher.remove('data', removeProperties);
+    if (typeof returnUpdatedNodes === 'function') {
+      callback = returnUpdatedNodes;
+      returnUpdatedNodes = true;
+    }
   }
 
   if (where !== '') {
@@ -185,6 +221,10 @@ Neo4j.prototype.updateNodesWithLabelsAndProperties = function(labels, oldPropert
   
   query += ' SET ' + whereSetProperties.set;
 
+  if (remove && remove !== '') {
+    query += ' REMOVE ' + remove;
+  }
+  
   if (returnUpdatedNodes) {
     query += ' RETURN data';
   }
@@ -667,15 +707,15 @@ Neo4j.prototype.readNodesWithLabel = function(label, callback){
 
 Neo4j.prototype.readNodesWithLabelsAndProperties = function(labels, properties, callback){
 	var that = this;
-	var val = new Validator();	
+	var val = new Validator();
 	val.labels(labels).properties(properties);
 	
 	if(val.hasErrors)
 		return callback(val.error(), null);	
 	
 	// Only one label and one property provided
-	if(typeof labels === 'string' && Object.keys(properties).length === 1) {		
-		var props = cypher.jsonToURL(properties);		
+	if(typeof labels === 'string' && Object.keys(properties).length === 1) {
+		var props = cypher.jsonToURL(properties);
 		request
 			.get(this.url + '/db/data/label/' + labels + '/nodes?' + props)
 			.end(function(result){

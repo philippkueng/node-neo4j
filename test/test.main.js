@@ -226,6 +226,55 @@ describe('Testing Node specific operations for Neo4j', function(){
 		});
 	}); /* END \n=> Delete a Node */
 
+  describe('\n=> Delete Nodes by labels and properties', function(){
+    var nodeIdOne,
+      nodeIdTwo;
+
+    //Insert a Node.
+    before(function(done){
+      db.insertNode({ userid: '111', name:'foobar', age: 22 }, ['User'], function (err, result){
+        onlyResult(err, result);
+        nodeIdOne = result._id;
+        db.insertNode({ userid: '222', name:'foobar' }, ['User', 'Student'], function (err, result){
+          onlyResult(err, result);
+          nodeIdTwo = result._id;
+          done();
+        });        
+      });
+    });
+
+    describe('-> Deleting an existing Node', function(){
+      it('should delete the Node and return number of removed Nodes', function(done){
+        db.deleteNodesWithLabelsAndProperties('User', { userid: '111' }, function (err, result){
+          onlyResult(err, result);
+          result.should.equal(1);
+          done();
+        });
+      });
+    });
+
+    describe('-> Deleting an non-existing Node', function(){
+      it('should delete the Node and return number of removed Nodes', function(done){
+        db.deleteNodesWithLabelsAndProperties('User', { userid: '666' }, function (err, result){
+          onlyResult(err, result);
+          result.should.equal(0);
+          done();
+        });
+      });
+    });
+
+    describe('-> Deleting a existing Nodes', function(){
+      it('should delete the Node and return number of removed Nodes', function(done){
+        db.deleteNodesWithLabelsAndProperties(['User'], {}, function (err, result){
+          onlyResult(err, result);
+          result.should.equal(1);
+          done();
+        });
+      });
+    });
+  }); /* END \n=> Delete a Node */
+
+
 	describe('\n=> Read a Node', function(){
 		var node_id;
 
@@ -403,10 +452,10 @@ describe('\n=> Update Node(s) with label(s) and properties', function(){
 
     //Insert a Node.
     before(function(done){
-      db.insertNode({ userid: '123', name:'foobar', age: 22 }, ['User'], function(err, result){
+      db.insertNode({ userid: '123', name:'foobar', age: 22 }, ['User'], function (err, result){
         onlyResult(err, result);
         nodeIdOne = result._id;
-        db.insertNode({ userid: '654', name:'foobar' }, ['User', 'Student'], function(err, result){
+        db.insertNode({ userid: '654', name:'foobar' }, ['User', 'Student'], function (err, result){
           onlyResult(err, result);
           nodeIdTwo = result._id;
           done();
@@ -416,7 +465,7 @@ describe('\n=> Update Node(s) with label(s) and properties', function(){
 
     describe('-> Update non-existing Nodes with new properties', function(){
       it('should return empty array because no Nodes where updated', function(done){
-        db.updateNodesWithLabelsAndProperties(['User'], { name:'notfound' }, { name: 'bar' }, function(err, result){
+        db.updateNodesWithLabelsAndProperties(['User'], { name:'notfound' }, { name: 'bar' }, function (err, result){
           onlyResult(err, result);
           done();
         });
@@ -425,7 +474,7 @@ describe('\n=> Update Node(s) with label(s) and properties', function(){
 
     describe('-> Update existing Nodes, change properties', function(){
       it('should return updated Nodes', function(done){
-        db.updateNodesWithLabelsAndProperties(['User'], { userid:'123' }, { name:'new_foobar', age: 25 }, function(err, result){
+        db.updateNodesWithLabelsAndProperties('User', { userid:'123' }, { name:'new_foobar', age: 25 }, function (err, result){
           onlyResult(err, result);
           result.should.be.an.instanceOf(Array);
           result.should.have.lengthOf(1);
@@ -440,7 +489,7 @@ describe('\n=> Update Node(s) with label(s) and properties', function(){
 
     describe('-> Update existing Nodes, same property in oldProperties as in newProperties', function(){
       it('should return updated Nodes', function(done){
-        db.updateNodesWithLabelsAndProperties(['User', 'Student'], { name:'foobar' }, { name:'new_foobar' }, function(err, result){
+        db.updateNodesWithLabelsAndProperties(['User', 'Student'], { name:'foobar' }, { name:'new_foobar' }, function (err, result){
           onlyResult(err, result);
           result.should.be.an.instanceOf(Array);
           result.should.have.lengthOf(1);
@@ -453,24 +502,53 @@ describe('\n=> Update Node(s) with label(s) and properties', function(){
     });
 
     describe('-> Update existing Nodes, no labels and add new property', function(){
-      it('should return updated Nodes', function(done){
-        db.updateNodesWithLabelsAndProperties([], { userid:'123' }, { name:'new_foo', extra: 'add-new-property' }, function(err, result){
+      it('should return updated Nodes', function (done){
+        db.updateNodesWithLabelsAndProperties([], { userid:'123' }, { name:'new_foo', extra: 'add-new-property', bonus: 'bonus' }, function (err, result){
           onlyResult(err, result);
           result.should.be.an.instanceOf(Array);
           result.should.have.lengthOf(1);
-          result[0].should.have.keys('_id', 'userid', 'name', 'age', 'extra');
-          result[0]._id.should.equal(nodeIdOne);
-          result[0].name.should.equal('new_foo');
-          result[0].age.should.be.a.Number;
-          result[0].extra.should.equal('add-new-property');
-          done();
+          result[0].should.have.keys('_id', 'userid', 'name', 'age', 'extra', 'bonus');
+
+          db.readNodesWithLabelsAndProperties('User', { userid: '123' }, function (err, result) {
+            onlyResult(err, result);
+            result.should.be.an.instanceOf(Array);
+            result.should.have.lengthOf(1);
+            result[0]._id.should.equal(nodeIdOne);
+            result[0].name.should.equal('new_foo');
+            result[0].age.should.be.a.Number;
+            result[0].extra.should.equal('add-new-property');
+            result[0].bonus.should.equal('bonus');
+            done();
+          });
+        });
+      });
+    });
+
+    describe('-> Update existing Nodes, remove properties', function(){
+      it('should return updated Nodes', function (done){
+        db.updateNodesWithLabelsAndProperties(['User'], { userid: '123' }, { name:'new_name' }, ['extra', 'bonus'], true, function (err, result){
+          onlyResult(err, result);
+          result.should.be.an.instanceOf(Array);
+          result.should.have.lengthOf(1);
+          result[0].should.have.keys('_id', 'userid', 'name', 'age');
+
+          db.readNodesWithLabelsAndProperties('User', { userid: '123' }, function (err, result) {
+            onlyResult(err, result);
+            result.should.be.an.instanceOf(Array);
+            result.should.have.lengthOf(1);
+            result[0].should.have.keys('_id', 'userid', 'name', 'age');
+            result[0]._id.should.equal(nodeIdOne);
+            result[0].name.should.equal('new_name');
+            result[0].age.should.be.a.Number;
+            done();
+          });
         });
       });
     });
 
     describe('-> Update existing Nodes, don\'t return updated nodes', function(){
-      it('should return updated Nodes', function(done){
-        db.updateNodesWithLabelsAndProperties(['User'], {}, { name:'all-users-the-same-name' }, false, function(err, result){
+      it('should return nothing', function (done){
+        db.updateNodesWithLabelsAndProperties(['User'], {}, { name:'all-users-the-same-name' }, [], false, function (err, result){
           onlyResult(err, result);
           result.should.be.an.instanceOf(Array);
           result.should.have.lengthOf(0);
@@ -480,8 +558,8 @@ describe('\n=> Update Node(s) with label(s) and properties', function(){
     });
 
     describe('-> Update multiple Nodes with only labels', function(){
-      it('should return updated Nodes', function(done){
-        db.updateNodesWithLabelsAndProperties(['User'], {}, { name:'new_foo' }, function(err, result){
+      it('should return updated Nodes', function (done){
+        db.updateNodesWithLabelsAndProperties(['User'], {}, { name:'new_foo' }, function (err, result){
           onlyResult(err, result);
           result.should.be.an.instanceOf(Array);
           result.should.have.lengthOf(2);
@@ -491,10 +569,10 @@ describe('\n=> Update Node(s) with label(s) and properties', function(){
     });
 
     // Remove Node afterwards.
-    after(function(done){
-      db.deleteNode(nodeIdOne, function(err, result){
+    after(function (done){
+      db.deleteNode(nodeIdOne, function (err, result){
         isTrue(err, result);
-        db.deleteNode(nodeIdTwo, function(err, result){
+        db.deleteNode(nodeIdTwo, function (err, result){
           isTrue(err, result);
           done();
         });
@@ -515,7 +593,7 @@ describe('\n=> Update Node(s) with label(s) and properties', function(){
 
 		describe('-> Insert a Relationship with root_node and other_node not existing', function(){
 			it('should return false', function(done){
-				db.insertRelationship(123456789, 987654321, 'RELATED_TO', {}, function(err, result){
+				db.insertRelationship(123456789, 987654321, 'RELATED_TO', {}, function (err, result){
 					isFalse(err, result);
 					done();
 				});
