@@ -781,14 +781,14 @@ Neo4j.prototype.listAllLabels = function(callback){
 
 /*	Create a uniqueness constraint on a property.
 	Example:
-		createUniquenessContstraint('User','email', callback);
+		createUniquenessConstraint('User','email', callback);
 		returns 	{
 					  'label' : 'User',
 					  'type' : 'UNIQUENESS',
 					  'property-keys' : [ 'email' ]
 					}			*/
 
-Neo4j.prototype.createUniquenessContstraint = function(label, property_key, callback){	
+function createUniquenessConstraint(label, property_key, callback){	
 	var val = new Validator();
 	val.label(label).property(property_key);
 	
@@ -811,6 +811,8 @@ Neo4j.prototype.createUniquenessContstraint = function(label, property_key, call
 			} 
 		});
 };
+Neo4j.prototype.createUniquenessConstraint = createUniquenessConstraint;
+Neo4j.prototype.createUniquenessContstraint = createUniquenessConstraint;
 
 /*	Get a specific uniqueness constraint for a label and a property
 	Example:
