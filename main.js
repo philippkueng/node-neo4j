@@ -1422,6 +1422,7 @@ Neo4j.prototype.cypherQuery = function(query, params, include_stats, callback){
 		.post(that.url + '/db/data/cypher' + (include_stats ? '?includeStats=true' : ''))
 		.set('Content-Type', 'application/json')
 		.send(body)
+    .on('error', callback)
 		.end(function(result){
 			switch(result.statusCode){
 				case 200:
