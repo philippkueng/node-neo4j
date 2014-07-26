@@ -16,7 +16,7 @@
   },
   "dependencies": {
       "superagent": "0.16.0",
-      "step": "0.0.5"     
+      "step": "0.0.5"
   },
   "devDependencies": {
       "mocha": "1.13.0",
@@ -37,6 +37,7 @@
     { "name": "Oskar Hane"},
     { "name": "lazaruslarue"},
     { "name": "Wes Freeman", "email": "wes@skeweredrook.com" },
-    { "name": "DrBoolean", "email": "brian@looprecur.com" }
+    { "name": "DrBoolean", "email": "brian@looprecur.com" },
+    { "name": "Matt Basta", "email": "me@mattbasta.com" }
   ]
 }
