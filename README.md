@@ -35,7 +35,7 @@ You can contact use on Twitter [https://twitter.com/Stofkn](@Stofkn) or [https:/
 
 ## New features
 
-**Note** 
+**Note**
 
 Take a look at the test.main.js file in the test folder for many examples.
 
@@ -101,7 +101,7 @@ Take a look at the test.main.js file in the test folder for many examples.
 **cypherQuery** Now supports parameters, Neo4j will cache query and reuse it with different parameters.
 
 ### Node operations
-        
+
 **Insert a Node**
 
     db.insertNode({
@@ -109,10 +109,10 @@ Take a look at the test.main.js file in the test folder for many examples.
         sex: 'male'
     },function(err, node){
         if(err) throw err;
-        
+
         // Output node properties.
         console.log(node.data);
-        
+
         // Output node id.
         console.log(node.id); /* for 2.0.0-RC6, use: console.log(node._id) */
     });
@@ -121,10 +121,10 @@ Take a look at the test.main.js file in the test folder for many examples.
 
     db.readNode(12, function(err, node){
         if(err) throw err;
-    
+
         // Output node properties.
         console.log(node.data);
-       
+
         // Output node id.
         console.log(node.id); /* for 2.0.0-RC6, use: console.log(node._id) */
     });
@@ -151,7 +151,7 @@ Return nothing if `returnUpdatedNodes` is `false`. Default will return all updat
 * `newProperties`       Object                  e.g.: { email: 'fred@example.com' }
 * `removeProperties`    Object                  e.g.: ['old_email', 'old_address'] (Optional)
 * `returnUpdatedNodes`  Boolean                 e.g.: `false` (Optional, default: `true`)
- 
+
 Will change only the name and remove the old_address of user with userid '123'. The node will be returned in an array because `returnUpdatedNodes` is `true`. You can drop `returnUpdatedNodes` because it's optional and the default is `true`.
 
     db.updateNodesWithLabelsAndProperties(['User'], { userid: '123' }, { name:'new_name' }, ['old_address'], true, function (err, updatedNodes){
@@ -163,12 +163,12 @@ Will change only the name and remove the old_address of user with userid '123'. 
             // zero or multiple nodes were updated
         }
     });
-        
+
 **Delete a Node**
 
     db.deleteNode(12, function(err, node){
         if(err) throw err;
-       
+
         if(node === true){
             // node deleted
         } else {
@@ -182,7 +182,7 @@ Will change only the name and remove the old_address of user with userid '123'. 
 Returns the number of deleted nodes e.g.: 1.
 
   db.deleteNodesWithLabelsAndProperties('User',{ firstname: 'Sam', male: true }, function(err, deletedNodesCount){});
-  db.deleteNodesWithLabelsAndProperties(['User','Admin'], { 'name': 'Sam'}, function(err, deletedNodesCount){}); 
+  db.deleteNodesWithLabelsAndProperties(['User','Admin'], { 'name': 'Sam'}, function(err, deletedNodesCount){});
 
 
 ### Relationship operations
@@ -287,13 +287,13 @@ This documentation only contains calls to Node specific index functions however 
 
         console.log(result); // an object with all indexes and their templates and configurations
     });
-		
+
 **Add a node to an index**
 
     db.addNodeToIndex(node_id, 'the_index_name', 'an_indexed_key', 'an_indexed_value', function(err, result){
         if (err) throw err;
-        
-        console.log(result); // will return the index 
+
+        console.log(result); // will return the index
     });
 
 ### Advanced relationship operations
@@ -362,6 +362,12 @@ This API wrapper relies on [mocha](https://github.com/visionmedia/mocha) for tes
 ## Issues or Feature Requests?
 
 In case you run into an issue while using the wrapper or you have a feature request please let me know by [creating a new issue](https://github.com/philippkueng/node-neo4j/issues) or contacting me via [twitter](https://twitter.com/philippkueng).
+
+## Development
+
+When making a pull request, please make sure to make it against the develop branch and make sure to install the git pre-commit hook which enforces a shared coding style.
+
+    ln -s ../../pre-commit.sh .git/hooks/pre-commit
 
 ## License
 
