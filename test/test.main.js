@@ -1633,6 +1633,107 @@ describe('Testing Node specific operations for Neo4j', function () {
         });
     }); /* END \n=> readNodesWithLabelsAndProperties:  Get nodes by label and property -------*/
 
+    describe('\n=> readNodesWithProperties: Get nodes by properties', function () {
+        var nodeIdOne;
+        var nodeIdTwo;
+
+        before(function (done) {
+            db.insertNode({
+                name: '√ Kört&rijk',
+                tourism: true
+            }, ['Capital', 'Belgium'], function (err, result) {
+                onlyResult(err, result);
+                nodeIdOne = result._id;
+                db.insertNode({
+                    inhabitants: 650000,
+                    tourism: true
+                }, ['City', 'Belgium'], function (err, result) {
+                    onlyResult(err, result);
+                    nodeIdTwo = result._id;
+                    done();
+                });
+            });
+        });
+
+        describe('-> Get nodes by one property with special characters', function () {
+            it('should return one node with this property', function (done) {
+                db.readNodesWithProperties({
+                    name: '√ Kört&rijk'
+                }, function (err, result) {
+                    onlyResult(err, result);
+                    result.should.be.an.instanceOf(Array);
+                    result.should.have.lengthOf(1);
+                    should.exist(result[0]._id);
+                    result[0]._id.should.equal(nodeIdOne);
+                    done();
+                });
+            });
+        });
+
+        describe('-> Get nodes by multiple properties', function () {
+            it('should return one node with those properties', function (done) {
+                db.readNodesWithProperties({
+                    inhabitants: 650000,
+                    tourism: true
+                }, function (err, result) {
+                    onlyResult(err, result);
+                    result.should.be.an.instanceOf(Array);
+                    result.should.have.lengthOf(1);
+                    should.exist(result[0]._id);
+                    result[0]._id.should.equal(nodeIdTwo);
+                    done();
+                });
+            });
+        });
+
+        describe('-> Get nodes by one property', function () {
+            it('should return two node with that property', function (done) {
+                db.readNodesWithProperties({
+                    tourism: true
+                }, function (err, result) {
+                    onlyResult(err, result);
+                    result.should.be.an.instanceOf(Array);
+                    result.should.have.lengthOf(2);
+                    should.exist(result[0]._id);
+                    should.exist(result[1]._id);
+                    done();
+                });
+            });
+        });
+
+        describe('-> Get nodes by non-existing property', function () {
+            it('should return no nodes (empty array)', function (done) {
+                db.readNodesWithProperties({
+                    'NotExisting': 123456789
+                }, function (err, result) {
+                    onlyResult(err, result);
+                    result.should.be.an.instanceOf(Array);
+                    result.should.have.lengthOf(0);
+                    done();
+                });
+            });
+        });
+
+        describe('-> Get nodes by invalid property: string (must be json)', function () {
+            it('should return an error because "property" needs to be json', function (done) {
+                db.readNodesWithProperties('Nöt Existing √', function (err, result) {
+                    onlyError(err, result);
+                    done();
+                });
+            });
+        });
+
+        after(function (done) {
+            db.deleteNode(nodeIdOne, function (err, result) {
+                isTrue(err, result);
+                db.deleteNode(nodeIdTwo, function (err, result) {
+                    isTrue(err, result);
+                    done();
+                });
+            });
+        });
+    }); /* END \n=> readNodesWithProperties:  Get nodes by properties -------*/
+
     describe('\n=> listAllLabels:  List all labels', function () {
         var nodeIdOne;
         var nodeIdTwo;

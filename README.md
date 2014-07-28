@@ -61,6 +61,8 @@ Take a look at the test.main.js file in the test folder for many examples.
 
 **readNodesWithLabelsAndProperties** Get nodes by labels and properties.
 
+**readNodesWithProperties** Get nodes with properties.
+
 **listAllLabels** List all labels.
 
 **updateNodesWithLabelsAndProperties** Update all nodes with labels and properties and update/remove properties.

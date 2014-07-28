@@ -790,6 +790,34 @@ Neo4j.prototype.readNodesWithLabelsAndProperties = function(labels, properties, 
 		}
 };
 
+/*	Get all nodes with  properties
+	Given one or more properties in json
+	returns an array of nodes with these  properties
+	Examples:
+	readNodesWithProperties({ firstname: 'Sam', male: true }, callback);
+		returns an array with nodes with the properties firstname='Sam' and male=true
+	readNodesWithProperties({ 'name': 'DoesNotExist'}, callback);
+		returns an empty array	 		*/
+
+Neo4j.prototype.readNodesWithProperties = function(properties, callback) {
+	var that = this;
+	var val = new Validator();
+	val.properties(properties);
+
+	if (val.hasErrors) {
+		return callback(val.error(), null);
+	}
+
+	var query = 'MATCH data WHERE ' + cypher.where('data', properties) + ' RETURN data';
+	this.cypherQuery(query, properties, function(err, res) {
+		if (err) {
+			callback(err, null);
+		} else {
+			callback(err, res.data);
+		}
+	});
+};
+
 /*	List all labels.
 	Example:
 	listAllLabels(callback);
