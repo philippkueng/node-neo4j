@@ -4,7 +4,7 @@
 
 var should = require('should'),
     step = require('step'),
-    neo4j = require('../main'),
+    neo4j = require('../index'),
     util = require('util');
 
 var url = 'http://localhost:7474';
