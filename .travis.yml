@@ -1,16 +1,22 @@
 language: node_js
 node_js:
-  - "0.10"
-#
-# Lines below copied from # https://github.com/versae/neo4j-rest-client/blob/master/.travis.yml
-#
+- '0.10'
 before_install:
-  - export NEO4J_PORT="7474"
-  - sudo service neo4j stop || true
-  - sleep 3
-  - ./install_local_neo4j.bash $NEO4J_VERSION
-  - ./lib/neo4j/bin/neo4j start || ( cat ./lib/neo4j/data/log/*.log && exit 1 )
-  - curl http://localhost:$NEO4J_PORT/db/data/
-  - curl -X DELETE 'http://localhost:7474/cleandb/supersecretdebugkey!'
+- export NEO4J_PORT="7474"
+- sudo service neo4j stop || true
+- sleep 3
+- ./install_local_neo4j.bash $NEO4J_VERSION
+- ./lib/neo4j/bin/neo4j start || ( cat ./lib/neo4j/data/log/*.log && exit 1 )
+- curl http://localhost:$NEO4J_PORT/db/data/
+- curl -X DELETE 'http://localhost:7474/cleandb/supersecretdebugkey!'
 env:
-  - NEO4J_VERSION="2.0.4"
+- NEO4J_VERSION="2.0.4"
+deploy:
+  provider: npm
+  email: github@philippkueng.ch
+  api_key:
+    secure: E70sEXEYHqev0wmVvsJtzzoO8Dja8079ZjJ8ypy2xbwtF6FP+SMb3gNeRcEOHVg63q+jg95R6kKWwNCTlfSSt6/1UeSYC1DbIKM45UNcazQ16uy2Pr+uroZYgorc2YGHW1s0/QvmqxU7CGkGYYe/l3N+0MpxebqqJhu18VKhwGc=
+  on:
+    tags: true
+    repo: philippkueng/node-neo4j
+    branch: master
