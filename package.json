@@ -19,7 +19,7 @@
     "step": "0.0.5"
   },
   "devDependencies": {
-    "mocha": "1.13.0",
+    "mocha": "2.1.0",
     "should": "2.0.1",
     "grunt-cli": "~0.1.13",
     "grunt": "~0.4.5",
