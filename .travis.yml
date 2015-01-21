@@ -19,4 +19,3 @@ deploy:
   on:
     tags: true
     repo: philippkueng/node-neo4j
-    branch: master
