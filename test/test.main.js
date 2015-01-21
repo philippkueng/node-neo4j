@@ -1,6 +1,10 @@
+'use strict';
+
+/*jshint expr: true*/
+
 var should = require('should'),
-    Step = require('step'),
-    neo4j = require('../main'),
+    step = require('step'),
+    neo4j = require('../index'),
     util = require('util');
 
 var url = 'http://localhost:7474';
@@ -197,7 +201,7 @@ describe('Testing Node specific operations for Neo4j', function () {
 
         // Remove these four nodes afterwards
         after(function (done) {
-            Step(
+            step(
                 function deleteNodes() {
                     db.deleteNode(firstNodeId, this.parallel());
                     db.deleteNode(secondNodeId, this.parallel());
@@ -225,7 +229,7 @@ describe('Testing Node specific operations for Neo4j', function () {
                 node_id = result._id;
                 done();
             });
-        })
+        });
 
         describe('-> Deleting an existing Node without Relationships', function () {
             it('should delete the Node and return true', function (done) {
@@ -981,7 +985,7 @@ describe('Testing Node specific operations for Neo4j', function () {
             });
         });
 
-        /*	Create an index on a property of a label 
+        /*	Create an index on a property of a label
 			Example:
 			Create an index on the first name and last name of a person.
 				insertLabelIndex('Person', 'firstname', callback);
@@ -1728,7 +1732,7 @@ describe('Testing Node specific operations for Neo4j', function () {
         });
 
         after(function (done) {
-            Step(
+            step(
                 function deleteNodes() {
                     db.deleteNode(nodeIdOne, this.parallel());
                     db.deleteNode(nodeIdTwo, this.parallel());
@@ -2219,12 +2223,14 @@ describe('Testing Node specific operations for Neo4j', function () {
                 onlyResult(err, result);
                 result.should.be.an.instanceOf(Array);
                 result.should.have.lengthOf(4);
-                for (var i = 0; i < 4; i++)
+                for (var i = 0; i < 4; i++) {
                     should.exist(result[i]._id);
-                Step(
+                }
+                step(
                     function deleteNodes() {
-                        for (var j = 0; j < 4; j++)
+                        for (var j = 0; j < 4; j++) {
                             db.deleteNode(result[j]._id, this.parallel());
+                        }
                     },
                     function afterDelete(err, result) {
                         onlyResult(err, result);
@@ -2636,7 +2642,7 @@ describe('Testing Node specific operations for Neo4j', function () {
                     relationship1_id = result.data[0][3];
                     relationship2_id = result.data[0][4];
                     done();
-                })
+                });
         });
 
         describe('-> Read typed outgoing Relationships of root_node', function () {
@@ -2670,7 +2676,7 @@ describe('Testing Node specific operations for Neo4j', function () {
                 result.columns.should.have.lengthOf(0);
                 result.data.should.have.lengthOf(0);
                 done();
-            })
+            });
         });
     }); /* END => Read all outgoing typed Relationships of a Node */
 

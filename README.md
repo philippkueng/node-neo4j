@@ -1,13 +1,14 @@
 # Neo4j REST API wrapper for Node.js
 
-master branch: [![Build Status](https://travis-ci.org/philippkueng/node-neo4j.png?branch=master)](https://travis-ci.org/philippkueng/node-neo4j) | develop branch: [![Build Status](https://travis-ci.org/philippkueng/node-neo4j.png?branch=develop)](https://travis-ci.org/philippkueng/node-neo4j)  
+master branch: [![Build Status](https://travis-ci.org/philippkueng/node-neo4j.png?branch=master)](https://travis-ci.org/philippkueng/node-neo4j) [![Dependency Status](https://gemnasium.com/philippkueng/node-neo4j.svg)](https://gemnasium.com/philippkueng/node-neo4j)  
+develop branch: [![Build Status](https://travis-ci.org/philippkueng/node-neo4j.png?branch=develop)](https://travis-ci.org/philippkueng/node-neo4j)  
 
 ---
 
 ## Installation
 
     npm install node-neo4j
-    npm install node-neo4j@2.0.0-RC6 (to get all the Neo4j 2.0.0 features)
+    npm install node-neo4j@2.0.0-RC7 (to get all the Neo4j 2.0.0 features)
 
 ## Usage
 
@@ -27,7 +28,7 @@ Navigate to the node module and run the tests:
 
 	$ npm test
 
-All tests should pass if you're running the latest version of Neo4j. (Neo4j 2.0.0-RC6)
+All tests should pass if you're running the latest version of Neo4j. (Neo4j 2.0.0-RC7)
 We try to update the module as fast as possible if there's a new version of Neo4j.
 Don't be shy to give remarks or report bugs. We would be glad to fix them.
 You can contact use on Twitter [https://twitter.com/Stofkn](@Stofkn) or [https://twitter.com/philippkueng](@philippkueng) or mail us (check package.json).
@@ -35,7 +36,7 @@ You can contact use on Twitter [https://twitter.com/Stofkn](@Stofkn) or [https:/
 
 ## New features
 
-**Note** 
+**Note**
 
 Take a look at the test.main.js file in the test folder for many examples.
 
@@ -101,7 +102,7 @@ Take a look at the test.main.js file in the test folder for many examples.
 **cypherQuery** Now supports parameters, Neo4j will cache query and reuse it with different parameters.
 
 ### Node operations
-        
+
 **Insert a Node**
 
     db.insertNode({
@@ -109,24 +110,24 @@ Take a look at the test.main.js file in the test folder for many examples.
         sex: 'male'
     },function(err, node){
         if(err) throw err;
-        
+
         // Output node properties.
         console.log(node.data);
-        
+
         // Output node id.
-        console.log(node.id); /* for 2.0.0-RC6, use: console.log(node._id) */
+        console.log(node.id); /* for 2.0.0-RC7, use: console.log(node._id) */
     });
 
 **Read a Node**
 
     db.readNode(12, function(err, node){
         if(err) throw err;
-    
+
         // Output node properties.
         console.log(node.data);
-       
+
         // Output node id.
-        console.log(node.id); /* for 2.0.0-RC6, use: console.log(node._id) */
+        console.log(node.id); /* for 2.0.0-RC7, use: console.log(node._id) */
     });
 
 **Update a Node**
@@ -151,7 +152,7 @@ Return nothing if `returnUpdatedNodes` is `false`. Default will return all updat
 * `newProperties`       Object                  e.g.: { email: 'fred@example.com' }
 * `removeProperties`    Object                  e.g.: ['old_email', 'old_address'] (Optional)
 * `returnUpdatedNodes`  Boolean                 e.g.: `false` (Optional, default: `true`)
- 
+
 Will change only the name and remove the old_address of user with userid '123'. The node will be returned in an array because `returnUpdatedNodes` is `true`. You can drop `returnUpdatedNodes` because it's optional and the default is `true`.
 
     db.updateNodesWithLabelsAndProperties(['User'], { userid: '123' }, { name:'new_name' }, ['old_address'], true, function (err, updatedNodes){
@@ -163,12 +164,12 @@ Will change only the name and remove the old_address of user with userid '123'. 
             // zero or multiple nodes were updated
         }
     });
-        
+
 **Delete a Node**
 
     db.deleteNode(12, function(err, node){
         if(err) throw err;
-       
+
         if(node === true){
             // node deleted
         } else {
@@ -182,7 +183,7 @@ Will change only the name and remove the old_address of user with userid '123'. 
 Returns the number of deleted nodes e.g.: 1.
 
   db.deleteNodesWithLabelsAndProperties('User',{ firstname: 'Sam', male: true }, function(err, deletedNodesCount){});
-  db.deleteNodesWithLabelsAndProperties(['User','Admin'], { 'name': 'Sam'}, function(err, deletedNodesCount){}); 
+  db.deleteNodesWithLabelsAndProperties(['User','Admin'], { 'name': 'Sam'}, function(err, deletedNodesCount){});
 
 
 ### Relationship operations
@@ -201,13 +202,13 @@ Returns the number of deleted nodes e.g.: 1.
             console.log(relationship.data);
 
             // Output relationship id.
-            console.log(relationship.id); /* for 2.0.0-RC6, use: console.log(relationship._id) */
+            console.log(relationship.id); /* for 2.0.0-RC7, use: console.log(relationship._id) */
 
             // Output relationship start_node_id.
-            console.log(relationship.start_node_id); /* for 2.0.0-RC6, use: console.log(relationship._start) */
+            console.log(relationship.start_node_id); /* for 2.0.0-RC7, use: console.log(relationship._start) */
 
             // Output relationship end_node_id.
-            console.log(relationship.end_node_id); /* for 2.0.0-RC6, use: console.log(relationship._end) */
+            console.log(relationship.end_node_id); /* for 2.0.0-RC7, use: console.log(relationship._end) */
     });
 
 **Read a Relationship**
@@ -287,13 +288,13 @@ This documentation only contains calls to Node specific index functions however 
 
         console.log(result); // an object with all indexes and their templates and configurations
     });
-		
+
 **Add a node to an index**
 
     db.addNodeToIndex(node_id, 'the_index_name', 'an_indexed_key', 'an_indexed_value', function(err, result){
         if (err) throw err;
-        
-        console.log(result); // will return the index 
+
+        console.log(result); // will return the index
     });
 
 ### Advanced relationship operations
@@ -363,12 +364,8 @@ This API wrapper relies on [mocha](https://github.com/visionmedia/mocha) for tes
 
 In case you run into an issue while using the wrapper or you have a feature request please let me know by [creating a new issue](https://github.com/philippkueng/node-neo4j/issues) or contacting me via [twitter](https://twitter.com/philippkueng).
 
-## License
+## Development
 
-Copyright (C) 2012 Philipp Küng
+When making a pull request, please make sure to make it against the develop branch and make sure to install the git pre-commit hook which enforces a shared coding style.
 
-Permission is hereby granted, free of charge, to any person obtaining a copy of this software and associated documentation files (the "Software"), to deal in the Software without restriction, including without limitation the rights to use, copy, modify, merge, publish, distribute, sublicense, and/or sell copies of the Software, and to permit persons to whom the Software is furnished to do so, subject to the following conditions:
-
-The above copyright notice and this permission notice shall be included in all copies or substantial portions of the Software.
-
-THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
+    ln -s ../../pre-commit.sh .git/hooks/pre-commit

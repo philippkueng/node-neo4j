@@ -2,7 +2,7 @@
   "author": "Philipp Küng <git@philippkueng.ch> (http://philippkueng.ch)",
   "name": "node-neo4j",
   "description": "Neo4j REST API wrapper for Node.js",
-  "version": "2.0.0-RC6",
+  "version": "2.0.0-RC7",
   "repository": {
     "type": "git",
     "url": "https://github.com/philippkueng/node-neo4j.git"
@@ -15,15 +15,20 @@
     "node": "~ 0.10.15"
   },
   "dependencies": {
-      "superagent": "0.16.0",
-      "step": "0.0.5"     
+    "superagent": "0.16.0",
+    "step": "0.0.5"
   },
   "devDependencies": {
-      "mocha": "1.13.0",
-      "should": "2.0.1"
-    },
+    "mocha": "2.1.0",
+    "should": "2.0.1",
+    "grunt-cli": "~0.1.13",
+    "grunt": "~0.4.5",
+    "grunt-contrib-jshint": "~0.10.0"
+  },
   "licenses": [
-    { "type": "MIT" }
+    {
+      "type": "MIT"
+    }
   ],
   "keywords": [
     "neo4j",
@@ -31,11 +36,38 @@
     "database"
   ],
   "contributors": [
-    { "name": "Dan Williams", "email": "me@deedubs.com" },
-    { "name": "Zaxnyd" },
-    { "name": "Kristof Van Miegem", "email": "kristofvanmiegem@msn.com" },
-    { "name": "Oskar Hane"},
-    { "name": "lazaruslarue"},
-    { "name": "Wes Freeman", "email": "wes@skeweredrook.com" }
+    {
+      "name": "Dan Williams",
+      "email": "me@deedubs.com"
+    },
+    {
+      "name": "Zaxnyd"
+    },
+    {
+      "name": "Kristof Van Miegem",
+      "email": "kristofvanmiegem@msn.com"
+    },
+    {
+      "name": "Oskar Hane"
+    },
+    {
+      "name": "lazaruslarue"
+    },
+    {
+      "name": "Wes Freeman",
+      "email": "wes@skeweredrook.com"
+    },
+    {
+      "name": "DrBoolean",
+      "email": "brian@looprecur.com"
+    },
+    {
+      "name": "Matt Basta",
+      "email": "me@mattbasta.com"
+    },
+    {
+      "name": "Nuno Barreto",
+      "email": "nbarreto@gmail.com"
+    }
   ]
 }
