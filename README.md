@@ -11,7 +11,7 @@ develop branch: [![Build Status](https://travis-ci.org/philippkueng/node-neo4j.p
 
 ## Usage
 
-In order to use the library you either have to create a [heroku](http://www.heroku.com/) app and add the [Neo4j Addon](https://addons.heroku.com/neo4j) there or install it locally.<br/>If you're using OS X i highly recommend installing Neo4j via [Homebrew](http://mxcl.github.com/homebrew/).
+In order to use the library you either have to create a [heroku](http://www.heroku.com/) app and add the [GrapheneDB Neo4j Addon](https://addons.heroku.com/graphenedb) there or install it locally.<br/>If you're using OS X I highly recommend installing Neo4j via [Homebrew](http://mxcl.github.com/homebrew/).
 
     $ brew install neo4j
     $ neo4j start
