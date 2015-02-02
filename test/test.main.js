@@ -68,8 +68,8 @@ describe('Testing Node specific operations for Neo4j', function () {
                     result.age.should.equal(7);
                     result.favoriteColors.should.be.an.instanceOf(Array);
                     result.favoriteColors.should.have.lengthOf(2);
-                    result.favoriteColors.should.include('red');
-                    result.favoriteColors.should.include('orange');
+                    result.favoriteColors.should.containEql('red');
+                    result.favoriteColors.should.containEql('orange');
                     result._id.should.be.an.Number;
                     firstNodeId = result._id;
                     done();
@@ -91,12 +91,12 @@ describe('Testing Node specific operations for Neo4j', function () {
                     result.level.should.equal(99);
                     result.hobbies.should.be.an.instanceOf(Array);
                     result.hobbies.should.have.lengthOf(2);
-                    result.hobbies.should.include('lightsaber fighting');
-                    result.hobbies.should.include('cycling in space');
+                    result.hobbies.should.containEql('lightsaber fighting');
+                    result.hobbies.should.containEql('cycling in space');
                     result.shipIds.should.be.an.instanceOf(Array);
                     result.shipIds.should.have.lengthOf(2);
-                    result.shipIds.should.include(123);
-                    result.shipIds.should.include(321);
+                    result.shipIds.should.containEql(123);
+                    result.shipIds.should.containEql(321);
                     result._id.should.be.an.Number;
                     secondNodeId = result._id;
                     done();
@@ -164,7 +164,7 @@ describe('Testing Node specific operations for Neo4j', function () {
                     onlyResult(err, result);
                     result.should.be.an.instanceOf(Array);
                     result.should.have.lengthOf(1);
-                    result.should.include('User');
+                    result.should.containEql('User');
                     done();
                 });
             });
@@ -176,9 +176,9 @@ describe('Testing Node specific operations for Neo4j', function () {
                     onlyResult(err, result);
                     result.should.be.an.instanceOf(Array);
                     result.should.have.lengthOf(3);
-                    result.should.include('User');
-                    result.should.include('Student');
-                    result.should.include('Man');
+                    result.should.containEql('User');
+                    result.should.containEql('Student');
+                    result.should.containEql('Man');
                     done();
                 });
             });
@@ -497,8 +497,8 @@ describe('Testing Node specific operations for Neo4j', function () {
                     result.price.should.equal(1.25);
                     result.colors.should.be.an.instanceOf(Array);
                     result.colors.should.have.lengthOf(2);
-                    result.colors.should.include('blue');
-                    result.colors.should.include('green');
+                    result.colors.should.containEql('blue');
+                    result.colors.should.containEql('green');
                     done();
                 });
             });
@@ -1005,7 +1005,7 @@ describe('Testing Node specific operations for Neo4j', function () {
                     result.should.have.property('property_keys');
                     result['property_keys'].should.be.an.instanceOf(Array);
                     result['property_keys'].should.have.lengthOf(1);
-                    result['property_keys'].should.include('firstname');
+                    result['property_keys'].should.containEql('firstname');
                     done();
                 });
             });
@@ -1209,7 +1209,7 @@ describe('Testing Node specific operations for Neo4j', function () {
                         onlyResult(err, result);
                         result.should.be.an.instanceOf(Array);
                         result.should.have.lengthOf(1);
-                        result.should.include('City');
+                        result.should.containEql('City');
                         done();
                     });
                 });
@@ -1224,10 +1224,10 @@ describe('Testing Node specific operations for Neo4j', function () {
                         onlyResult(err, result);
                         result.should.be.an.instanceOf(Array);
                         result.should.have.lengthOf(4);
-                        result.should.include('City');
-                        result.should.include('Capital');
-                        result.should.include('Belgium');
-                        result.should.include('Frietjes');
+                        result.should.containEql('City');
+                        result.should.containEql('Capital');
+                        result.should.containEql('Belgium');
+                        result.should.containEql('Frietjes');
                         done();
                     });
                 });
@@ -1292,7 +1292,7 @@ describe('Testing Node specific operations for Neo4j', function () {
                         onlyResult(err, result);
                         result.should.be.an.instanceOf(Array);
                         result.should.have.lengthOf(1);
-                        result.should.include('Dutch');
+                        result.should.containEql('Dutch');
                         done();
                     });
                 });
@@ -1306,9 +1306,9 @@ describe('Testing Node specific operations for Neo4j', function () {
                     db.readLabels(nodeId, function (err, result) {
                         onlyResult(err, result);
                         result.should.be.an.instanceOf(Array);
-                        result.should.include('Dutch');
-                        result.should.include('French');
-                        result.should.include('German');
+                        result.should.containEql('Dutch');
+                        result.should.containEql('French');
+                        result.should.containEql('German');
                         done();
                     });
                 });
@@ -1383,8 +1383,8 @@ describe('Testing Node specific operations for Neo4j', function () {
                         onlyResult(err, result);
                         result.should.be.an.instanceOf(Array);
                         result.should.have.lengthOf(2);
-                        result.should.include('Capital');
-                        result.should.include('Belgium');
+                        result.should.containEql('Capital');
+                        result.should.containEql('Belgium');
                         done();
                     });
                 });
@@ -1659,9 +1659,9 @@ describe('Testing Node specific operations for Neo4j', function () {
                 db.listAllLabels(function (err, result) {
                     onlyResult(err, result);
                     result.should.be.an.instanceOf(Array);
-                    result.should.include('Capital');
-                    result.should.include('City');
-                    result.should.include('Belgium');
+                    result.should.containEql('Capital');
+                    result.should.containEql('City');
+                    result.should.containEql('Belgium');
                     done();
                 });
             });
@@ -1716,7 +1716,7 @@ describe('Testing Node specific operations for Neo4j', function () {
                     result.should.have.property('property_keys');
                     result['property_keys'].should.be.an.instanceOf(Array);
                     result['property_keys'].should.have.lengthOf(1);
-                    result['property_keys'].should.include('email');
+                    result['property_keys'].should.containEql('email');
                     done();
                 });
             });
@@ -1777,7 +1777,7 @@ describe('Testing Node specific operations for Neo4j', function () {
                     result[0].should.have.property('property_keys');
                     result[0].should.have.property('type', 'UNIQUENESS');
                     result[0]['property_keys'].should.have.lengthOf(1);
-                    result[0]['property_keys'].should.include('email');
+                    result[0]['property_keys'].should.containEql('email');
                     done();
                 });
             });
@@ -2710,8 +2710,8 @@ describe('Testing Node specific operations for Neo4j', function () {
                     result.data.should.have.lengthOf(0);
                     result.columns.should.be.an.instanceOf(Array);
                     result.columns.should.have.lengthOf(2);
-                    result.columns.should.include('a.name');
-                    result.columns.should.include('o.name');
+                    result.columns.should.containEql('a.name');
+                    result.columns.should.containEql('o.name');
                     done();
                 });
             });
@@ -2722,8 +2722,8 @@ describe('Testing Node specific operations for Neo4j', function () {
                 db.cypherQuery("MATCH (n:ex) RETURN n.p1, n.p2", null, function (err, result) {
                     onlyResult(err, result);
                     result.should.have.keys('columns', 'data');
-                    result.columns.should.include('n.p1');
-                    result.columns.should.include('n.p2');
+                    result.columns.should.containEql('n.p1');
+                    result.columns.should.containEql('n.p2');
                     result.data.should.have.lengthOf(0);
                     done();
                 });
@@ -2775,7 +2775,7 @@ describe('Testing Node specific operations for Neo4j', function () {
                     result.data.should.have.lengthOf(1);
                     result.columns.should.be.an.instanceOf(Array);
                     result.columns.should.have.lengthOf(1);
-                    result.columns.should.include('user');
+                    result.columns.should.containEql('user');
                     should.exist(result.data[0]._id);
                     result.data[0]._id.should.equal(root_node_id);
                     done();
@@ -2794,7 +2794,7 @@ describe('Testing Node specific operations for Neo4j', function () {
                     result.data.should.have.lengthOf(2);
                     result.columns.should.be.an.instanceOf(Array);
                     result.columns.should.have.lengthOf(1);
-                    result.columns.should.include('friends');
+                    result.columns.should.containEql('friends');
                     should.exist(result.data[0].name);
                     should.exist(result.data[1].name);
                     should.exist(result.data[0]._id);
@@ -2816,7 +2816,7 @@ describe('Testing Node specific operations for Neo4j', function () {
                     result.data.should.have.lengthOf(1);
                     result.columns.should.be.an.instanceOf(Array);
                     result.columns.should.have.lengthOf(1);
-                    result.columns.should.include('p');
+                    result.columns.should.containEql('p');
                     should.exist(result.data[0].start);
                     should.exist(result.data[0].end);
                     result.data[0].nodes.should.have.lengthOf(2);
@@ -2839,11 +2839,11 @@ describe('Testing Node specific operations for Neo4j', function () {
                     result.data[3].should.have.lengthOf(2);
                     result.columns.should.be.an.instanceOf(Array);
                     result.columns.should.have.lengthOf(2);
-                    result.data[0].should.include('foobar');
-                    result.data[0].should.include('foobar2');
-                    result.data[1].should.include('foobar');
-                    result.data[1].should.include('foobar3');
-                    result.columns.should.include('a.name');
+                    result.data[0].should.containEql('foobar');
+                    result.data[0].should.containEql('foobar2');
+                    result.data[1].should.containEql('foobar');
+                    result.data[1].should.containEql('foobar3');
+                    result.columns.should.containEql('a.name');
                     done();
                 });
             });
@@ -2855,7 +2855,7 @@ describe('Testing Node specific operations for Neo4j', function () {
                     root_node: 'foobar'
                 }, function (err, result) {
                     onlyResult(err, result);
-                    result.columns.should.include('friends');
+                    result.columns.should.containEql('friends');
                     result.data.should.be.an.instanceOf(Array);
                     result.data.should.have.lengthOf(2);
                     result.data[0].should.have.property('name', 'foobar2');
@@ -2909,8 +2909,8 @@ describe('Testing Node specific operations for Neo4j', function () {
                 db.cypherQuery("MATCH (n:ex) RETURN n.p1, n.p2", null, function (err, result) {
                     onlyResult(err, result);
                     result.should.have.keys('columns', 'data');
-                    result.columns.should.include('n.p1');
-                    result.columns.should.include('n.p2');
+                    result.columns.should.containEql('n.p1');
+                    result.columns.should.containEql('n.p2');
                     result.data.should.have.lengthOf(2);
                     result.data[0].should.have.lengthOf(2);
                     result.data[1].should.have.lengthOf(2);
