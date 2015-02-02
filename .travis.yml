@@ -7,6 +7,7 @@ before_install:
 - sleep 3
 - ./install_local_neo4j.bash $NEO4J_VERSION
 - ./lib/neo4j/bin/neo4j start || ( cat ./lib/neo4j/data/log/*.log && exit 1 )
+- sleep 10
 - curl http://localhost:$NEO4J_PORT/db/data/
 - curl -X DELETE 'http://localhost:7474/cleandb/supersecretdebugkey!'
 env:
