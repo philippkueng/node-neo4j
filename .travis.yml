@@ -10,7 +10,7 @@ before_install:
 - neo4j-community-$NEO4J_VERSION/bin/neo4j start
 - curl -vvv http://localhost:7474/db/data/
 script:
-- ./tests/setAuthenticationToken.sh
+- ./test/setAuthenticationToken.sh
 deploy:
   provider: npm
   email: github@philippkueng.ch
