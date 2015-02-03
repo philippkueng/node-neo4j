@@ -18,8 +18,13 @@ In order to use the library you either have to create a [heroku](http://www.hero
 
 **Instantiate a wrapper instance**
 
-    var neo4j = require('node-neo4j');
-    db = new neo4j('http://username:password@domain:port');
+```javascript
+var neo4j = require('node-neo4j');
+db = new neo4j('http://username:password@domain:port');
+
+// when using token based authentication introduced in Neo4j v2.2
+db = new neo4j('http://:your-authentication-token@domain:port');
+```
 
 **NOTE**
 New features like labels, contraints and transactions are only supported by Neo4j 2.0.0.
