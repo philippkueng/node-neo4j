@@ -2,6 +2,8 @@ language: node_js
 node_js:
 - '0.10'
 env:
+- NEO4J_VERSION="2.0.4"
+- NEO4J_VERSION="2.1.7"
 - NEO4J_VERSION="2.2.0-M03"
 before_install:
 - sudo apt-get update > /dev/null
