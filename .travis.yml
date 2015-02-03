@@ -1,17 +1,16 @@
 language: node_js
 node_js:
 - '0.10'
-before_install:
-- export NEO4J_PORT="7474"
-- sudo service neo4j stop || true
-- sleep 3
-- ./install_local_neo4j.bash $NEO4J_VERSION
-- ./lib/neo4j/bin/neo4j start || ( cat ./lib/neo4j/data/log/*.log && exit 1 )
-- sleep 10
-- curl -vvv http://localhost:$NEO4J_PORT/db/data/
-- curl -vvv -X DELETE 'http://localhost:7474/cleandb/supersecretdebugkey!'
 env:
 - NEO4J_VERSION="2.2.0-M03"
+before_install:
+- sudo apt-get update > /dev/null
+- wget dist.neo4j.org/neo4j-community-$NEO4J_VERSION-unix.tar.gz > null
+- tar -xzf neo4j-community-$NEO4J_VERSION-unix.tar.gz > null
+- neo4j-community-$NEO4J_VERSION/bin/neo4j start
+- curl -vvv http://localhost:7474/db/data/
+script:
+- ./tests/setAuthenticationToken.sh
 deploy:
   provider: npm
   email: github@philippkueng.ch

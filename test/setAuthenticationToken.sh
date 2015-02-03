@@ -1,0 +1,2 @@
+#!/bin/bash
+curl -vvv X POST -d '{"password": "neo4j", "new_authorization_token" : "4287e44985b04c7536c523ca6ea8e67c"}' -H 'Content-Type: application/json' -i http://localhost:7474/user/neo4j/authorization_token

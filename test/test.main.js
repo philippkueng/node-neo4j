@@ -7,7 +7,7 @@ var should = require('should'),
     neo4j = require('../index'),
     util = require('util');
 
-var url = 'http://localhost:7474';
+var url = 'http://:4287e44985b04c7536c523ca6ea8e67c@localhost:7474';
 var db = new neo4j(url);
 
 function onlyResult(err, result) {
