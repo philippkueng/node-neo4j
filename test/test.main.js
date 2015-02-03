@@ -2839,10 +2839,8 @@ describe('Testing Node specific operations for Neo4j', function () {
                     result.data[3].should.have.lengthOf(2);
                     result.columns.should.be.an.instanceOf(Array);
                     result.columns.should.have.lengthOf(2);
-                    result.data[0].should.containEql('foobar');
-                    result.data[0].should.containEql('foobar2');
-                    result.data[1].should.containEql('foobar');
-                    result.data[1].should.containEql('foobar3');
+                    result.data.should.containDeep([['foobar', 'foobar2'],
+                                                    ['foobar', 'foobar3']]);
                     result.columns.should.containEql('a.name');
                     done();
                 });
@@ -2858,8 +2856,8 @@ describe('Testing Node specific operations for Neo4j', function () {
                     result.columns.should.containEql('friends');
                     result.data.should.be.an.instanceOf(Array);
                     result.data.should.have.lengthOf(2);
-                    result.data[0].should.have.property('name', 'foobar2');
-                    result.data[1].should.have.property('name', 'foobar3');
+                    result.data.should.containDeep([{name: 'foobar2'},
+                                                    {name: 'foobar3'}]);
                     done();
                 });
             });
