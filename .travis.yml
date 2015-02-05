@@ -14,7 +14,7 @@ before_install:
 before_script:
 - ./test/setAuthenticationToken.sh
 script:
-- npm test
+- make coveralls
 deploy:
   provider: npm
   email: github@philippkueng.ch
