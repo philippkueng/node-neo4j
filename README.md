@@ -8,12 +8,13 @@ develop branch: [![Build Status](https://travis-ci.org/philippkueng/node-neo4j.p
 ## Installation
 
 ```bash
-npm install node-neo4j
+npm install node-neo4j --save
 ```
 
 ## Usage
 
-In order to use the library you either have to create a [heroku](http://www.heroku.com/) app and add the [GrapheneDB Neo4j Addon](https://addons.heroku.com/graphenedb) there or install it locally.<br/>If you're using OS X I highly recommend installing Neo4j via [Homebrew](http://mxcl.github.com/homebrew/).
+In order to use the library you either have to create a [heroku](http://www.heroku.com/) app and add the [GrapheneDB Neo4j Addon](https://addons.heroku.com/graphenedb) or install it locally.  
+If you're using OS X I highly recommend installing Neo4j via [Homebrew](http://mxcl.github.com/homebrew/).
 
 ```bash
 brew install neo4j
@@ -32,16 +33,11 @@ db = new neo4j('http://:your-authentication-token@domain:port');
 
 **NOTE**
 New features like labels, contraints and transactions are only supported by Neo4j 2.0.0.
-Navigate to the node module and run the tests:
 
-```bash
-npm test
-```
-
-All tests should pass if you're running the latest version of Neo4j.
-We try to update the module as fast as possible if there's a new version of Neo4j.
-Don't be shy to give remarks or report bugs. We would be glad to fix them.
-You can contact use on Twitter [https://twitter.com/Stofkn](@Stofkn) or [https://twitter.com/philippkueng](@philippkueng) or mail us (check package.json).
+**Disclaimer**
+We try to update the module as fast as possible to adapt to any new version of Neo4j.
+Don't be shy to give remarks, report bugs or send in pull requests.
+You can contact use on Twitter [https://twitter.com/Stofkn](@Stofkn), [https://twitter.com/philippkueng](@philippkueng) or send us some email via the address defined in the `package.json`.
 
 
 ## New features
