@@ -31,6 +31,17 @@ db = new neo4j('http://username:password@domain:port');
 db = new neo4j('http://:your-authentication-token@domain:port');
 ```
 
+**Run a cypher query**
+
+```javascript
+db.cypherQuery("START user = node(123) MATCH user-[:RELATED_TO]->friends RETURN friends", function(err, result){
+    if(err) throw err;
+
+    console.log(result.data); // delivers an array of query results
+    console.log(result.columns); // delivers an array of names of objects getting returned
+});
+```
+
 **NOTE**
 New features like labels, contraints and transactions are only supported by Neo4j 2.0.0.
 
