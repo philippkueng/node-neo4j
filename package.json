@@ -22,7 +22,7 @@
     "coveralls": "^2.11.2",
     "mocha-lcov-reporter": "0.0.1",
     "mocha": "2.1.0",
-    "should": "4.6.5",
+    "should": "5.0.0",
     "istanbul": "^0.3.2",
     "grunt-cli": "~0.1.13",
     "grunt": "~0.4.5",
