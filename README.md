@@ -339,7 +339,7 @@ Get all (incoming and outgoing) relationships of a node, or use the options obje
             console.log(relationships); // delivers an array of relationship objects.
     });
 
-**Run a cyper query against Neo4j**
+**Run a cypher query against Neo4j**
 
     db.cypherQuery("START user = node(123) MATCH user-[:RELATED_TO]->friends RETURN friends", function(err, result){
         if(err) throw err;
